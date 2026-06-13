@@ -184,10 +184,10 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-white leading-tight">
-                M4E CRM
+                Customer Reactivation Manager
               </span>
               <span className="text-[10px] text-slate-400 leading-tight">
-                WhatsApp Business
+                Your reclamation engine
               </span>
             </div>
           </Link>

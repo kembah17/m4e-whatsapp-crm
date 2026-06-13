@@ -1,17 +1,17 @@
 {
-  "name": "m4e-whatsapp-crm",
+  "name": "customer-reactivation-manager",
   "version": "0.2.2",
   "private": true,
-  "description": "Self-hostable CRM template for WhatsApp built on Next.js and Supabase — shared inbox, contacts, sales pipelines, broadcasts, and no-code automations.",
+  "description": "Customer Reactivation Manager \u2014 Your dormant customer reclamation engine! Multi-channel CRM powered by Marketing4Effect.",
   "license": "MIT",
   "author": "Arnas Donauskas",
-  "homepage": "https://github.com/ArnasDon/wacrm",
+  "homepage": "https://github.com/kembah17/m4e-whatsapp-crm",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArnasDon/wacrm.git"
+    "url": "git+https://github.com/kembah17/m4e-whatsapp-crm.git"
   },
   "bugs": {
-    "url": "https://github.com/ArnasDon/wacrm/issues"
+    "url": "https://github.com/kembah17/m4e-whatsapp-crm/issues"
   },
   "keywords": [
     "crm",

@@ -14,10 +14,10 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: "M4E CRM",
-    template: "%s — M4E CRM",
+    default: "Customer Reactivation Manager",
+    template: "%s — Customer Reactivation Manager",
   },
-  description: "WhatsApp CRM powered by Marketing4Effect.",
+  description: "Your dormant customer reclamation engine! Multi-channel CRM powered by Marketing4Effect.",
   robots: {
     index: false,
     follow: false,

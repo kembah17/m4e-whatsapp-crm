@@ -83,7 +83,7 @@ function LoginPageInner() {
           <CardDescription className="text-slate-400">
             {inviteToken
               ? "Sign in and we'll take you to the invitation."
-              : "Sign in to your M4E CRM account"}
+              : "Sign in to Customer Reactivation Manager"}
           </CardDescription>
         </CardHeader>
         <CardContent>

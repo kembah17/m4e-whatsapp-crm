@@ -1,5 +1,5 @@
 /**
- * Nigerian locale utilities for M4E CRM.
+ * Nigerian locale utilities for Customer Reactivation Manager.
  * Provides currency formatting, date formatting, and timezone defaults.
  */
 
