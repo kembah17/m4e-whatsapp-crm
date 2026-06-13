@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "indigo",
   "violet",
   "emerald",
   "cobalt",
@@ -23,9 +24,9 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "indigo";
 
-export const STORAGE_KEY = "wacrm.theme";
+export const STORAGE_KEY = "m4e-crm.theme";
 
 export interface ThemeMeta {
   id: ThemeId;
@@ -41,6 +42,12 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
+  {
+    id: "indigo",
+    name: "Indigo",
+    tagline: "M4E signature — midnight indigo with champagne gold.",
+    swatch: "oklch(0.750 0.085 82)",
+  },
   {
     id: "violet",
     name: "Violet",

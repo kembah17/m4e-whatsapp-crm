@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
-// Replaces the default Next.js favicon with the brand mark — Hostinger
-// violet rounded square + white chat-square glyph — matching the
+// Replaces the default Next.js favicon with the M4E brand mark — Midnight
+// Indigo rounded square + Champagne Gold chat-square glyph — matching the
 // sidebar logo in `src/components/layout/sidebar.tsx`. Next.js renders
 // this at build time and auto-injects <link rel="icon"> into <head>.
 //
@@ -22,7 +22,7 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#7c3aed", // primary (Hostinger-aligned purple)
+          background: "#1E1B4B", // primary (M4E Midnight Indigo)
           borderRadius: 6,
         }}
       >
@@ -31,7 +31,7 @@ export default function Icon() {
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#ffffff"
+          stroke="#C9A96E"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"

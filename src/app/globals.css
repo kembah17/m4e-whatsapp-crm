@@ -69,7 +69,47 @@
  * project/Color Themes.html — change one, change the other.
  * ============================================================ */
 
+/* M4E Indigo — Midnight Indigo + Champagne Gold */
 :root,
+html[data-theme="indigo"] {
+  --background: oklch(0.166 0.047 282);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.214 0.070 281);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.214 0.070 281);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.750 0.085 82);
+  --primary-foreground: oklch(0.166 0.047 282);
+  --primary-hover: oklch(0.828 0.057 83);
+  --primary-soft: oklch(0.750 0.085 82 / 0.12);
+  --primary-soft-2: oklch(0.750 0.085 82 / 0.22);
+  --secondary: oklch(0.257 0.086 281);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.257 0.086 281);
+  --muted-foreground: oklch(0.712 0.013 286);
+  --accent: oklch(0.257 0.086 281);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.380 0.121 281);
+  --input: oklch(0.380 0.121 281);
+  --ring: oklch(0.750 0.085 82);
+  --chart-1: oklch(0.750 0.085 82);
+  --chart-2: oklch(0.686 0.098 82);
+  --chart-3: oklch(0.498 0.113 284);
+  --chart-4: oklch(0.380 0.121 281);
+  --chart-5: oklch(0.276 0.084 282);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.190 0.058 281);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.750 0.085 82);
+  --sidebar-primary-foreground: oklch(0.166 0.047 282);
+  --sidebar-accent: oklch(0.257 0.086 281);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.325 0.102 281);
+  --sidebar-ring: oklch(0.750 0.085 82);
+}
+
+
 html[data-theme="violet"] {
   --background: oklch(0.13 0.01 260);
   --foreground: oklch(0.985 0 0);
