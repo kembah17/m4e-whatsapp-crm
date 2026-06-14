@@ -135,15 +135,15 @@ function SignupPageInner() {
             />
           </div>
           <CardTitle className="text-xl text-white font-heading">
-            {inviteToken ? "Create account & join" : "Create account"}
+            {inviteToken ? "Create account & join" : "Customer Reactivation Manager"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken
               ? "Verify your email, then accept the invitation to join your team."
-              : "Get started with Customer Reactivation Manager"}
+              : "Your dormant customer reclamation Engine!"}
           </CardDescription>
           {!inviteToken && (
-            <p className="mt-1 text-xs italic text-primary/60">We make the people who need you, know you</p>
+            <p className="mt-2 text-sm font-medium text-slate-300">Create account</p>
           )}
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />

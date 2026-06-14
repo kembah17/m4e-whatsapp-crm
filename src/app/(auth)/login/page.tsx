@@ -75,14 +75,16 @@ function LoginPageInner() {
             />
           </div>
           <CardTitle className="text-xl text-white font-heading">
-            {inviteToken ? "Sign in to accept" : "Welcome to M4E"}
+            {inviteToken ? "Sign in to accept" : "Customer Reactivation Manager"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken
               ? "Sign in and we\u2019ll take you to the invitation."
-              : "Sign in to Customer Reactivation Manager"}
+              : "Your dormant customer reclamation Engine!"}
           </CardDescription>
-          <p className="mt-1 text-xs italic text-primary/60">We make the people who need you, know you</p>
+          {!inviteToken && (
+            <p className="mt-2 text-sm font-medium text-slate-300">Sign in</p>
+          )}
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
         <CardContent>

@@ -89,10 +89,11 @@ export default function ForgotPasswordPage() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-white font-heading">Reset password</CardTitle>
+          <CardTitle className="text-xl text-white font-heading">Customer Reactivation Manager</CardTitle>
           <CardDescription className="text-slate-400">
-            Enter your email and we&apos;ll send you a reset link
+            Your dormant customer reclamation Engine!
           </CardDescription>
+          <p className="mt-2 text-sm font-medium text-slate-300">Reset password</p>
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
         <CardContent>
