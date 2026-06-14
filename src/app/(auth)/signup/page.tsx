@@ -140,7 +140,7 @@ function SignupPageInner() {
           <CardDescription className="text-slate-400">
             {inviteToken
               ? "Verify your email, then accept the invitation to join your team."
-              : "Your dormant customer reclamation Engine!"}
+              : "Your Dormant Customer Reclamation Engine!"}
           </CardDescription>
           {!inviteToken && (
             <p className="mt-2 text-sm font-medium text-slate-300">Create account</p>
