@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,22 +61,30 @@ function LoginPageInner() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4">
-      <Card className="w-full max-w-md border-[#3A3680] bg-[#151338]">
+    <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4" style={{ background: 'radial-gradient(ellipse at center top, #1E1B4B 0%, #151338 35%, #0C0B22 70%)' }}>
+      <Card className="w-full max-w-md border border-[#C9A96E]/20 bg-[#151338]/80 shadow-[0_0_40px_-10px_rgba(201,169,110,0.15)] backdrop-blur-xl">
         <CardHeader className="items-center text-center">
           <div className="mb-4">
-            <span className="font-heading text-3xl font-bold tracking-tight text-primary">M4E</span>
+            <Image
+              src="/logo-m4e-200.png"
+              alt="Marketing4Effect"
+              width={80}
+              height={80}
+              className="rounded-full"
+              priority
+            />
           </div>
           <CardTitle className="text-xl text-white font-heading">
             {inviteToken ? "Sign in to accept" : "Welcome to M4E"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken
-              ? "Sign in and we’ll take you to the invitation."
+              ? "Sign in and we\u2019ll take you to the invitation."
               : "Sign in to Customer Reactivation Manager"}
           </CardDescription>
+          <p className="mt-1 text-xs italic text-primary/60">We make the people who need you, know you</p>
         </CardHeader>
-        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             {error && (

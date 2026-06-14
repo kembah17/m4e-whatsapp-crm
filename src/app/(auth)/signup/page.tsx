@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -82,8 +83,8 @@ function SignupPageInner() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4">
-        <Card className="w-full max-w-md border-[#3A3680] bg-[#151338]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4" style={{ background: 'radial-gradient(ellipse at center top, #1E1B4B 0%, #151338 35%, #0C0B22 70%)' }}>
+        <Card className="w-full max-w-md border border-[#C9A96E]/20 bg-[#151338]/80 shadow-[0_0_40px_-10px_rgba(201,169,110,0.15)] backdrop-blur-xl">
           <CardHeader className="items-center text-center">
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle className="h-6 w-6 text-primary" />
@@ -97,7 +98,7 @@ function SignupPageInner() {
               inbox and click the link to verify your account.
             </CardDescription>
           </CardHeader>
-          <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+          <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
           <CardContent>
             <Link
               href={
@@ -120,11 +121,18 @@ function SignupPageInner() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4">
-      <Card className="w-full max-w-md border-[#3A3680] bg-[#151338]">
+    <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4" style={{ background: 'radial-gradient(ellipse at center top, #1E1B4B 0%, #151338 35%, #0C0B22 70%)' }}>
+      <Card className="w-full max-w-md border border-[#C9A96E]/20 bg-[#151338]/80 shadow-[0_0_40px_-10px_rgba(201,169,110,0.15)] backdrop-blur-xl">
         <CardHeader className="items-center text-center">
           <div className="mb-4">
-            <span className="font-heading text-3xl font-bold tracking-tight text-primary">M4E</span>
+            <Image
+              src="/logo-m4e-200.png"
+              alt="Marketing4Effect"
+              width={80}
+              height={80}
+              className="rounded-full"
+              priority
+            />
           </div>
           <CardTitle className="text-xl text-white font-heading">
             {inviteToken ? "Create account & join" : "Create account"}
@@ -134,8 +142,11 @@ function SignupPageInner() {
               ? "Verify your email, then accept the invitation to join your team."
               : "Get started with Customer Reactivation Manager"}
           </CardDescription>
+          {!inviteToken && (
+            <p className="mt-1 text-xs italic text-primary/60">We make the people who need you, know you</p>
+          )}
         </CardHeader>
-        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
         <CardContent>
           <form onSubmit={handleSignup} className="flex flex-col gap-4">
             {error && (
