@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MessageSquare, CheckCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-xl text-white">
+            <CardTitle className="text-xl text-white font-heading">
               Check your email
             </CardTitle>
             <CardDescription className="text-slate-400">
@@ -58,6 +58,7 @@ export default function ForgotPasswordPage() {
               inbox.
             </CardDescription>
           </CardHeader>
+          <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           <CardContent>
             <Link href="/login">
               <Button
@@ -77,14 +78,15 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4">
       <Card className="w-full max-w-md border-[#3A3680] bg-[#151338]">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <MessageSquare className="h-6 w-6 text-primary" />
+          <div className="mb-4">
+            <span className="font-heading text-3xl font-bold tracking-tight text-primary">M4E</span>
           </div>
-          <CardTitle className="text-xl text-white">Reset password</CardTitle>
+          <CardTitle className="text-xl text-white font-heading">Reset password</CardTitle>
           <CardDescription className="text-slate-400">
             Enter your email and we&apos;ll send you a reset link
           </CardDescription>
         </CardHeader>
+        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <CardContent>
           <form onSubmit={handleReset} className="flex flex-col gap-4">
             {error && (
@@ -111,7 +113,7 @@ export default function ForgotPasswordPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="mt-2 h-11 w-full rounded-lg bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40 transition-all duration-200 disabled:opacity-50"
             >
               {loading ? "Sending..." : "Send reset link"}
             </Button>

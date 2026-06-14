@@ -14,13 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MessageSquare, UsersRound } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
-// `useSearchParams` opts the component out of static prerendering
-// unless it sits under a Suspense boundary. We split the form into
-// a child component so the outer page can prerender the chrome
-// (background, card frame) while the form hydrates with the query
-// string on the client.
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
@@ -31,13 +26,11 @@ export default function LoginPage() {
 
 function LoginPageInner() {
   const searchParams = useSearchParams();
-  // Forwarded from `/join/<token>` when the visitor already has an
-  // account. After a successful sign-in we send them to the join
-  // page to accept rather than to /dashboard.
   const inviteToken = searchParams.get("invite");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -70,22 +63,19 @@ function LoginPageInner() {
     <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4">
       <Card className="w-full max-w-md border-[#3A3680] bg-[#151338]">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            {inviteToken ? (
-              <UsersRound className="h-6 w-6 text-primary" />
-            ) : (
-              <MessageSquare className="h-6 w-6 text-primary" />
-            )}
+          <div className="mb-4">
+            <span className="font-heading text-3xl font-bold tracking-tight text-primary">M4E</span>
           </div>
-          <CardTitle className="text-xl text-white">
+          <CardTitle className="text-xl text-white font-heading">
             {inviteToken ? "Sign in to accept" : "Welcome to M4E"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken
-              ? "Sign in and we'll take you to the invitation."
+              ? "Sign in and we’ll take you to the invitation."
               : "Sign in to Customer Reactivation Manager"}
           </CardDescription>
         </CardHeader>
+        <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             {error && (
@@ -121,21 +111,34 @@ function LoginPageInner() {
                   Forgot password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="mt-2 h-11 w-full rounded-lg bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40 transition-all duration-200 disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign in"}
             </Button>

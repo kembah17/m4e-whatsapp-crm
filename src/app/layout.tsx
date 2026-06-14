@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Source_Sans_3 } from "next/font/google";
+import { Source_Sans_3, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -10,6 +10,12 @@ const sourceSans = Source_Sans_3({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -37,15 +43,6 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-// Inline boot script — runs before React hydrates so the user's
-// chosen theme is on the <html> element before first paint. Without
-// this every page load flashes the default Violet for a frame before
-// the React tree mounts and applies the picked theme.
-//
-// Kept dependency-free (no imports, no JSX) — must be a string the
-// browser can run as a single <script>. Knowledge of valid theme IDs
-// is sourced from the THEME_IDS constant so adding a theme doesn't
-// silently break the boot path.
 const THEME_BOOT_SCRIPT = `
 (function(){
   try {
@@ -70,13 +67,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme={DEFAULT_THEME}
-      className={`${sourceSans.variable} h-full antialiased`}
-      // The `theme-boot` script below rewrites `data-theme` on <html>
-      // from localStorage before React hydrates, so for any non-default
-      // theme the client DOM intentionally differs from the server-
-      // rendered `DEFAULT_THEME`. suppressHydrationWarning silences the
-      // expected mismatch — it only applies to this element's own
-      // attributes, so genuine mismatches in children still surface.
+      className={`${sourceSans.variable} ${playfair.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
