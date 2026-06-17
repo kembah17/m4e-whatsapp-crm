@@ -26,6 +26,7 @@ import {
   GitBranch,
   Webhook,
   CircleSlash,
+  Mail,
   Zap,
   Loader2,
   ArrowDown,
@@ -99,6 +100,7 @@ const STEP_META: Record<AutomationStepType, StepMeta> = {
   condition: { label: "Condition (If/Else)", icon: GitBranch, border: "border-l-amber-500" },
   send_webhook: { label: "Send Webhook", icon: Webhook, border: "border-l-primary" },
   close_conversation: { label: "Close Conversation", icon: CircleSlash, border: "border-l-primary" },
+  send_email: { label: "Send Email", icon: Mail, border: "border-l-blue-500" },
 }
 
 const ADDABLE_STEPS: AutomationStepType[] = [
@@ -113,6 +115,7 @@ const ADDABLE_STEPS: AutomationStepType[] = [
   "condition",
   "send_webhook",
   "close_conversation",
+  "send_email",
 ]
 
 const TRIGGER_OPTIONS: { value: AutomationTriggerType; label: string; hint: string }[] = [
@@ -161,6 +164,8 @@ function blankConfig(type: AutomationStepType): Record<string, unknown> {
       return { url: "", headers: {}, body_template: "" }
     case "close_conversation":
       return {}
+    case "send_email":
+      return { subject: "", html_body: "", text_body: "" }
     default:
       return {}
   }
@@ -1225,6 +1230,35 @@ function StepEditor({
           </FieldBlock>
         </>
       )
+    case "send_email":
+      return (
+        <>
+          <FieldBlock label="Subject">
+            <Input
+              value={(cfg.subject as string) ?? ""}
+              onChange={(e) => set({ subject: e.target.value })}
+              placeholder="e.g. Your appointment is confirmed"
+              className="bg-slate-800 text-white"
+            />
+          </FieldBlock>
+          <FieldBlock label="HTML Body">
+            <Textarea
+              value={(cfg.html_body as string) ?? ""}
+              onChange={(e) => set({ html_body: e.target.value })}
+              placeholder="<p>Hello {{contact_name}},</p>..."
+              className="min-h-32 bg-slate-800 font-mono text-xs text-white"
+            />
+          </FieldBlock>
+          <FieldBlock label="Plain Text (optional)">
+            <Textarea
+              value={(cfg.text_body as string) ?? ""}
+              onChange={(e) => set({ text_body: e.target.value })}
+              placeholder="Hello {{contact_name}},..."
+              className="min-h-16 bg-slate-800 text-xs text-white"
+            />
+          </FieldBlock>
+        </>
+      )
     case "close_conversation":
       return (
         <p className="text-xs text-slate-400">
@@ -1263,6 +1297,8 @@ function previewFor(step: BuilderStep): string {
       return `when ${step.step_config.subject ?? "?"}`
     case "send_webhook":
       return (step.step_config.url as string) || "no url"
+    case "send_email":
+      return (step.step_config.subject as string) || "no subject"
     default:
       return ""
   }
