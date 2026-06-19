@@ -14,10 +14,12 @@ import type {
   CreateDealStepConfig,
   AssignConversationStepConfig,
   SendEmailStepConfig,
+  SendSmsStepConfig,
 } from '@/types'
 import { supabaseAdmin } from './admin-client'
 import { engineSendText, engineSendTemplate } from './meta-send'
 import { engineSendEmail } from './brevo-send'
+import { engineSendSms } from './brevo-sms-send'
 
 // ------------------------------------------------------------
 // Public API
@@ -566,6 +568,20 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
         textContent: textBody,
       })
       return `email sent via Brevo (${messageId})`
+    }
+    case 'send_sms': {
+      const cfg = step.step_config as SendSmsStepConfig
+      if (!args.contactId) throw new Error('send_sms needs a contact')
+      if (!cfg.content?.trim()) throw new Error('send_sms needs content')
+      const smsContent = interpolate(cfg.content, args)
+      const { messageId } = await engineSendSms({
+        accountId: args.automation.account_id,
+        userId: args.automation.user_id,
+        contactId: args.contactId,
+        content: smsContent,
+        tag: cfg.tag,
+      })
+      return `SMS sent via Brevo (${messageId})`
     }
     default:
       return `unknown step: ${step.step_type}`

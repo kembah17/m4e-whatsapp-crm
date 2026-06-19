@@ -27,6 +27,7 @@ import {
   Webhook,
   CircleSlash,
   Mail,
+  Smartphone,
   Zap,
   Loader2,
   ArrowDown,
@@ -101,6 +102,7 @@ const STEP_META: Record<AutomationStepType, StepMeta> = {
   send_webhook: { label: "Send Webhook", icon: Webhook, border: "border-l-primary" },
   close_conversation: { label: "Close Conversation", icon: CircleSlash, border: "border-l-primary" },
   send_email: { label: "Send Email", icon: Mail, border: "border-l-blue-500" },
+  send_sms: { label: "Send SMS", icon: Smartphone, border: "border-l-green-500" },
 }
 
 const ADDABLE_STEPS: AutomationStepType[] = [
@@ -116,6 +118,7 @@ const ADDABLE_STEPS: AutomationStepType[] = [
   "send_webhook",
   "close_conversation",
   "send_email",
+  "send_sms",
 ]
 
 const TRIGGER_OPTIONS: { value: AutomationTriggerType; label: string; hint: string }[] = [

@@ -11,6 +11,7 @@ import {
   Coins,
   SlidersHorizontal,
   Mail,
+  Smartphone,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useCan } from '@/hooks/use-can';
@@ -25,11 +26,13 @@ import { MembersTab } from '@/components/settings/members-tab';
 import { DealsSettings } from '@/components/settings/deals-settings';
 import { CustomFieldsSettings } from '@/components/settings/custom-fields-settings';
 import { EmailConfig } from '@/components/settings/email-config';
+import { SmsConfig } from '@/components/settings/sms-config';
 
 const TAB_VALUES = [
   'profile',
   'whatsapp',
   'email',
+  'sms',
   'templates',
   'tags',
   'custom-fields',
@@ -103,6 +106,13 @@ export default function SettingsPage() {
             Email
           </TabsTrigger>
           <TabsTrigger
+            value="sms"
+            className="data-active:text-primary text-slate-400 data-active:bg-slate-800"
+          >
+            <Smartphone className="size-4" />
+            SMS
+          </TabsTrigger>
+          <TabsTrigger
             value="templates"
             className="data-active:text-primary text-slate-400 data-active:bg-slate-800"
           >
@@ -160,6 +170,10 @@ export default function SettingsPage() {
 
         <TabsContent value="email">
           <EmailConfig />
+        </TabsContent>
+
+        <TabsContent value="sms">
+          <SmsConfig />
         </TabsContent>
 
         <TabsContent value="templates">

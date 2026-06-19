@@ -389,7 +389,8 @@ export type AutomationStepType =
   | 'condition'
   | 'send_webhook'
   | 'close_conversation'
-  | 'send_email';
+  | 'send_email'
+  | 'send_sms';
 
 export type AutomationLogStatus = 'success' | 'partial' | 'failed';
 
@@ -486,6 +487,14 @@ export interface SendEmailStepConfig {
   text_body?: string;
 }
 
+export interface SendSmsStepConfig {
+  /** SMS body text. Supports {{ variable }} interpolation. */
+  content: string;
+  /** Optional tag for analytics grouping. */
+  tag?: string;
+}
+
+
 export type AutomationStepConfig =
   | SendMessageStepConfig
   | SendTemplateStepConfig
@@ -497,6 +506,7 @@ export type AutomationStepConfig =
   | ConditionStepConfig
   | SendWebhookStepConfig
   | SendEmailStepConfig
+  | SendSmsStepConfig
   | Record<string, never>
   | Record<string, unknown>;
 
