@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
-import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal } from '@/types';
+import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal, PurchaseHistory, Product } from '@/types';
 import {
   Sheet,
   SheetContent,
@@ -22,6 +22,20 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Phone,
   Mail,
   Building2,
@@ -33,6 +47,8 @@ import {
   Save,
   X,
   DollarSign,
+  ShoppingBag,
+  Calendar,
 } from 'lucide-react';
 
 interface ContactDetailViewProps {
@@ -82,6 +98,20 @@ export function ContactDetailView({
   // Deals tab
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(false);
+
+  // Purchases tab
+  const [purchases, setPurchases] = useState<PurchaseHistory[]>([]);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [productsList, setProductsList] = useState<Product[]>([]);
+  const [showRecordPurchase, setShowRecordPurchase] = useState(false);
+  const [purchaseProductId, setPurchaseProductId] = useState('');
+  const [purchaseProductName, setPurchaseProductName] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState('');
+  const [purchaseQuantity, setPurchaseQuantity] = useState('1');
+  const [purchaseChannel, setPurchaseChannel] = useState('');
+  const [purchaseNotes, setPurchaseNotes] = useState('');
+  const [savingPurchase, setSavingPurchase] = useState(false);
 
   const fetchContact = useCallback(async () => {
     if (!contactId) return;
@@ -166,6 +196,33 @@ export function ContactDetailView({
     setLoadingDeals(false);
   }, [contactId, supabase]);
 
+  const fetchPurchases = useCallback(async () => {
+    if (!contactId) return;
+    setLoadingPurchases(true);
+    try {
+      const res = await fetch(`/api/purchases?contact_id=${contactId}`);
+      if (res.ok) {
+        const json = await res.json();
+        setPurchases(json.purchases ?? []);
+      }
+    } catch {
+      // silently fail
+    }
+    setLoadingPurchases(false);
+  }, [contactId]);
+
+  const fetchProductsList = useCallback(async () => {
+    try {
+      const res = await fetch('/api/products?status=active');
+      if (res.ok) {
+        const json = await res.json();
+        setProductsList(json.products ?? []);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
+
   useEffect(() => {
     if (open && contactId) {
       fetchContact();
@@ -173,8 +230,58 @@ export function ContactDetailView({
       fetchNotes();
       fetchCustomFields();
       fetchDeals();
+      fetchPurchases();
+      fetchProductsList();
     }
-  }, [open, contactId, fetchContact, fetchTags, fetchNotes, fetchCustomFields, fetchDeals]);
+  }, [open, contactId, fetchContact, fetchTags, fetchNotes, fetchCustomFields, fetchDeals, fetchPurchases, fetchProductsList]);
+
+  async function recordPurchase() {
+    if (!contactId) return;
+    const prodName = purchaseProductName.trim() || productsList.find((p) => p.id === purchaseProductId)?.name || '';
+    if (!prodName) {
+      toast.error('Product name is required');
+      return;
+    }
+    if (!purchaseAmount || isNaN(parseFloat(purchaseAmount))) {
+      toast.error('Valid amount is required');
+      return;
+    }
+    if (!purchaseDate) {
+      toast.error('Purchase date is required');
+      return;
+    }
+    setSavingPurchase(true);
+    try {
+      const res = await fetch('/api/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_id: contactId,
+          product_id: purchaseProductId || null,
+          product_name: prodName,
+          amount: parseFloat(purchaseAmount),
+          purchase_date: purchaseDate,
+          quantity: parseInt(purchaseQuantity) || 1,
+          channel: purchaseChannel.trim() || null,
+          notes: purchaseNotes.trim() || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to record purchase');
+      toast.success('Purchase recorded');
+      setShowRecordPurchase(false);
+      setPurchaseProductId('');
+      setPurchaseProductName('');
+      setPurchaseAmount('');
+      setPurchaseDate('');
+      setPurchaseQuantity('1');
+      setPurchaseChannel('');
+      setPurchaseNotes('');
+      fetchPurchases();
+    } catch {
+      toast.error('Failed to record purchase');
+    }
+    setSavingPurchase(false);
+  }
 
   async function copyPhone() {
     if (!contact) return;
@@ -416,6 +523,12 @@ export function ContactDetailView({
                   className="data-active:bg-slate-800 data-active:text-primary text-slate-400"
                 >
                   Deals
+                </TabsTrigger>
+                <TabsTrigger
+                  value="purchases"
+                  className="data-active:bg-slate-800 data-active:text-primary text-slate-400"
+                >
+                  Purchases
                 </TabsTrigger>
               </TabsList>
 
@@ -679,10 +792,231 @@ export function ContactDetailView({
                   </div>
                 )}
               </TabsContent>
+
+              {/* Purchases Tab */}
+              <TabsContent value="purchases" className="flex-1 overflow-y-auto px-4 py-3">
+                {/* Purchase Summary */}
+                {!loadingPurchases && purchases.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-2.5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Purchases</p>
+                      <p className="text-sm font-semibold text-white">{purchases.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-2.5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Spent</p>
+                      <p className="text-sm font-semibold text-white">
+                        {formatCurrency(
+                          purchases.reduce((sum, p) => sum + (p.amount * p.quantity), 0),
+                          defaultCurrency,
+                        )}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-2.5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Last Purchase</p>
+                      <p className="text-sm font-semibold text-white">
+                        {new Date(purchases[0].purchase_date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-2.5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Top Product</p>
+                      <p className="text-sm font-semibold text-white truncate">
+                        {(() => {
+                          const counts: Record<string, number> = {};
+                          purchases.forEach((p) => {
+                            counts[p.product_name] = (counts[p.product_name] || 0) + p.quantity;
+                          });
+                          return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Record Purchase Button */}
+                <Button
+                  onClick={() => setShowRecordPurchase(true)}
+                  size="sm"
+                  className="w-full mb-3"
+                >
+                  <Plus className="size-3.5 mr-1" /> Record Purchase
+                </Button>
+
+                {/* Purchases List */}
+                {loadingPurchases ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="size-5 animate-spin text-primary" />
+                  </div>
+                ) : purchases.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingBag className="size-8 text-slate-600 mx-auto mb-2" />
+                    <p className="text-xs text-slate-500">No purchases recorded yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {purchases.map((purchase) => (
+                      <div
+                        key={purchase.id}
+                        className="rounded-lg border border-slate-700 bg-slate-800/50 p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-white">
+                            {purchase.product_name}
+                          </p>
+                          <span className="text-sm font-medium text-primary">
+                            {formatCurrency(purchase.amount, defaultCurrency)}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 flex items-center gap-3 text-xs text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="size-3" />
+                            {new Date(purchase.purchase_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          {purchase.quantity > 1 && (
+                            <span>Qty: {purchase.quantity}</span>
+                          )}
+                          {purchase.channel && (
+                            <span className="capitalize">{purchase.channel}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </div>
         )}
       </SheetContent>
+
+
+      {/* Record Purchase Dialog */}
+      <Dialog open={showRecordPurchase} onOpenChange={setShowRecordPurchase}>
+        <DialogContent className="bg-slate-900 border-slate-800 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Record Purchase</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {/* Product Select or Type */}
+            <div className="space-y-1.5">
+              <Label className="text-slate-400 text-xs">Product</Label>
+              {productsList.length > 0 ? (
+                <Select
+                  value={purchaseProductId}
+                  onValueChange={(v) => {
+                    setPurchaseProductId(v ?? '');
+                    const prod = productsList.find((p) => p.id === v);
+                    if (prod) {
+                      setPurchaseProductName(prod.name);
+                      if (!purchaseAmount) setPurchaseAmount(String(prod.price));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue placeholder="Select a product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productsList.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} — {formatCurrency(p.price, defaultCurrency)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : null}
+              <Input
+                value={purchaseProductName}
+                onChange={(e) => setPurchaseProductName(e.target.value)}
+                placeholder="Or type product name..."
+                className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-slate-400 text-xs">Amount *</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={purchaseAmount}
+                  onChange={(e) => setPurchaseAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-slate-400 text-xs">Date *</Label>
+                <Input
+                  type="date"
+                  value={purchaseDate}
+                  onChange={(e) => setPurchaseDate(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-slate-400 text-xs">Quantity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={purchaseQuantity}
+                  onChange={(e) => setPurchaseQuantity(e.target.value)}
+                  placeholder="1"
+                  className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-slate-400 text-xs">Channel</Label>
+                <Input
+                  value={purchaseChannel}
+                  onChange={(e) => setPurchaseChannel(e.target.value)}
+                  placeholder="e.g. WhatsApp, Walk-in"
+                  className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-slate-400 text-xs">Notes</Label>
+              <Input
+                value={purchaseNotes}
+                onChange={(e) => setPurchaseNotes(e.target.value)}
+                placeholder="Optional notes..."
+                className="bg-slate-800 border-slate-700 text-white h-8 text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRecordPurchase(false)}
+              disabled={savingPurchase}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={recordPurchase}
+              disabled={savingPurchase}
+            >
+              {savingPurchase ? (
+                <Loader2 className="size-3.5 animate-spin mr-1" />
+              ) : (
+                <Plus className="size-3.5 mr-1" />
+              )}
+              Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

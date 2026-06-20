@@ -313,6 +313,9 @@ export interface Deal {
   created_at: string;
   updated_at?: string;
   contact?: Contact;
+  /** Product linked to this deal (migration 028). */
+  product_id?: string;
+  product?: Product;
   stage?: PipelineStage;
   assignee?: Profile;
 }
@@ -559,4 +562,63 @@ export interface AutomationLog {
   error_message?: string | null;
   created_at: string;
   contact?: Contact;
+}
+
+
+// ============================================================
+// Product Catalog (migrations 025-028)
+// ============================================================
+
+export type ProductStatus = 'active' | 'discontinued' | 'seasonal';
+
+export interface Product {
+  id: string;
+  account_id: string;
+  name: string;
+  price: number;
+  status: ProductStatus;
+  category?: string;
+  description?: string;
+  short_pitch?: string;
+  cost?: number;
+  image_url?: string;
+  sku?: string;
+  lead_magnet_eligible: boolean;
+  lead_magnet_cost?: number;
+  upsell_product_id?: string;
+  seasonal_start?: string;
+  seasonal_end?: string;
+  tags: string[];
+  ai_generated_fields: Record<string, boolean>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseHistory {
+  id: string;
+  account_id: string;
+  contact_id: string;
+  product_id?: string;
+  product_name: string;
+  amount: number;
+  purchase_date: string;
+  quantity: number;
+  channel?: string;
+  notes?: string;
+  import_batch_id?: string;
+  created_at: string;
+  contact?: Contact;
+  product?: Product;
+}
+
+export interface ProductScoreSettings {
+  id: string;
+  account_id: string;
+  weight_reactivation_power: number;
+  weight_revenue_potential: number;
+  weight_margin_score: number;
+  weight_dormant_match: number;
+  lead_magnet_cost_threshold: number;
+  dormancy_threshold_days: number;
+  updated_at: string;
 }
