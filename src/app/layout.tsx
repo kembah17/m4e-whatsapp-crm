@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Source_Sans_3, Playfair_Display } from "next/font/google";
 import Script from "next/script";
-import { Toaster } from "sonner";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
-import { DEFAULT_THEME, STORAGE_KEY, THEME_IDS } from "@/lib/themes";
+import { ThemedToaster } from "@/components/themed-toaster";
+import {
+  DEFAULT_MODE,
+  DEFAULT_THEME,
+  MODE_STORAGE_KEY,
+  MODES,
+  STORAGE_KEY,
+  THEME_IDS,
+} from "@/lib/themes";
 
 const sourceSans = Source_Sans_3({
   variable: "--font-sans",
@@ -40,20 +47,37 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0C0B22",
-  colorScheme: "dark",
+  colorScheme: "dark light",
 };
 
+// Inline boot script — runs before React hydrates so the user's
+// chosen accent (data-theme) AND mode (data-mode) are on the <html>
+// element before first paint. Without this every page load flashes
+// the server-rendered defaults for a frame before the React tree
+// mounts and applies the picked values.
+//
+// Kept dependency-free (no imports, no JSX) — must be a string the
+// browser can run as a single <script>. Knowledge of valid ids is
+// sourced from the THEME_IDS / MODES constants so adding one doesn't
+// silently break the boot path.
 const THEME_BOOT_SCRIPT = `
 (function(){
+  var d = document.documentElement;
   try {
-    var STORAGE_KEY = ${JSON.stringify(STORAGE_KEY)};
-    var DEFAULT = ${JSON.stringify(DEFAULT_THEME)};
-    var ALLOWED = ${JSON.stringify(THEME_IDS)};
-    var saved = localStorage.getItem(STORAGE_KEY);
-    var theme = ALLOWED.indexOf(saved) !== -1 ? saved : DEFAULT;
-    document.documentElement.dataset.theme = theme;
+    var THEME_KEY = ${JSON.stringify(STORAGE_KEY)};
+    var THEME_DEFAULT = ${JSON.stringify(DEFAULT_THEME)};
+    var THEMES = ${JSON.stringify(THEME_IDS)};
+    var savedTheme = localStorage.getItem(THEME_KEY);
+    d.dataset.theme = THEMES.indexOf(savedTheme) !== -1 ? savedTheme : THEME_DEFAULT;
+
+    var MODE_KEY = ${JSON.stringify(MODE_STORAGE_KEY)};
+    var MODE_DEFAULT = ${JSON.stringify(DEFAULT_MODE)};
+    var MODES = ${JSON.stringify(MODES)};
+    var savedMode = localStorage.getItem(MODE_KEY);
+    d.dataset.mode = MODES.indexOf(savedMode) !== -1 ? savedMode : MODE_DEFAULT;
   } catch (_e) {
-    document.documentElement.dataset.theme = ${JSON.stringify(DEFAULT_THEME)};
+    d.dataset.theme = ${JSON.stringify(DEFAULT_THEME)};
+    d.dataset.mode = ${JSON.stringify(DEFAULT_MODE)};
   }
 })();
 `;
@@ -67,7 +91,15 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme={DEFAULT_THEME}
+      data-mode={DEFAULT_MODE}
       className={`${sourceSans.variable} ${playfair.variable} h-full antialiased`}
+      // The `theme-boot` script below rewrites `data-theme` and
+      // `data-mode` on <html> from localStorage before React hydrates,
+      // so for any non-default choice the client DOM intentionally
+      // differs from the server-rendered defaults. suppressHydration-
+      // Warning silences the expected mismatch — it only applies to
+      // this element's own attributes, so genuine mismatches in
+      // children still surface.
       suppressHydrationWarning
     >
       <head>
@@ -80,17 +112,7 @@ export default function RootLayout({
       <body className="min-h-full bg-background text-foreground font-sans">
         <ThemeProvider>
           {children}
-          <Toaster
-            theme="dark"
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "rgb(30 41 59)",
-                border: "1px solid rgb(51 65 85)",
-                color: "white",
-              },
-            }}
-          />
+          <ThemedToaster />
         </ThemeProvider>
       </body>
     </html>
