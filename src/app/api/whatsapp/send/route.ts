@@ -157,8 +157,8 @@ export async function POST(request: Request) {
     }
 
     // Sanitize and validate phone
-    const sanitizedPhone = sanitizePhoneForMeta(contact.phone)
-    if (!isValidE164(sanitizedPhone)) {
+    const sanitizedPhone = contact.phone ? sanitizePhoneForMeta(contact.phone) : null
+    if (!sanitizedPhone || !isValidE164(sanitizedPhone)) {
       return NextResponse.json(
         { error: 'Invalid phone number format' },
         { status: 400 }

@@ -150,7 +150,7 @@ export async function POST(request: Request) {
           { status: 400 },
         )
       }
-      recipientPhone = contact.phone
+      recipientPhone = contact.phone ?? ""
       contactId = contact.id
     } else if (phone) {
       recipientPhone = phone

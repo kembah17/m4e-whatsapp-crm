@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
 import { GatedButton } from "@/components/ui/gated-button";
+import { BranchFilter } from "@/components/shared/branch-filter";
 
 // Pipeline creation is admin-class (settings-tier write under
 // the new RLS); deal creation is operational and only requires
@@ -67,6 +68,7 @@ export default function PipelinesPage() {
   const [dealFormOpen, setDealFormOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [defaultStageId, setDefaultStageId] = useState<string>("");
+  const [branchId, setBranchId] = useState<string>("");
 
   // Guard against double-seeding (React StrictMode double-effect in dev).
   const seedAttempted = useRef(false);
@@ -97,14 +99,16 @@ export default function PipelinesPage() {
 
   const loadDeals = useCallback(
     async (pipelineId: string) => {
-      const { data } = await supabase
+      let q = supabase
         .from("deals")
         .select("*, contact:contacts(*), assignee:profiles!deals_assigned_to_fkey(*)")
         .eq("pipeline_id", pipelineId)
         .order("created_at", { ascending: false });
+      if (branchId) q = q.eq("branch_id", branchId);
+      const { data } = await q;
       return (data ?? []) as Deal[];
     },
-    [supabase],
+    [supabase, branchId],
   );
 
   const seedDefaultPipeline = useCallback(async (): Promise<Pipeline | null> => {
@@ -362,6 +366,7 @@ export default function PipelinesPage() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          <BranchFilter value={branchId} onChange={setBranchId} />
         </div>
 
         <div className="flex items-center gap-2">

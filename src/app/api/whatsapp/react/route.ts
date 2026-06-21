@@ -123,7 +123,14 @@ export async function POST(request: Request) {
     }
 
     const accessToken = decrypt(config.access_token);
-    const sanitizedPhone = sanitizePhoneForMeta(contact.phone);
+    const sanitizedPhone = contact.phone ? sanitizePhoneForMeta(contact.phone) : null;
+
+    if (!sanitizedPhone) {
+      return NextResponse.json(
+        { error: 'Contact has no phone number for WhatsApp.' },
+        { status: 400 },
+      );
+    }
 
     try {
       await sendReactionMessage({

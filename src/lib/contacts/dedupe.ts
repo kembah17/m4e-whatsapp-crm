@@ -75,29 +75,45 @@ export function isUniqueViolation(error: unknown): boolean {
 }
 
 /**
- * De-duplicate parsed CSV rows by normalized phone, keeping the first
- * occurrence of each. Rows with an empty normalized phone are dropped
- * (they can't be a valid contact). Returns the unique rows plus the
- * count removed as in-file duplicates.
+ * De-duplicate parsed CSV rows by normalized phone OR email, keeping
+ * the first occurrence of each. Rows with neither phone nor email are
+ * dropped. For phone-bearing rows, de-dupe key is the normalized phone.
+ * For email-only rows, de-dupe key is the lowercased email.
+ * Returns the unique rows plus the count removed as in-file duplicates.
  */
-export function dedupeByPhone<T extends { phone: string }>(
+export function dedupeByPhone<T extends { phone: string; email?: string }>(
   rows: T[],
 ): { unique: T[]; duplicates: number } {
-  const seen = new Set<string>();
+  const seenPhones = new Set<string>();
+  const seenEmails = new Set<string>();
   const unique: T[] = [];
   let duplicates = 0;
 
   for (const row of rows) {
-    const key = normalizeKey(row.phone);
-    if (!key) {
+    const phoneKey = row.phone ? normalizeKey(row.phone) : "";
+    const emailKey = row.email ? row.email.trim().toLowerCase() : "";
+
+    // Must have at least one identifier
+    if (!phoneKey && !emailKey) {
       duplicates++;
       continue;
     }
-    if (seen.has(key)) {
-      duplicates++;
-      continue;
+
+    // Check for duplicates by phone (primary) or email (fallback)
+    if (phoneKey) {
+      if (seenPhones.has(phoneKey)) {
+        duplicates++;
+        continue;
+      }
+      seenPhones.add(phoneKey);
+    } else if (emailKey) {
+      if (seenEmails.has(emailKey)) {
+        duplicates++;
+        continue;
+      }
+      seenEmails.add(emailKey);
     }
-    seen.add(key);
+
     unique.push(row);
   }
 

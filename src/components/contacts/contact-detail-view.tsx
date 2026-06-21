@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
-import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal, PurchaseHistory, Product } from '@/types';
+import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal, PurchaseHistory, Product, Branch } from '@/types';
 import {
   Sheet,
   SheetContent,
@@ -49,7 +49,10 @@ import {
   DollarSign,
   ShoppingBag,
   Calendar,
+  MessageCircle,
+  GitBranch,
 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface ContactDetailViewProps {
   open: boolean;
@@ -76,6 +79,9 @@ export function ContactDetailView({
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editCompany, setEditCompany] = useState('');
+  const [editPrimaryChannel, setEditPrimaryChannel] = useState<string>('whatsapp');
+  const [editBranchId, setEditBranchId] = useState<string>('__none__');
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [savingDetails, setSavingDetails] = useState(false);
 
   // Tags tab
@@ -126,12 +132,25 @@ export function ContactDetailView({
     if (data) {
       setContact(data);
       setEditName(data.name ?? '');
-      setEditPhone(data.phone);
+      setEditPhone(data.phone ?? '');
       setEditEmail(data.email ?? '');
       setEditCompany(data.company ?? '');
+      setEditPrimaryChannel(data.primary_channel ?? 'whatsapp');
+      setEditBranchId(data.branch_id ?? '__none__');
     }
     setLoading(false);
   }, [contactId, supabase]);
+
+  const fetchBranches = useCallback(async () => {
+    if (!accountId) return;
+    const { data } = await supabase
+      .from('branches')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('is_active', true)
+      .order('name');
+    if (data) setBranches(data);
+  }, [accountId, supabase]);
 
   const fetchTags = useCallback(async () => {
     if (!contactId) return;
@@ -231,9 +250,10 @@ export function ContactDetailView({
       fetchCustomFields();
       fetchDeals();
       fetchPurchases();
+      fetchBranches();
       fetchProductsList();
     }
-  }, [open, contactId, fetchContact, fetchTags, fetchNotes, fetchCustomFields, fetchDeals, fetchPurchases, fetchProductsList]);
+  }, [open, contactId, fetchContact, fetchTags, fetchNotes, fetchCustomFields, fetchDeals, fetchPurchases, fetchProductsList, fetchBranches]);
 
   async function recordPurchase() {
     if (!contactId) return;
@@ -284,15 +304,15 @@ export function ContactDetailView({
   }
 
   async function copyPhone() {
-    if (!contact) return;
+    if (!contact || !contact.phone) return;
     await navigator.clipboard.writeText(contact.phone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
   }
 
   async function saveDetails() {
-    if (!contactId || !editPhone.trim()) {
-      toast.error('Phone number is required');
+    if (!contactId || (!editPhone.trim() && !editEmail.trim())) {
+      toast.error('Phone or email is required');
       return;
     }
 
@@ -301,9 +321,11 @@ export function ContactDetailView({
       .from('contacts')
       .update({
         name: editName.trim() || null,
-        phone: editPhone.trim(),
+        phone: editPhone.trim() || null,
         email: editEmail.trim() || null,
         company: editCompany.trim() || null,
+        primary_channel: editPrimaryChannel,
+        branch_id: editBranchId === '__none__' ? null : editBranchId || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', contactId);
@@ -461,19 +483,46 @@ export function ContactDetailView({
                   <SheetDescription className="text-muted-foreground text-xs mt-0.5">
                     Contact details
                   </SheetDescription>
-                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                    <button
-                      onClick={copyPhone}
-                      className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      <Phone className="size-3" />
-                      {contact.phone}
-                      {copiedPhone ? (
-                        <Check className="size-3 text-primary" />
-                      ) : (
-                        <Copy className="size-3" />
-                      )}
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    {/* Primary channel badge */}
+                    {contact.primary_channel === 'whatsapp' && (
+                      <Badge variant="outline" className="gap-1 text-[10px] border-green-500/30 text-green-400 px-1.5 py-0">
+                        <MessageCircle className="size-2.5" /> WhatsApp
+                      </Badge>
+                    )}
+                    {contact.primary_channel === 'email' && (
+                      <Badge variant="outline" className="gap-1 text-[10px] border-blue-500/30 text-blue-400 px-1.5 py-0">
+                        <Mail className="size-2.5" /> Email
+                      </Badge>
+                    )}
+                    {contact.primary_channel === 'sms' && (
+                      <Badge variant="outline" className="gap-1 text-[10px] border-amber-500/30 text-amber-400 px-1.5 py-0">
+                        <Phone className="size-2.5" /> SMS
+                      </Badge>
+                    )}
+                    {/* Data completeness */}
+                    {typeof contact.data_completeness_score === 'number' && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <Progress value={contact.data_completeness_score} className="h-1.5 w-12" />
+                        {contact.data_completeness_score}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    {contact.phone && (
+                      <button
+                        onClick={copyPhone}
+                        className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        <Phone className="size-3" />
+                        {contact.phone}
+                        {copiedPhone ? (
+                          <Check className="size-3 text-primary" />
+                        ) : (
+                          <Copy className="size-3" />
+                        )}
+                      </button>
+                    )}
                     {contact.email && (
                       <span className="flex items-center gap-1">
                         <Mail className="size-3" />
@@ -569,6 +618,61 @@ export function ContactDetailView({
                       className="bg-muted border-border text-foreground h-8 text-sm"
                     />
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">Primary Channel</Label>
+                    <Select value={editPrimaryChannel} onValueChange={(v) => v && setEditPrimaryChannel(v)}>
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="Select channel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="whatsapp">
+                          <span className="flex items-center gap-1.5">
+                            <MessageCircle className="size-3 text-green-400" /> WhatsApp
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="email">
+                          <span className="flex items-center gap-1.5">
+                            <Mail className="size-3 text-blue-400" /> Email
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="sms">
+                          <span className="flex items-center gap-1.5">
+                            <Phone className="size-3 text-amber-400" /> SMS
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs flex items-center gap-1">
+                      <GitBranch className="size-3" /> Branch
+                    </Label>
+                    <Select value={editBranchId} onValueChange={(v) => setEditBranchId(v ?? "__none__")}>
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="No branch assigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">No branch</SelectItem>
+                        {branches.map((branch) => (
+                          <SelectItem key={branch.id} value={branch.id}>
+                            {branch.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Data completeness score */}
+                  {typeof contact?.data_completeness_score === 'number' && (
+                    <div className="space-y-1.5">
+                      <Label className="text-muted-foreground text-xs">Profile Completeness</Label>
+                      <div className="flex items-center gap-2">
+                        <Progress value={contact.data_completeness_score} className="h-2 flex-1" />
+                        <span className="text-xs font-medium text-muted-foreground w-8 text-right">
+                          {contact.data_completeness_score}%
+                        </span>
+                      </div>
+                    </div>
+                  )}
                   <Button
                     onClick={saveDetails}
                     disabled={savingDetails}

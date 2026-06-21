@@ -49,6 +49,7 @@ import { CustomFieldsManager } from '@/components/contacts/custom-fields-manager
 import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BranchFilter } from '@/components/shared/branch-filter';
 
 const PAGE_SIZE = 25;
 
@@ -64,6 +65,8 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState<ContactWithTags[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [branchId, setBranchIdRaw] = useState('');
+  const setBranchId = (v: string) => { setBranchIdRaw(v); setPage(0); };
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -110,6 +113,10 @@ export default function ContactsPage() {
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(from, to);
+
+    if (branchId) {
+      query = query.eq('branch_id', branchId);
+    }
 
     if (search.trim()) {
       const term = `%${search.trim()}%`;
@@ -308,7 +315,8 @@ export default function ContactsPage() {
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
+      <div className="flex items-center gap-3">
       <div className="relative max-w-sm">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
@@ -322,6 +330,8 @@ export default function ContactsPage() {
           placeholder="Search by name, phone, or email..."
           className="pl-8 bg-card border-border text-foreground placeholder:text-muted-foreground"
         />
+      </div>
+      <BranchFilter value={branchId} onChange={setBranchId} />
       </div>
 
       {/* Bulk action bar */}
@@ -420,14 +430,14 @@ export default function ContactsPage() {
                     <Checkbox
                       checked={selected.has(contact.id)}
                       onCheckedChange={() => toggleSelect(contact.id)}
-                      aria-label={`Select ${contact.name || contact.phone}`}
+                      aria-label={`Select ${contact.name || contact.phone || contact.email || "contact"}`}
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
                     {contact.name || <span className="text-muted-foreground italic">Unnamed</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
-                    {contact.phone}
+                    {contact.phone || contact.email || "—"}
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden md:table-cell text-sm">
                     {contact.email || <span className="text-muted-foreground">-</span>}

@@ -11,6 +11,7 @@ import {
 import {
   parseContactCsv,
   type ParsedContactRow,
+  type ChannelBreakdown,
 } from '@/lib/contacts/parse-contact-csv';
 import {
   assignImportedContactTags,
@@ -28,6 +29,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Upload,
   FileText,
@@ -36,6 +38,9 @@ import {
   XCircle,
   AlertTriangle,
   Tag,
+  MessageCircle,
+  Mail,
+  Phone,
 } from 'lucide-react';
 
 const DEFAULT_TAG_COLOR = '#3b82f6';
@@ -70,6 +75,31 @@ function PreviewCell({
       {value}
     </span>
   );
+}
+
+function ChannelBadge({ channel }: { channel: string }) {
+  switch (channel) {
+    case 'whatsapp':
+      return (
+        <Badge variant="outline" className="gap-1 text-[10px] border-green-500/30 text-green-400">
+          <MessageCircle className="size-2.5" /> WhatsApp
+        </Badge>
+      );
+    case 'email':
+      return (
+        <Badge variant="outline" className="gap-1 text-[10px] border-blue-500/30 text-blue-400">
+          <Mail className="size-2.5" /> Email
+        </Badge>
+      );
+    case 'sms':
+      return (
+        <Badge variant="outline" className="gap-1 text-[10px] border-amber-500/30 text-amber-400">
+          <Phone className="size-2.5" /> SMS
+        </Badge>
+      );
+    default:
+      return null;
+  }
 }
 
 function ImportPreviewTags({
@@ -112,6 +142,34 @@ function ImportPreviewTags({
   );
 }
 
+function ChannelBreakdownBar({ breakdown }: { breakdown: ChannelBreakdown }) {
+  const total = breakdown.whatsapp + breakdown.email + breakdown.skipped;
+  if (total === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+      {breakdown.whatsapp > 0 && (
+        <span className="inline-flex items-center gap-1 text-green-400">
+          <MessageCircle className="size-3" />
+          {breakdown.whatsapp} WhatsApp
+        </span>
+      )}
+      {breakdown.email > 0 && (
+        <span className="inline-flex items-center gap-1 text-blue-400">
+          <Mail className="size-3" />
+          {breakdown.email} Email-only
+        </span>
+      )}
+      {breakdown.skipped > 0 && (
+        <span className="inline-flex items-center gap-1 text-amber-400">
+          <AlertTriangle className="size-3" />
+          {breakdown.skipped} skipped (no identifier)
+        </span>
+      )}
+    </div>
+  );
+}
+
 interface ImportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -131,6 +189,12 @@ export function ImportModal({
   const [parsedRows, setParsedRows] = useState<ParsedContactRow[]>([]);
   const [hasTagsColumn, setHasTagsColumn] = useState(false);
   const [hasCompanyColumn, setHasCompanyColumn] = useState(false);
+  const [hasBranchColumn, setHasBranchColumn] = useState(false);
+  const [channelBreakdown, setChannelBreakdown] = useState<ChannelBreakdown>({
+    whatsapp: 0,
+    email: 0,
+    skipped: 0,
+  });
   const [tagColorByKey, setTagColorByKey] = useState<Map<string, string>>(
     new Map()
   );
@@ -147,6 +211,8 @@ export function ImportModal({
     setParsedRows([]);
     setHasTagsColumn(false);
     setHasCompanyColumn(false);
+    setHasBranchColumn(false);
+    setChannelBreakdown({ whatsapp: 0, email: 0, skipped: 0 });
     setTagColorByKey(new Map());
     setResult(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -169,15 +235,19 @@ export function ImportModal({
       rows,
       hasTagsColumn: csvHasTags,
       hasCompanyColumn: csvHasCompany,
+      hasBranchColumn: csvHasBranch,
+      channelBreakdown: breakdown,
     } = parseContactCsv(text);
 
     if (rows.length === 0) {
       toast.error(
-        'No valid rows found. Ensure CSV has a "phone" column header.'
+        'No valid rows found. Ensure CSV has a "phone" and/or "email" column header.'
       );
       setParsedRows([]);
       setHasTagsColumn(false);
       setHasCompanyColumn(false);
+      setHasBranchColumn(false);
+      setChannelBreakdown({ whatsapp: 0, email: 0, skipped: 0 });
       setTagColorByKey(new Map());
       return;
     }
@@ -185,6 +255,8 @@ export function ImportModal({
     setParsedRows(rows);
     setHasTagsColumn(csvHasTags);
     setHasCompanyColumn(csvHasCompany);
+    setHasBranchColumn(csvHasBranch);
+    setChannelBreakdown(breakdown);
 
     if (csvHasTags && accountId) {
       const { data: tags } = await supabase
@@ -201,6 +273,46 @@ export function ImportModal({
     } else {
       setTagColorByKey(new Map());
     }
+  }
+
+  /** Resolve branch names to IDs, creating new branches as needed. */
+  async function resolveBranchIds(
+    branchNames: string[],
+    acctId: string
+  ): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    if (branchNames.length === 0) return map;
+
+    const uniqueNames = [...new Set(branchNames.map((n) => n.trim().toLowerCase()))];
+
+    // Fetch existing branches
+    const { data: existing } = await supabase
+      .from('branches')
+      .select('id, name')
+      .eq('account_id', acctId);
+
+    for (const branch of existing ?? []) {
+      map.set(branch.name.trim().toLowerCase(), branch.id);
+    }
+
+    // Create missing branches
+    for (const name of uniqueNames) {
+      if (map.has(name)) continue;
+      // Find original casing from the CSV
+      const originalName = branchNames.find(
+        (n) => n.trim().toLowerCase() === name
+      ) ?? name;
+      const { data: created } = await supabase
+        .from('branches')
+        .insert({ account_id: acctId, name: originalName.trim() })
+        .select('id')
+        .single();
+      if (created) {
+        map.set(name, created.id);
+      }
+    }
+
+    return map;
   }
 
   async function handleImport() {
@@ -220,34 +332,46 @@ export function ImportModal({
       let skipped = 0;
       let failed = 0;
 
-      // 1) De-dupe within the file by normalized phone (keep first).
+      // 1) De-dupe within the file by normalized phone/email (keep first).
       const { unique, duplicates: inFileDupes } = dedupeByPhone(parsedRows);
       skipped += inFileDupes;
 
-      // 2) Skip numbers already in this account. One read of the
-      //    generated `phone_normalized` column (migration 022) → Set.
-      const { data: existingRows } = await supabase
+      // 2) Skip contacts already in this account by phone or email.
+      const { data: existingPhoneRows } = await supabase
         .from('contacts')
         .select('phone_normalized')
-        .eq('account_id', accountId);
-      const existing = new Set(
-        (existingRows ?? [])
-          .map(
-            (r) => (r as { phone_normalized: string | null }).phone_normalized
-          )
+        .eq('account_id', accountId)
+        .not('phone_normalized', 'is', null);
+      const existingPhones = new Set(
+        (existingPhoneRows ?? [])
+          .map((r) => (r as { phone_normalized: string | null }).phone_normalized)
           .filter((p): p is string => !!p)
       );
 
+      const { data: existingEmailRows } = await supabase
+        .from('contacts')
+        .select('email')
+        .eq('account_id', accountId)
+        .not('email', 'is', null);
+      const existingEmails = new Set(
+        (existingEmailRows ?? [])
+          .map((r) => (r as { email: string | null }).email?.toLowerCase())
+          .filter((e): e is string => !!e)
+      );
+
       const toInsert = unique.filter((row) => {
-        if (existing.has(normalizeKey(row.phone))) {
+        if (row.phone && existingPhones.has(normalizeKey(row.phone))) {
+          skipped++;
+          return false;
+        }
+        if (!row.phone && row.email && existingEmails.has(row.email.toLowerCase())) {
           skipped++;
           return false;
         }
         return true;
       });
 
-      // 3) Resolve tag names → ids (admin+ may auto-create missing tags).
-      //    Skip the round-trip when the import carries no tag names.
+      // 3) Resolve tag names → ids.
       const allTagNames = toInsert.flatMap((row) => row.tagNames);
       let tagIdByKey = new Map<string, string>();
       let skippedNames: string[] = [];
@@ -260,11 +384,15 @@ export function ImportModal({
         }));
       }
 
+      // 4) Resolve branch names → ids.
+      const allBranchNames = toInsert
+        .map((row) => row.branchName)
+        .filter((n): n is string => !!n);
+      const branchIdByKey = await resolveBranchIds(allBranchNames, accountId);
+
       const tagAssignments: ContactTagAssignment[] = [];
 
-      // 4) Batch insert the genuinely-new rows in chunks of 50. The DB
-      //    unique index is the backstop: a 23505 (race, or a format
-      //    that normalizes equal) counts as skipped, not failed.
+      // 5) Batch insert in chunks of 50.
       const chunkSize = 50;
 
       for (let i = 0; i < toInsert.length; i += chunkSize) {
@@ -272,10 +400,14 @@ export function ImportModal({
         const rows = chunk.map((row) => ({
           user_id: user.id,
           account_id: accountId,
-          phone: row.phone,
+          phone: row.phone || null,
           name: row.name || null,
           email: row.email || null,
           company: row.company || null,
+          primary_channel: row.primaryChannel,
+          branch_id: row.branchName
+            ? branchIdByKey.get(row.branchName.trim().toLowerCase()) ?? null
+            : null,
         }));
 
         const { data, error } = await supabase
@@ -312,9 +444,6 @@ export function ImportModal({
         } else {
           const inserted = data ?? [];
           imported += inserted.length;
-          // inserted[j] ↔ chunk[j] only holds because a single INSERT
-          // preserves RETURNING order. If this path is ever split into
-          // parallel inserts, zip by phone or returned id instead.
           for (let j = 0; j < inserted.length; j++) {
             const source = chunk[j];
             if (!source || source.tagNames.length === 0) continue;
@@ -326,8 +455,7 @@ export function ImportModal({
         }
       }
 
-      // 5) Wire tags onto the contacts we just created. Failure here must
-      //    not mask a successful contact import.
+      // 6) Wire tags onto the contacts we just created.
       let tagsAssigned = 0;
       try {
         tagsAssigned = await assignImportedContactTags(
@@ -376,14 +504,12 @@ export function ImportModal({
   }
 
   const preview = parsedRows.slice(0, PREVIEW_LIMIT);
-  // Tags: OR — show when the CSV declares a column or preview rows carry
-  // values, so an all-empty tags column still renders for validation.
   const previewHasTags =
     hasTagsColumn || preview.some((row) => row.tagNames.length > 0);
-  // Company: AND — hide unless the CSV declares it and preview has data,
-  // avoiding an all-dash column that wastes horizontal space.
   const previewHasCompany =
     hasCompanyColumn && preview.some((row) => row.company?.trim());
+  const previewHasBranch =
+    hasBranchColumn && preview.some((row) => row.branchName?.trim());
 
   const tagStats = useMemo(() => {
     const names = new Set<string>();
@@ -405,17 +531,17 @@ export function ImportModal({
               Import Contacts
             </DialogTitle>
             <DialogDescription className="leading-relaxed text-muted-foreground">
-              Upload a CSV with a required{' '}
+              Upload a CSV with{' '}
               <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
                 phone
               </code>{' '}
-              column. Optional:{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
-                name
-              </code>
-              ,{' '}
+              and/or{' '}
               <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
                 email
+              </code>{' '}
+              columns (at least one required). Optional:{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
+                name
               </code>
               ,{' '}
               <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
@@ -424,8 +550,12 @@ export function ImportModal({
               ,{' '}
               <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
                 tags
-              </code>{' '}
-              (comma-separated; quote multi-tag cells).
+              </code>
+              ,{' '}
+              <code className="rounded bg-muted px-1 py-0.5 text-[11px] text-muted-foreground">
+                branch
+              </code>
+              .
             </DialogDescription>
           </DialogHeader>
 
@@ -503,11 +633,17 @@ export function ImportModal({
                 </div>
               </div>
 
+              {/* Channel breakdown */}
+              <ChannelBreakdownBar breakdown={channelBreakdown} />
+
               <div className="overflow-hidden rounded-xl border border-border ring-1 ring-border/50">
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[32rem] text-xs">
                     <thead>
                       <tr className="border-b border-border bg-background/60">
+                        <th className="px-3 py-2 text-left font-medium whitespace-nowrap text-muted-foreground">
+                          Channel
+                        </th>
                         <th className="px-3 py-2 text-left font-medium whitespace-nowrap text-muted-foreground">
                           Phone
                         </th>
@@ -520,6 +656,11 @@ export function ImportModal({
                         {previewHasCompany && (
                           <th className="px-3 py-2 text-left font-medium whitespace-nowrap text-muted-foreground">
                             Company
+                          </th>
+                        )}
+                        {previewHasBranch && (
+                          <th className="px-3 py-2 text-left font-medium whitespace-nowrap text-muted-foreground">
+                            Branch
                           </th>
                         )}
                         {previewHasTags && (
@@ -535,9 +676,12 @@ export function ImportModal({
                           key={i}
                           className="bg-popover/40 transition-colors hover:bg-muted/30"
                         >
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            <ChannelBadge channel={row.primaryChannel} />
+                          </td>
                           <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
                             <PreviewCell
-                              value={row.phone}
+                              value={row.phone || '—'}
                               mono
                               maxWidth="max-w-[7.5rem]"
                             />
@@ -558,6 +702,14 @@ export function ImportModal({
                             <td className="px-3 py-2 text-muted-foreground">
                               <PreviewCell
                                 value={row.company || '—'}
+                                maxWidth="max-w-[7rem]"
+                              />
+                            </td>
+                          )}
+                          {previewHasBranch && (
+                            <td className="px-3 py-2 text-muted-foreground">
+                              <PreviewCell
+                                value={row.branchName || '—'}
                                 maxWidth="max-w-[7rem]"
                               />
                             </td>

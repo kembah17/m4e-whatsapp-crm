@@ -75,7 +75,7 @@ export async function engineSendSms(
   const { messageId } = await sendTransactionalSms({
     apiKey,
     sender: smsConfig.sender_id,
-    recipient: formatNigerianPhone(contact.phone),
+    recipient: contact.phone ? formatNigerianPhone(contact.phone) : "",
     content: args.content,
     type: 'transactional',
     tag: args.tag,

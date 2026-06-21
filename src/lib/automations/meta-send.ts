@@ -78,9 +78,9 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
     throw new Error('contact not found for this account')
   }
 
-  const sanitized = sanitizePhoneForMeta(contact.phone)
-  if (!isValidE164(sanitized)) {
-    throw new Error(`contact phone invalid: ${contact.phone}`)
+  const sanitized = contact.phone ? sanitizePhoneForMeta(contact.phone) : null
+  if (!sanitized || !isValidE164(sanitized)) {
+    throw new Error(`contact phone invalid: ${contact.phone ?? "(no phone)"}`)
   }
 
   const { data: config, error: configErr } = await db
