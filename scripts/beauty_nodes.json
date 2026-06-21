@@ -1,0 +1,647 @@
+[
+  {
+    "node_key": "start",
+    "node_type": "start",
+    "config": {
+      "next_node_key": "welcome"
+    }
+  },
+  {
+    "node_key": "welcome",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Welcome to {salon_name}! 💇‍♀️✨\n\nWe’re thrilled to have you. What can we do for you today?",
+      "buttons": [
+        {
+          "title": "📅 Book Appointment",
+          "reply_id": "book",
+          "next_node_key": "booking_start"
+        },
+        {
+          "title": "💰 Services & Prices",
+          "reply_id": "services",
+          "next_node_key": "services_info"
+        },
+        {
+          "title": "⚙️ More Options",
+          "reply_id": "more",
+          "next_node_key": "more_options"
+        }
+      ],
+      "footer_text": "Tap a button to get started"
+    }
+  },
+  {
+    "node_key": "booking_start",
+    "node_type": "send_message",
+    "config": {
+      "text": "Let’s get you booked! 💅\n\nFirst, let me know what service you’re interested in.",
+      "next_node_key": "service_category"
+    }
+  },
+  {
+    "node_key": "service_category",
+    "node_type": "send_list",
+    "config": {
+      "text": "What type of service are you looking for?",
+      "button_text": "View Services",
+      "sections": [
+        {
+          "title": "Service Categories",
+          "rows": [
+            {
+              "id": "hair",
+              "title": "💇 Hair Styling",
+              "description": "Braids, weaves, locs, press & more",
+              "next_node_key": "specific_service_hair"
+            },
+            {
+              "id": "nails",
+              "title": "💅 Nails",
+              "description": "Manicure, pedicure, nail art",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "spa",
+              "title": "🧖 Spa & Massage",
+              "description": "Full body, deep tissue, hot stone",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "makeup",
+              "title": "💄 Makeup",
+              "description": "Glam, bridal, editorial",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "facial",
+              "title": "✨ Facial & Skincare",
+              "description": "Deep cleanse, hydrating, anti-aging",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "barbing",
+              "title": "💈 Barbing",
+              "description": "Haircuts, beard trim, grooming",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "bridal",
+              "title": "👰 Bridal Package",
+              "description": "Complete bridal beauty package",
+              "next_node_key": "bridal_info"
+            },
+            {
+              "id": "all",
+              "title": "📋 See All Services",
+              "description": "Full service menu with prices",
+              "next_node_key": "services_info"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "specific_service_hair",
+    "node_type": "send_list",
+    "config": {
+      "text": "💇 *Hair Styling Menu*\n\nSelect your preferred style:",
+      "button_text": "View Styles",
+      "sections": [
+        {
+          "title": "Hair Services & Prices",
+          "rows": [
+            {
+              "id": "box_braids",
+              "title": "Box Braids",
+              "description": "₦15,000 - ₦25,000",
+              "next_node_key": "stylist_selection"
+            },
+            {
+              "id": "knotless",
+              "title": "Knotless Braids",
+              "description": "₦20,000 - ₦35,000",
+              "next_node_key": "stylist_selection"
+            },
+            {
+              "id": "cornrows",
+              "title": "Cornrows",
+              "description": "₦5,000 - ₦15,000",
+              "next_node_key": "stylist_selection"
+            },
+            {
+              "id": "weave",
+              "title": "Weave Installation",
+              "description": "₦10,000 - ₦20,000",
+              "next_node_key": "stylist_selection"
+            },
+            {
+              "id": "locs",
+              "title": "Locs Retwist",
+              "description": "₦8,000 - ₦15,000",
+              "next_node_key": "stylist_selection"
+            },
+            {
+              "id": "silk_press",
+              "title": "Silk Press",
+              "description": "₦12,000 - ₦18,000",
+              "next_node_key": "stylist_selection"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "stylist_selection",
+    "node_type": "send_list",
+    "config": {
+      "text": "💑 Would you like to choose a specific stylist?",
+      "button_text": "View Stylists",
+      "sections": [
+        {
+          "title": "Our Stylists",
+          "rows": [
+            {
+              "id": "stylist_a",
+              "title": "🌟 Stylist A (Senior)",
+              "description": "10+ years experience, specializes in braids",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "stylist_b",
+              "title": "🌟 Stylist B (Senior)",
+              "description": "Expert in weaves and silk press",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "stylist_c",
+              "title": "🌟 Stylist C",
+              "description": "Great with locs and natural hair",
+              "next_node_key": "collect_date"
+            },
+            {
+              "id": "no_pref",
+              "title": "🤷 No Preference",
+              "description": "Any available stylist is fine",
+              "next_node_key": "collect_date"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "collect_date",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📅 What date works for you?\n\nPlease type your preferred date (e.g., Monday 23rd June, or 23/06/2026)",
+      "var_key": "appointment_date",
+      "validation": "any",
+      "next_node_key": "time_selection"
+    }
+  },
+  {
+    "node_key": "time_selection",
+    "node_type": "send_list",
+    "config": {
+      "text": "⏰ What time would you prefer?\n\nSelect from our available slots:",
+      "button_text": "View Time Slots",
+      "sections": [
+        {
+          "title": "Available Times",
+          "rows": [
+            {
+              "id": "9am",
+              "title": "9:00 AM",
+              "description": "Morning slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "10am",
+              "title": "10:00 AM",
+              "description": "Morning slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "11am",
+              "title": "11:00 AM",
+              "description": "Morning slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "12pm",
+              "title": "12:00 PM",
+              "description": "Afternoon slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "1pm",
+              "title": "1:00 PM",
+              "description": "Afternoon slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "2pm",
+              "title": "2:00 PM",
+              "description": "Afternoon slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "3pm",
+              "title": "3:00 PM",
+              "description": "Afternoon slot",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "4pm",
+              "title": "4:00 PM",
+              "description": "Late afternoon",
+              "next_node_key": "booking_summary"
+            },
+            {
+              "id": "5pm",
+              "title": "5:00 PM",
+              "description": "Evening slot",
+              "next_node_key": "booking_summary"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "booking_summary",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "📋 *Appointment Summary*\n\n📅 Date: {{vars.appointment_date}}\n\nPlease confirm your booking:",
+      "buttons": [
+        {
+          "title": "✅ Confirm Booking",
+          "reply_id": "confirm",
+          "next_node_key": "booking_confirmed"
+        },
+        {
+          "title": "✏️ Change Details",
+          "reply_id": "change",
+          "next_node_key": "service_category"
+        }
+      ],
+      "footer_text": "Review your appointment"
+    }
+  },
+  {
+    "node_key": "booking_confirmed",
+    "node_type": "send_message",
+    "config": {
+      "text": "🎉 *Appointment Confirmed!*\n\nYou’re all set! Here are some tips:\n\n✅ Please arrive 10 minutes early\n📸 Bring reference photos of your desired style\n💳 A 30% deposit may be required for some services\n⏰ We’ll send you a reminder 24 hours before\n\nSee you soon! 💅✨",
+      "next_node_key": "booking_tag"
+    }
+  },
+  {
+    "node_key": "booking_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "appointment-booked",
+      "next_node_key": "booking_end"
+    }
+  },
+  {
+    "node_key": "booking_end",
+    "node_type": "end",
+    "config": {}
+  },
+  {
+    "node_key": "services_info",
+    "node_type": "send_message",
+    "config": {
+      "text": "Here’s our full service menu! 💅\n\n💇 *Hair Styling*\n• Box Braids: ₦15K-25K\n• Knotless Braids: ₦20K-35K\n• Cornrows: ₦5K-15K\n• Weave Installation: ₦10K-20K\n• Locs Retwist: ₦8K-15K\n• Silk Press: ₦12K-18K\n\n💅 *Nails*\n• Manicure: ₦3K-5K\n• Pedicure: ₦4K-7K\n• Gel/Acrylic: ₦8K-15K\n• Nail Art: ₦10K-20K\n\n🧖 *Spa & Massage*\n• Swedish Massage: ₦10K-15K\n• Deep Tissue: ₦12K-18K\n• Hot Stone: ₦15K-22K\n\n💄 *Makeup*\n• Day Glam: ₦15K-25K\n• Full Glam: ₦25K-45K\n• Bridal: ₦50K-100K\n\n✨ *Facial & Skincare*\n• Basic Facial: ₦8K-12K\n• Deep Cleanse: ₦12K-18K\n• Anti-Aging: ₦15K-25K\n\n*Prices may vary based on hair length and complexity*",
+      "next_node_key": "services_action"
+    }
+  },
+  {
+    "node_key": "services_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "What would you like to do?",
+      "buttons": [
+        {
+          "title": "📅 Book Now",
+          "reply_id": "book",
+          "next_node_key": "booking_start"
+        },
+        {
+          "title": "📸 See Our Work",
+          "reply_id": "portfolio",
+          "next_node_key": "portfolio"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "portfolio",
+    "node_type": "send_message",
+    "config": {
+      "text": "📸 *Our Portfolio*\n\nCheck out some of our recent work!\n\n*[Portfolio images will be shared here]*\n\nFollow us on Instagram for daily inspiration: @{salon_instagram}\n\nLike what you see?",
+      "next_node_key": "portfolio_action"
+    }
+  },
+  {
+    "node_key": "portfolio_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Ready to book this style?",
+      "buttons": [
+        {
+          "title": "📅 Book This Style",
+          "reply_id": "book",
+          "next_node_key": "booking_start"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "more_options",
+    "node_type": "send_list",
+    "config": {
+      "text": "What else can we help you with? 😊",
+      "button_text": "View Options",
+      "sections": [
+        {
+          "title": "More Options",
+          "rows": [
+            {
+              "id": "loyalty",
+              "title": "👑 Loyalty Rewards",
+              "description": "Earn points, get free services",
+              "next_node_key": "loyalty_info"
+            },
+            {
+              "id": "bridal",
+              "title": "👰 Bridal Packages",
+              "description": "Complete wedding beauty",
+              "next_node_key": "bridal_info"
+            },
+            {
+              "id": "faq",
+              "title": "❓ FAQ",
+              "description": "Common questions answered",
+              "next_node_key": "beauty_faq"
+            },
+            {
+              "id": "complaint",
+              "title": "😔 File a Complaint",
+              "description": "We’ll make it right",
+              "next_node_key": "beauty_complaint"
+            },
+            {
+              "id": "rate",
+              "title": "⭐ Rate Your Visit",
+              "description": "Share your experience",
+              "next_node_key": "rate_visit"
+            },
+            {
+              "id": "agent",
+              "title": "💬 Talk to Us",
+              "description": "Chat with our team",
+              "next_node_key": "beauty_agent"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "loyalty_info",
+    "node_type": "send_message",
+    "config": {
+      "text": "👑 *Loyalty Rewards Program*\n\nEarn points with every visit and unlock amazing rewards!\n\n💫 *How It Works:*\n• Earn 1 point per ₦1,000 spent\n• Points never expire\n\n🏆 *Reward Tiers:*\n• 50 points: Free nail art upgrade\n• 100 points: Free deep conditioning treatment\n• 200 points: 20% off any service\n• 500 points: Free full service of your choice\n\n🎁 *Bonus Points:*\n• Birthday month: Double points\n• Refer a friend: 50 bonus points\n• Leave a review: 25 bonus points",
+      "next_node_key": "loyalty_action"
+    }
+  },
+  {
+    "node_key": "loyalty_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Would you like to join or check your points?",
+      "buttons": [
+        {
+          "title": "📊 Check Points",
+          "reply_id": "check",
+          "next_node_key": "beauty_agent"
+        },
+        {
+          "title": "✅ Enroll Me",
+          "reply_id": "enroll",
+          "next_node_key": "loyalty_enroll"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "loyalty_enroll",
+    "node_type": "send_message",
+    "config": {
+      "text": "🎉 You’re enrolled in our Loyalty Rewards Program!\n\nYou’ll start earning points from your next visit. Welcome to the family! 💜",
+      "next_node_key": "loyalty_tag"
+    }
+  },
+  {
+    "node_key": "loyalty_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "loyalty-enrolled",
+      "next_node_key": "loyalty_end"
+    }
+  },
+  {
+    "node_key": "loyalty_end",
+    "node_type": "end",
+    "config": {}
+  },
+  {
+    "node_key": "bridal_info",
+    "node_type": "send_message",
+    "config": {
+      "text": "👰 *Bridal Beauty Packages*\n\nMake your special day unforgettable!\n\n💎 *Classic Bridal Package - ₦150,000*\n• Bridal makeup\n• Hair styling\n• Manicure & pedicure\n• Trial session included\n\n👑 *Premium Bridal Package - ₦300,000*\n• Everything in Classic\n• Bridal party makeup (up to 4)\n• Touch-up kit\n• Pre-wedding facial\n• Dedicated stylist for the day\n\n💍 *Royal Bridal Package - ₦500,000*\n• Everything in Premium\n• Engagement shoot styling\n• Traditional & white wedding looks\n• Bridal party (up to 8)\n• Spa day for bride\n• 3-month pre-wedding skincare plan\n\n*All packages include a consultation session*",
+      "next_node_key": "bridal_action"
+    }
+  },
+  {
+    "node_key": "bridal_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Interested in a bridal package?",
+      "buttons": [
+        {
+          "title": "📅 Book Consultation",
+          "reply_id": "consult",
+          "next_node_key": "bridal_collect"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "bridal_collect",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "💍 Please share the following details:\n\n1. Your wedding date\n2. Which package interests you (Classic/Premium/Royal)\n3. Number of bridal party members\n4. Any specific styles or looks you have in mind\n\n(Type all details in one message)",
+      "var_key": "bridal_details",
+      "validation": "any",
+      "next_node_key": "bridal_handoff"
+    }
+  },
+  {
+    "node_key": "bridal_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Bridal consultation request. Details: {{vars.bridal_details}}. Please schedule a consultation and provide package information."
+    }
+  },
+  {
+    "node_key": "beauty_faq",
+    "node_type": "send_message",
+    "config": {
+      "text": "❓ *Frequently Asked Questions*\n\n🕐 *Opening Hours:*\nMon-Fri: 9AM - 7PM\nSat: 8AM - 8PM\nSun: 10AM - 5PM\n\n📍 *Location:*\n{salon_address}\n\n💳 *Payment:*\n• Cash\n• Bank Transfer\n• POS (Card)\n\n⏰ *Appointments:*\n• Walk-ins welcome (subject to availability)\n• Booking recommended for weekends\n• 30% deposit for bookings over ₦20,000\n\n🔄 *Cancellation:*\n• Free cancellation 24 hours before\n• 50% charge for late cancellation\n• Deposits are non-refundable for no-shows\n\n🚿 *What to Bring:*\n• Reference photos\n• Your own hair extensions (or buy from us)\n• Comfortable clothing",
+      "next_node_key": "beauty_faq_action"
+    }
+  },
+  {
+    "node_key": "beauty_faq_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Anything else you need?",
+      "buttons": [
+        {
+          "title": "📅 Book Now",
+          "reply_id": "book",
+          "next_node_key": "booking_start"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "beauty_complaint",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "😔 We’re sorry you had a bad experience. Please describe what happened so we can make it right.\n\nInclude the date of your visit and the service you received.",
+      "var_key": "complaint_text",
+      "validation": "any",
+      "next_node_key": "beauty_complaint_tag"
+    }
+  },
+  {
+    "node_key": "beauty_complaint_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "salon-complaint",
+      "next_node_key": "beauty_complaint_handoff"
+    }
+  },
+  {
+    "node_key": "beauty_complaint_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Salon complaint from customer: {{vars.complaint_text}}. Please contact the customer to resolve this issue promptly."
+    }
+  },
+  {
+    "node_key": "rate_visit",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "⭐ We’d love your feedback!\n\nPlease rate your visit (1-5 stars) and tell us about your experience:\n\nExample: \"5 - My braids came out amazing! Love the new look!\"",
+      "var_key": "visit_rating",
+      "validation": "any",
+      "next_node_key": "rate_photo"
+    }
+  },
+  {
+    "node_key": "rate_photo",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "📸 Would you like to share a photo of your new look? We’d love to feature you on our page! (with your permission)",
+      "buttons": [
+        {
+          "title": "📸 Yes, Share Photo",
+          "reply_id": "yes_photo",
+          "next_node_key": "photo_collect"
+        },
+        {
+          "title": "❌ No Thanks",
+          "reply_id": "no_photo",
+          "next_node_key": "rate_thanks"
+        }
+      ],
+      "footer_text": "Your photo helps inspire others!"
+    }
+  },
+  {
+    "node_key": "photo_collect",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📸 Please send your photo! We’ll feature it on our page with your permission.\n\nJust send the image in this chat.",
+      "var_key": "style_photo",
+      "validation": "any",
+      "next_node_key": "photo_tag"
+    }
+  },
+  {
+    "node_key": "photo_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "ugc-content",
+      "next_node_key": "rate_thanks"
+    }
+  },
+  {
+    "node_key": "rate_thanks",
+    "node_type": "send_message",
+    "config": {
+      "text": "🙏 Thank you so much for your feedback!\n\nWe appreciate you choosing us and can’t wait to see you again! 💜✨\n\nRemember, you earn loyalty points for leaving reviews! 👑",
+      "next_node_key": "rate_end"
+    }
+  },
+  {
+    "node_key": "rate_end",
+    "node_type": "end",
+    "config": {}
+  },
+  {
+    "node_key": "beauty_agent",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer wants to speak with the salon team. Please assist them promptly."
+    }
+  }
+]

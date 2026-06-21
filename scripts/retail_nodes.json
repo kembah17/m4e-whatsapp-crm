@@ -1,0 +1,456 @@
+[
+  {
+    "node_key": "start",
+    "node_type": "start",
+    "config": {
+      "next_node_key": "welcome"
+    }
+  },
+  {
+    "node_key": "welcome",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "Welcome to {business_name}! 🛍️✨\n\nWe are so glad you’re here. How can we help you today?",
+      "buttons": [
+        {
+          "title": "🛒 Shop Now",
+          "reply_id": "shop_now",
+          "next_node_key": "product_inquiry"
+        },
+        {
+          "title": "📦 Track Order",
+          "reply_id": "track_order",
+          "next_node_key": "order_tracking_start"
+        },
+        {
+          "title": "💬 Talk to Us",
+          "reply_id": "talk_to_us",
+          "next_node_key": "general_inquiry"
+        }
+      ],
+      "footer_text": "Tap a button below to get started"
+    }
+  },
+  {
+    "node_key": "product_inquiry",
+    "node_type": "send_list",
+    "config": {
+      "text": "What are you looking for today? 👀\n\nBrowse our categories below:",
+      "button_text": "View Categories",
+      "sections": [
+        {
+          "title": "Shop by Category",
+          "rows": [
+            {
+              "id": "new_arrivals",
+              "title": "🆕 New Arrivals",
+              "description": "Just dropped this week",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "womens_fashion",
+              "title": "👗 Women’s Fashion",
+              "description": "Dresses, tops, skirts & more",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "mens_fashion",
+              "title": "👔 Men’s Fashion",
+              "description": "Shirts, trousers, native wear",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "kids_baby",
+              "title": "👶 Kids & Baby",
+              "description": "Adorable styles for little ones",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "bags_accessories",
+              "title": "👜 Bags & Accessories",
+              "description": "Bags, jewelry, watches",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "shoes_footwear",
+              "title": "👟 Shoes & Footwear",
+              "description": "Sneakers, heels, sandals",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "sale_items",
+              "title": "🏷️ Sale Items",
+              "description": "Up to 50% off selected items",
+              "next_node_key": "category_selected"
+            },
+            {
+              "id": "full_catalog",
+              "title": "📋 Full Catalog",
+              "description": "See everything we have",
+              "next_node_key": "category_selected"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "category_selected",
+    "node_type": "send_message",
+    "config": {
+      "text": "Here are our top picks in this category! 🔥\n\n📸 *[Product images and details will be shared here]*\n\nWould you like to place an order or need more info?",
+      "next_node_key": "category_action"
+    }
+  },
+  {
+    "node_key": "category_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "What would you like to do next?",
+      "buttons": [
+        {
+          "title": "✅ Yes, Order Now",
+          "reply_id": "order_now",
+          "next_node_key": "order_flow_start"
+        },
+        {
+          "title": "💰 Ask About Price",
+          "reply_id": "ask_price",
+          "next_node_key": "price_inquiry"
+        },
+        {
+          "title": "🔙 Other Categories",
+          "reply_id": "other_categories",
+          "next_node_key": "product_inquiry"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "order_flow_start",
+    "node_type": "send_message",
+    "config": {
+      "text": "Great choice! 🎉 Let’s get your order started.\n\nI’ll need a few details from you.",
+      "next_node_key": "collect_order_items"
+    }
+  },
+  {
+    "node_key": "collect_order_items",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📝 What item(s) would you like to order?\n\nPlease describe the item(s) or share the product name/code.",
+      "var_key": "order_items",
+      "validation": "any",
+      "next_node_key": "collect_order_size"
+    }
+  },
+  {
+    "node_key": "collect_order_size",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📏 What size do you need?\n\n(e.g., S, M, L, XL, UK 8, US 10, etc.)",
+      "var_key": "order_size",
+      "validation": "any",
+      "next_node_key": "collect_order_colour"
+    }
+  },
+  {
+    "node_key": "collect_order_colour",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "🎨 What colour do you prefer?",
+      "var_key": "order_colour",
+      "validation": "any",
+      "next_node_key": "collect_delivery_address"
+    }
+  },
+  {
+    "node_key": "collect_delivery_address",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📍 Please share your delivery address.\n\nInclude: Street, Area/Estate, City, State.",
+      "var_key": "delivery_address",
+      "validation": "any",
+      "next_node_key": "delivery_option"
+    }
+  },
+  {
+    "node_key": "delivery_option",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "🚚 Choose your delivery option:",
+      "buttons": [
+        {
+          "title": "⚡ Express ₦2,500",
+          "reply_id": "express",
+          "next_node_key": "order_summary"
+        },
+        {
+          "title": "📦 Standard ₦1,500",
+          "reply_id": "standard",
+          "next_node_key": "order_summary"
+        },
+        {
+          "title": "🏪 Pickup (Free)",
+          "reply_id": "pickup",
+          "next_node_key": "order_summary"
+        }
+      ],
+      "footer_text": "Select delivery method"
+    }
+  },
+  {
+    "node_key": "order_summary",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "📋 *Order Summary*\n\n🛍️ Items: {{vars.order_items}}\n📏 Size: {{vars.order_size}}\n🎨 Colour: {{vars.order_colour}}\n📍 Address: {{vars.delivery_address}}\n\nPlease confirm your order:",
+      "buttons": [
+        {
+          "title": "✅ Confirm Order",
+          "reply_id": "confirm",
+          "next_node_key": "order_confirmed"
+        },
+        {
+          "title": "✏️ Make Changes",
+          "reply_id": "changes",
+          "next_node_key": "collect_order_items"
+        }
+      ],
+      "footer_text": "Review your order details"
+    }
+  },
+  {
+    "node_key": "order_confirmed",
+    "node_type": "send_message",
+    "config": {
+      "text": "🎉 *Order Confirmed!*\n\nThank you for your order! Here’s what happens next:\n\n💳 *Payment Details:*\nBank: GTBank\nAccount: 0123456789\nName: {business_name}\n\n📸 Please send your payment receipt here after transfer.\n\n⏰ Your order will be processed within 24 hours of payment confirmation.\n\nThank you for shopping with us! 🛍️✨",
+      "next_node_key": "order_tag"
+    }
+  },
+  {
+    "node_key": "order_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "order-placed",
+      "next_node_key": "order_end"
+    }
+  },
+  {
+    "node_key": "order_end",
+    "node_type": "end",
+    "config": {}
+  },
+  {
+    "node_key": "price_inquiry",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "💰 Which item would you like the price for?\n\nPlease describe the item or share a photo/screenshot.",
+      "var_key": "price_inquiry_item",
+      "validation": "any",
+      "next_node_key": "price_handoff"
+    }
+  },
+  {
+    "node_key": "price_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer is asking about the price of: {{vars.price_inquiry_item}}. Please provide pricing information and assist with the order if interested."
+    }
+  },
+  {
+    "node_key": "order_tracking_start",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📦 Please enter your Order ID to track your delivery.\n\n(You can find this in your order confirmation message)",
+      "var_key": "tracking_order_id",
+      "validation": "any",
+      "next_node_key": "tracking_result"
+    }
+  },
+  {
+    "node_key": "tracking_result",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "📦 *Order Status for #{{vars.tracking_order_id}}*\n\n📋 Status: Processing\n🚚 Estimated Delivery: 2-3 business days\n📍 Last Update: Order confirmed and being prepared\n\nIs there anything else you need?",
+      "buttons": [
+        {
+          "title": "🔄 Track Another",
+          "reply_id": "track_another",
+          "next_node_key": "order_tracking_start"
+        },
+        {
+          "title": "⚠️ Report Issue",
+          "reply_id": "report_issue",
+          "next_node_key": "tracking_issue"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main_menu",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "tracking_issue",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer is reporting an issue with Order #{{vars.tracking_order_id}}. Please investigate and provide an update."
+    }
+  },
+  {
+    "node_key": "general_inquiry",
+    "node_type": "send_list",
+    "config": {
+      "text": "How can we help you today? 🤝\n\nSelect an option below:",
+      "button_text": "View Options",
+      "sections": [
+        {
+          "title": "Support Options",
+          "rows": [
+            {
+              "id": "faq",
+              "title": "❓ FAQ",
+              "description": "Common questions answered",
+              "next_node_key": "faq_response"
+            },
+            {
+              "id": "complaint",
+              "title": "😤 File a Complaint",
+              "description": "We’ll make it right",
+              "next_node_key": "complaint_start"
+            },
+            {
+              "id": "returns",
+              "title": "🔄 Returns & Exchange",
+              "description": "Return or exchange an item",
+              "next_node_key": "returns_info"
+            },
+            {
+              "id": "agent",
+              "title": "👤 Chat with Agent",
+              "description": "Speak to a real person",
+              "next_node_key": "agent_handoff"
+            },
+            {
+              "id": "feedback",
+              "title": "⭐ Leave Feedback",
+              "description": "Tell us about your experience",
+              "next_node_key": "feedback_collect"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "node_key": "faq_response",
+    "node_type": "send_message",
+    "config": {
+      "text": "❓ *Frequently Asked Questions*\n\n🕐 *Business Hours:*\nMon-Fri: 9AM - 7PM\nSat: 10AM - 6PM\nSun: Closed\n\n📍 *Location:*\n{business_address}\n\n💳 *Payment Methods:*\n• Bank Transfer\n• Card Payment\n• Cash on Delivery (Lagos only)\n\n🚚 *Delivery:*\n• Lagos: 1-2 business days\n• Other states: 3-5 business days\n• Express delivery available\n\n🔄 *Returns:*\n• 7-day return policy\n• Item must be unused with tags\n• See Returns section for details\n\nNeed more help? Type *hi* to go back to the main menu.",
+      "next_node_key": "welcome"
+    }
+  },
+  {
+    "node_key": "complaint_start",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "😔 We’re sorry to hear that. Please describe your complaint in detail so we can resolve it quickly.\n\nInclude your order number if applicable.",
+      "var_key": "complaint_text",
+      "validation": "any",
+      "next_node_key": "complaint_tag"
+    }
+  },
+  {
+    "node_key": "complaint_tag",
+    "node_type": "set_tag",
+    "config": {
+      "tag_name": "complaint",
+      "next_node_key": "complaint_handoff"
+    }
+  },
+  {
+    "node_key": "complaint_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer complaint: {{vars.complaint_text}}. Please prioritize and resolve this issue."
+    }
+  },
+  {
+    "node_key": "returns_info",
+    "node_type": "send_message",
+    "config": {
+      "text": "🔄 *Returns & Exchange Policy*\n\n✅ *Eligible for Return:*\n• Within 7 days of delivery\n• Item unused, unworn, with original tags\n• Original packaging intact\n\n❌ *Not Eligible:*\n• Underwear & swimwear\n• Customized/personalized items\n• Items on final sale\n\n💰 *Refund Process:*\n• Refund processed within 3-5 business days\n• Original payment method\n• Shipping costs are non-refundable\n\nWould you like to start a return?",
+      "next_node_key": "returns_action"
+    }
+  },
+  {
+    "node_key": "returns_action",
+    "node_type": "send_buttons",
+    "config": {
+      "text": "What would you like to do?",
+      "buttons": [
+        {
+          "title": "🔄 Start a Return",
+          "reply_id": "start_return",
+          "next_node_key": "returns_collect"
+        },
+        {
+          "title": "🏠 Main Menu",
+          "reply_id": "main_menu",
+          "next_node_key": "welcome"
+        }
+      ],
+      "footer_text": "Tap to continue"
+    }
+  },
+  {
+    "node_key": "returns_collect",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "📝 Please provide:\n\n1. Your Order ID\n2. Item(s) you want to return\n3. Reason for return\n\n(Type all details in one message)",
+      "var_key": "return_details",
+      "validation": "any",
+      "next_node_key": "returns_handoff"
+    }
+  },
+  {
+    "node_key": "returns_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer wants to return/exchange. Details: {{vars.return_details}}. Please process the return request."
+    }
+  },
+  {
+    "node_key": "feedback_collect",
+    "node_type": "collect_input",
+    "config": {
+      "prompt_text": "⭐ We’d love to hear from you!\n\nPlease rate your experience (1-5 stars) and share any feedback:\n\nExample: \"5 - Amazing service, fast delivery!\"",
+      "var_key": "feedback",
+      "validation": "any",
+      "next_node_key": "feedback_thanks"
+    }
+  },
+  {
+    "node_key": "feedback_thanks",
+    "node_type": "send_message",
+    "config": {
+      "text": "🙏 Thank you so much for your feedback!\n\nYour opinion helps us serve you better. We truly appreciate you shopping with us! 💛\n\nSee you again soon! 🛍️✨",
+      "next_node_key": "feedback_end"
+    }
+  },
+  {
+    "node_key": "feedback_end",
+    "node_type": "end",
+    "config": {}
+  },
+  {
+    "node_key": "agent_handoff",
+    "node_type": "handoff",
+    "config": {
+      "note": "Customer requested to speak with a human agent. Please assist them promptly."
+    }
+  }
+]
