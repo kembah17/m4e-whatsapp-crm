@@ -710,3 +710,26 @@ export interface ProductScoreSettings {
   dormancy_threshold_days: number;
   updated_at: string;
 }
+
+
+// --- Agent Event Queue ---
+
+export interface AgentEvent {
+  id: string;
+  account_id: string;
+  event_type: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  priority: number;
+  payload: Record<string, unknown>;
+  result: Record<string, unknown> | null;
+  error: string | null;
+  retry_count: number;
+  max_retries: number;
+  automation_id: string | null;
+  contact_id: string | null;
+  conversation_id: string | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  expires_at: string | null;
+}

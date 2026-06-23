@@ -531,6 +531,33 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
     case 'send_webhook': {
       const cfg = step.step_config as SendWebhookStepConfig
       if (!cfg.url) throw new Error('send_webhook needs url')
+
+      // Agent Zero event queue: agent://event_type
+      if (cfg.url.startsWith('agent://')) {
+        const eventType = cfg.url.replace('agent://', '')
+        const payload = cfg.body_template
+          ? JSON.parse(interpolate(cfg.body_template, args))
+          : args.context
+        const { error } = await db
+          .from('agent_events')
+          .insert({
+            account_id: args.automation.account_id,
+            event_type: eventType,
+            payload: {
+              ...payload,
+              contact_id: args.contactId,
+              conversation_id: args.context?.conversation_id,
+            },
+            automation_id: args.automation.id,
+            contact_id: args.contactId || null,
+            conversation_id: (args.context as Record<string, unknown>)?.conversation_id || null,
+            priority: (payload as Record<string, unknown>)?.priority ?? 5,
+          })
+        if (error) throw new Error(`agent event queue failed: ${error.message}`)
+        return 'agent event queued'
+      }
+
+      // Standard HTTP webhook
       const body = cfg.body_template ? interpolate(cfg.body_template, args) : JSON.stringify(args.context)
       const res = await fetch(cfg.url, {
         method: 'POST',
