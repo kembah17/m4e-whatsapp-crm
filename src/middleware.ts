@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -28,9 +28,7 @@ export async function middleware(request: NextRequest) {
   // Auth pages - redirect to dashboard if already logged in.
   // Exception: when an invite token is in the query string we
   // send the already-signed-in user to /join/<token> instead so
-  // they can accept the invitation in one click. Without this,
-  // a forwarded invite link to someone who's already signed in
-  // would silently drop them on /dashboard.
+  // they can accept the invitation in one click.
   if (user && (
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/signup' ||
@@ -53,11 +51,32 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected pages - redirect to login if not authenticated
-  const protectedPaths = ['/dashboard', '/inbox', '/contacts', '/pipelines', '/broadcasts', '/automations', '/settings']
+  const protectedPaths = [
+    '/dashboard', '/inbox', '/contacts', '/pipelines',
+    '/broadcasts', '/automations', '/settings', '/flows',
+    '/admin',  // Super admin routes
+  ]
   if (!user && protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  // Super admin routes — require is_super_admin flag on profile.
+  // We do a lightweight DB check here so non-admins get a clean
+  // redirect instead of a broken page.
+  if (user && request.nextUrl.pathname.startsWith('/admin')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile?.is_super_admin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   // API routes that need auth (not webhooks or agent events)
@@ -65,6 +84,22 @@ export async function middleware(request: NextRequest) {
       !request.nextUrl.pathname.includes('/webhook') &&
       !request.nextUrl.pathname.startsWith('/api/agent')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Admin API routes — require super admin
+  if (request.nextUrl.pathname.startsWith('/api/admin')) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile?.is_super_admin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   return supabaseResponse
