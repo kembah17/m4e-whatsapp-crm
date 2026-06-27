@@ -14,6 +14,7 @@ import {
   Package,
   MessageSquare,
   Radio,
+  Rocket,
   Settings,
   Shield,
   User,
@@ -94,6 +95,7 @@ const navItems: NavItem[] = [
   { href: "/pipelines", label: "Pipelines", icon: GitBranch },
   { href: "/products", label: "Products", icon: Package },
   { href: "/broadcasts", label: "Broadcasts", icon: Radio },
+  { href: "/campaigns", label: "Campaigns", icon: Rocket },
   { href: "/automations", label: "Automations", icon: Zap },
   { href: "/flows", label: "Flows", icon: Workflow, beta: true },
 ];
