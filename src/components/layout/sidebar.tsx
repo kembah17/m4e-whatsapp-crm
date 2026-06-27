@@ -21,6 +21,7 @@ import {
   UserCog,
   Users,
   UsersRound,
+  ShoppingCart,
   Workflow,
   X,
   Zap,
@@ -96,6 +97,7 @@ const navItems: NavItem[] = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/broadcasts", label: "Broadcasts", icon: Radio },
   { href: "/campaigns", label: "Campaigns", icon: Rocket },
+  { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },
   { href: "/automations", label: "Automations", icon: Zap },
   { href: "/flows", label: "Flows", icon: Workflow, beta: true },
 ];

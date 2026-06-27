@@ -33,6 +33,7 @@ import {
   AlertCircle,
   RefreshCw,
   Zap,
+  History,
   Pause,
   XCircle,
   FileText,
@@ -43,6 +44,8 @@ import type {
   CampaignPerformance,
   CampaignTemplate,
 } from "@/types/campaigns"
+import { TriggerList } from "@/components/campaigns/trigger-list"
+import { ExecutionLog } from "@/components/campaigns/execution-log"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -140,6 +143,7 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<CampaignWithTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"campaigns" | "triggers" | "executions">("campaigns")
   const [activeTab, setActiveTab] = useState<string>("all")
 
   // -----------------------------------------------------------------------
@@ -402,8 +406,41 @@ export default function CampaignsPage() {
         </div>
       )}
 
+      {/* View Mode Switcher */}
+      {!loading && !error && (
+        <div className="flex gap-2 border-b border-border pb-3 mb-4">
+          <Button
+            variant={viewMode === "campaigns" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("campaigns")}
+            className="gap-1.5"
+          >
+            <Megaphone className="h-3.5 w-3.5" />
+            Campaigns
+          </Button>
+          <Button
+            variant={viewMode === "triggers" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("triggers")}
+            className="gap-1.5"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            Triggers
+          </Button>
+          <Button
+            variant={viewMode === "executions" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("executions")}
+            className="gap-1.5"
+          >
+            <History className="h-3.5 w-3.5" />
+            Execution Log
+          </Button>
+        </div>
+      )}
+
       {/* Tabs */}
-      {!loading && !error && campaigns.length > 0 && (
+      {!loading && !error && campaigns.length > 0 && viewMode === "campaigns" && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="h-auto flex-wrap">
             {[
@@ -452,7 +489,7 @@ export default function CampaignsPage() {
       )}
 
       {/* Empty */}
-      {!loading && !error && campaigns.length === 0 && (
+      {!loading && !error && campaigns.length === 0 && viewMode === "campaigns" && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
@@ -475,6 +512,7 @@ export default function CampaignsPage() {
       {!loading &&
         !error &&
         campaigns.length > 0 &&
+        viewMode === "campaigns" &&
         filteredCampaigns.length === 0 && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -490,11 +528,14 @@ export default function CampaignsPage() {
         )}
 
       {/* Campaign grid */}
-      {!loading && !error && filteredCampaigns.length > 0 && (
+      {!loading && !error && viewMode === "campaigns" && filteredCampaigns.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCampaigns.map((campaign) => renderCampaignCard(campaign))}
         </div>
       )}
+      {viewMode === "triggers" && <TriggerList />}
+      {viewMode === "executions" && <ExecutionLog />}
+
     </div>
   )
 }

@@ -201,3 +201,116 @@ export interface CampaignWizardState {
   scheduledAt: string | null
   campaignName: string
 }
+
+
+// ============================================================
+// Campaign Triggers (event-driven campaign execution)
+// ============================================================
+export type TriggerEventType =
+  | 'order_placed'
+  | 'order_shipped'
+  | 'order_delivered'
+  | 'order_cancelled'
+  | 'payment_confirmed'
+  | 'payment_failed'
+  | 'cart_abandoned'
+  | 'contact_birthday'
+  | 'contact_anniversary'
+  | 'purchase_milestone'
+  | 'no_purchase_period'
+  | 'review_requested'
+  | 'referral_made'
+  | 'manual'
+
+export interface TriggerConditions {
+  min_order_value?: number
+  product_category?: string
+  customer_segment?: string
+  min_cart_value?: number
+  days_since_purchase?: number
+  purchase_count_threshold?: number
+  [key: string]: unknown
+}
+
+export interface CampaignTrigger {
+  id: string
+  account_id: string
+  campaign_template_id: string | null
+  trigger_event: TriggerEventType
+  conditions: TriggerConditions
+  delay_minutes: number
+  is_active: boolean
+  execution_count: number
+  last_executed_at: string | null
+  created_at: string
+  updated_at: string
+  // Joined fields
+  campaign_template?: CampaignTemplate
+}
+
+export interface CreateCampaignTriggerPayload {
+  campaign_template_id: string | null
+  trigger_event: TriggerEventType
+  conditions?: TriggerConditions
+  delay_minutes?: number
+  is_active?: boolean
+}
+
+// ============================================================
+// Campaign Executions (queued messages from triggers)
+// ============================================================
+export type ExecutionStatus = 'queued' | 'sending' | 'sent' | 'failed' | 'cancelled'
+
+export interface CampaignExecution {
+  id: string
+  account_id: string
+  trigger_id: string | null
+  campaign_id: string | null
+  contact_id: string | null
+  status: ExecutionStatus
+  scheduled_for: string
+  sent_at: string | null
+  channel: string
+  message_content: Record<string, unknown> | null
+  error_message: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+  // Joined fields
+  contact?: { name: string | null; phone: string | null; email: string | null }
+  trigger?: CampaignTrigger
+}
+
+// ============================================================
+// Trigger Engine Types
+// ============================================================
+export interface TriggerEvent {
+  event: TriggerEventType
+  account_id: string
+  contact_id?: string
+  order_id?: string
+  cart_id?: string
+  metadata?: Record<string, unknown>
+}
+
+export interface TriggerContext {
+  contact_id?: string
+  contact_name?: string
+  contact_phone?: string
+  contact_email?: string
+  order_number?: string
+  order_total?: number
+  order_status?: string
+  cart_url?: string
+  cart_total?: number
+  product_names?: string[]
+  customer_segment?: string
+  days_since_last_purchase?: number
+  total_purchases?: number
+  [key: string]: unknown
+}
+
+export interface ComposedMessage {
+  channel: string
+  body: string
+  variables: Record<string, string>
+}
