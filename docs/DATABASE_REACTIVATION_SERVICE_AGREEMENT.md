@@ -30,7 +30,7 @@ M4E and Client are each referred to individually as a "Party" and collectively a
 
 For the purposes of this Agreement, the following terms shall have the meanings set forth below:
 
-**1.1 "Active Customer"** — A customer who has completed a purchase or transaction within the last ninety (90) days.
+**1.1 "Active Customer"** — A customer who has completed a purchase or transaction within the Activity Threshold period (as defined in Section 1.16 and specified in Schedule A for the Client's industry). The default Activity Threshold is ninety (90) days, unless otherwise configured in Schedule A.
 
 **1.2 "Attribution Window"** — The configurable time period (default: 14 calendar days) during which a customer purchase may be attributed to M4E's reactivation campaign. Configurable options: 7, 14, or 30 days, as agreed in Schedule A.
 
@@ -46,7 +46,7 @@ For the purposes of this Agreement, the following terms shall have the meanings 
 
 **1.8 "Deal"** — A tracked sales opportunity within the CRM System, representing a potential or completed transaction with a customer.
 
-**1.9 "Dormant Customer"** — A customer who has not completed a purchase or transaction within the last ninety (90) days but has a prior purchase history with the Client.
+**1.9 "Dormant Customer"** — A customer who has not completed a purchase or transaction within the Activity Threshold period (as defined in Section 1.16 and specified in Schedule A for the Client's industry) but has a prior purchase history with the Client.
 
 **1.10 "Performance Fee"** — The variable fee payable to M4E, calculated as a percentage of Reactivation Revenue, as defined in Section 6.
 
@@ -59,6 +59,15 @@ For the purposes of this Agreement, the following terms shall have the meanings 
 **1.14 "Reactivation Revenue"** — The total value of purchases made by Reactivated Customers within the Attribution Window, as calculated by the CRM System from Raw Transaction Data.
 
 **1.15 "Reactivation Rate"** — The percentage of contacted Dormant Customers who become Reactivated Customers. Formula: (Reactivated Customers ÷ Total Dormant Customers Contacted) × 100.
+
+**1.16 "Activity Threshold"** — The configurable number of calendar days used to distinguish Active Customers from Dormant Customers. A customer whose most recent purchase falls within the Activity Threshold is classified as Active; otherwise, the customer is classified as Dormant. The Activity Threshold is specified per Client in Schedule A and varies by industry purchasing cycle. Default: ninety (90) days.
+
+**1.17 "Industry Purchasing Cycle"** — The typical interval between repeat purchases for customers in the Client's industry, used to calibrate the Activity Threshold and dormancy segmentation ranges. Industry Purchasing Cycle parameters are specified in Schedule A.
+
+**1.18 "Dormancy Segmentation Ranges"** — The configurable time-based ranges used to classify Dormant Customers into sub-segments for targeted reactivation campaigns. The ranges are defined relative to the date of the customer's last purchase and are specified in Schedule A. The three sub-segments are:
+- **Hot Dormant** — Customers whose last purchase falls within the Hot Dormant Range (default: Activity Threshold to 2× Activity Threshold).
+- **Warm Dormant** — Customers whose last purchase falls within the Warm Dormant Range (default: 2× Activity Threshold to 4× Activity Threshold).
+- **Cold Dormant** — Customers whose last purchase exceeds the Cold Dormant Threshold (default: beyond 4× Activity Threshold).
 
 ---
 
@@ -77,7 +86,7 @@ M4E shall provide the following core services ("Core Services"):
 
 **(b) Customer Segmentation**
 - Classification of all contacts into actionable segments based on:
-  - Purchase recency (Hot Dormant: 90–180 days; Warm Dormant: 180–365 days; Cold Dormant: 365+ days)
+  - Purchase recency (Hot Dormant, Warm Dormant, and Cold Dormant segments as defined by the Industry Purchasing Cycle parameters specified in Schedule A)
   - Customer value (VIP: top 20% by spend; Mid-value: middle 60%; Low-value: bottom 20%)
   - Engagement history (Openers, Clickers, Ghosts, Repliers)
 - Dynamic segment updates based on ongoing customer behaviour
@@ -678,6 +687,8 @@ All notices under this Agreement shall be in writing and delivered by email (wit
 
 *To be completed at onboarding:*
 
+### A.1 General Configuration
+
 | Parameter | Value |
 |---|---|
 | Database Size (estimated contacts) | _________________ |
@@ -690,6 +701,45 @@ All notices under this Agreement shall be in writing and delivered by email (wit
 | Reporting Frequency | ☐ Weekly  ☐ Monthly (default) |
 | Primary Contact (Client) | _________________ |
 | Primary Contact (M4E) | _________________ |
+
+### A.2 Industry Purchasing Cycle & Dormancy Segmentation
+
+*Select the Client's industry category or specify custom values. These parameters determine how the CRM System classifies customers as Active or Dormant and segments Dormant Customers for targeted reactivation campaigns.*
+
+**Client Industry:** ☐ FMCG / Grocery  ☐ Retail / E-Commerce  ☐ Hospitality / Food Service  ☐ Health & Beauty  ☐ B2B Services  ☐ Professional Services  ☐ Real Estate  ☐ Education  ☐ Other: _________________
+
+#### Industry Purchasing Cycle Reference Table
+
+*The following table provides recommended defaults by industry. The Client and M4E may agree on custom values based on the Client's specific business data.*
+
+| Industry | Typical Purchasing Cycle | Recommended Activity Threshold | Hot Dormant Range | Warm Dormant Range | Cold Dormant Threshold |
+|---|---|---|---|---|---|
+| FMCG / Grocery | 7–14 days | 30 days | 31–60 days | 61–120 days | 121+ days |
+| Retail / E-Commerce | 30–60 days | 90 days | 91–180 days | 181–365 days | 366+ days |
+| Hospitality / Food Service | 14–30 days | 60 days | 61–120 days | 121–240 days | 241+ days |
+| Health & Beauty | 30–45 days | 90 days | 91–180 days | 181–365 days | 366+ days |
+| B2B Services | 90–180 days | 180 days | 181–365 days | 366–730 days | 731+ days |
+| Professional Services | 90–180 days | 180 days | 181–365 days | 366–730 days | 731+ days |
+| Real Estate | 365+ days | 365 days | 366–730 days | 731–1095 days | 1096+ days |
+| Education | 90–180 days | 180 days | 181–365 days | 366–730 days | 731+ days |
+
+#### Agreed Dormancy Configuration for This Client
+
+| Parameter | Value | Default (if blank) |
+|---|---|---|
+| Industry Purchasing Cycle | _____________ days | 90 days |
+| Activity Threshold | _____________ days | 90 days |
+| Hot Dormant Range | _____________ to _____________ days | Activity Threshold + 1 day to 2× Activity Threshold |
+| Warm Dormant Range | _____________ to _____________ days | 2× Activity Threshold + 1 day to 4× Activity Threshold |
+| Cold Dormant Threshold | _____________ days and beyond | Beyond 4× Activity Threshold |
+
+**Notes:**
+1. The Activity Threshold defines the boundary between Active and Dormant customer classification (see Definitions 1.1, 1.9, and 1.16).
+2. Dormancy Segmentation Ranges (Hot, Warm, Cold) determine the intensity and messaging strategy of reactivation campaigns (see Definition 1.18).
+3. All thresholds are measured in calendar days from the customer's most recent purchase date.
+4. The CRM System automatically applies these parameters to segment the Client's customer database upon configuration.
+5. Parameters may be adjusted during the Agreement term by mutual written agreement, with changes taking effect within five (5) business days of CRM System reconfiguration.
+6. If no custom values are specified, the system defaults (90-day Activity Threshold with proportional dormancy ranges) shall apply.
 
 ---
 
