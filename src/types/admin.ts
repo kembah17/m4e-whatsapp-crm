@@ -99,3 +99,176 @@ export interface PlatformGrowthPoint {
   new_conversations: number
   messages_sent: number
 }
+
+// ============================================================
+// Campaign Monitoring Types
+// ============================================================
+
+export interface PlatformCampaignRow {
+  campaign_id: string
+  campaign_name: string
+  account_name: string
+  account_id: string
+  template_name: string | null
+  template_category: string | null
+  status: string
+  channel: string
+  created_at: string
+  started_at: string | null
+  completed_at: string | null
+  total_audience: number
+  total_sent: number
+  total_delivered: number
+  total_read: number
+  total_replied: number
+  total_failed: number
+  open_rate: number
+  reply_rate: number
+}
+
+export interface PlatformCampaignsOverview {
+  campaigns: PlatformCampaignRow[]
+  total_count: number
+}
+
+// ============================================================
+// System Alerts Types
+// ============================================================
+
+export interface AlertAccount {
+  account_id: string
+  account_name: string
+  owner_email: string | null
+}
+
+export interface PlatformAlerts {
+  disconnected_whatsapp: Array<AlertAccount & { created_at: string }>
+  inactive_accounts: Array<AlertAccount & { last_activity: string | null }>
+  failed_broadcasts: Array<{
+    account_id: string
+    account_name: string
+    broadcast_id: string
+    broadcast_name: string
+    status: string
+    created_at: string
+  }>
+  approaching_limits: Array<{
+    account_id: string
+    account_name: string
+    contact_count: number
+    tier: string
+  }>
+}
+
+// ============================================================
+// Revenue & Billing Types
+// ============================================================
+
+export type SubscriptionTier = "free" | "starter" | "growth" | "enterprise"
+export type SubscriptionStatus = "active" | "trial" | "suspended" | "cancelled"
+
+export interface RevenueAccount {
+  account_id: string
+  account_name: string
+  owner_email: string | null
+  subscription_tier: SubscriptionTier
+  subscription_status: SubscriptionStatus
+  created_at: string
+  contact_count: number
+}
+
+export interface PlatformRevenueOverview {
+  tier_distribution: Record<SubscriptionTier, number>
+  status_distribution: Record<SubscriptionStatus, number>
+  projected_mrr: number
+  accounts: RevenueAccount[]
+}
+
+// ============================================================
+// Campaign Analytics Types
+// ============================================================
+
+export interface TemplatePerformance {
+  template_name: string
+  template_category: string
+  campaign_count: number
+  total_sent: number
+  total_delivered: number
+  total_read: number
+  total_replied: number
+  open_rate: number
+  reply_rate: number
+}
+
+export interface CampaignVolumePoint {
+  day: string
+  campaigns_created: number
+  messages_sent: number
+}
+
+export interface PlatformCampaignAnalytics {
+  template_performance: TemplatePerformance[]
+  volume_over_time: CampaignVolumePoint[]
+  channel_distribution: Record<string, number>
+}
+
+// ============================================================
+// Engagement Analytics Types
+// ============================================================
+
+export interface HeatmapCell {
+  day_of_week: number
+  hour_of_day: number
+  message_count: number
+}
+
+export interface ResponseTimePoint {
+  day: string
+  avg_response_minutes: number | null
+}
+
+export interface TopEngagedAccount {
+  account_id: string
+  account_name: string
+  message_count: number
+  conversation_count: number
+  contact_count: number
+}
+
+export interface ConversationResolution {
+  total_conversations: number
+  resolved_conversations: number
+  open_conversations: number
+}
+
+export interface PlatformEngagementAnalytics {
+  message_heatmap: HeatmapCell[]
+  response_time_trend: ResponseTimePoint[]
+  top_accounts_by_engagement: TopEngagedAccount[]
+  conversation_resolution: ConversationResolution
+}
+
+// ============================================================
+// Cohort Analytics Types
+// ============================================================
+
+export interface CohortRetention {
+  cohort_month: string
+  total_accounts: number
+  active_now: number
+  retention_rate: number
+}
+
+export interface FeatureAdoption {
+  total_accounts: number
+  using_whatsapp: number
+  using_broadcasts: number
+  using_automations: number
+  using_campaigns: number
+  using_deals: number
+}
+
+export interface PlatformCohortAnalytics {
+  account_retention: CohortRetention[]
+  feature_adoption: FeatureAdoption
+}

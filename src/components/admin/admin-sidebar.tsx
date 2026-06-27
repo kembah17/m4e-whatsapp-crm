@@ -9,8 +9,10 @@ import {
   ArrowLeft,
   BarChart3,
   Building2,
+  DollarSign,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Shield,
   User,
   X,
@@ -37,7 +39,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/accounts", label: "Accounts", icon: Building2 },
+  { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
 ]
 
 interface AdminSidebarProps {

@@ -23,6 +23,7 @@ import {
 } from "@/components/admin/admin-metric-card"
 import { AdminGrowthChart } from "@/components/admin/admin-growth-chart"
 import { AdminOnboardingTracker } from "@/components/admin/admin-onboarding-tracker"
+import { AdminAlertsPanel } from "@/components/admin/admin-alerts-panel"
 import Link from "next/link"
 
 export default function AdminDashboardPage() {
@@ -190,6 +191,9 @@ export default function AdminDashboardPage() {
           />
         </div>
       </div>
+
+      {/* System Alerts Panel */}
+      <AdminAlertsPanel />
 
       {/* Recent accounts table */}
       <div className="rounded-xl border border-border bg-card">
