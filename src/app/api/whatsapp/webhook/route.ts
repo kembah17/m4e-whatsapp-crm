@@ -7,6 +7,7 @@ import { findExistingContact, isUniqueViolation } from '@/lib/contacts/dedupe'
 import { verifyMetaWebhookSignature } from '@/lib/whatsapp/webhook-signature'
 import { runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
+import { tryAIChatbotResponse } from '@/lib/ai/chatbot-engine'
 import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
@@ -683,6 +684,31 @@ async function processMessage(
   // Fire-and-forget: a slow or failing automation must not block the
   // webhook's 200 OK response to Meta.
   const inboundText = contentText ?? message.text?.body ?? ''
+
+  // ============================================================
+  // AI Chatbot dispatch.
+  //
+  // If the flow didn't consume the message and it's a text message,
+  // try the AI chatbot. If the AI handles it (sends a response),
+  // we suppress content-level automation triggers just like flows.
+  // Wrapped in try/catch so AI errors never break the webhook.
+  // ============================================================
+  let aiHandled = false
+  if (!flowConsumed && inboundText) {
+    try {
+      const aiResult = await tryAIChatbotResponse({
+        accountId,
+        contactId: contactRecord.id,
+        conversationId: conversation.id,
+        messageText: inboundText,
+        contactName: contactRecord.name || contactRecord.phone,
+      })
+      aiHandled = aiResult.handled
+    } catch (err) {
+      console.error('[ai-chatbot] error:', err)
+    }
+  }
+
   const automationTriggers: (
     | 'new_contact_created'
     | 'first_inbound_message'
@@ -690,8 +716,8 @@ async function processMessage(
     | 'keyword_match'
   )[] = []
   // Content-level triggers are suppressed when a flow consumed the
-  // message — see the comment block above.
-  if (!flowConsumed) {
+  // message OR the AI chatbot handled it.
+  if (!flowConsumed && !aiHandled) {
     automationTriggers.push('new_message_received', 'keyword_match')
   }
   // new_contact_created fires only when the webhook just auto-created the
