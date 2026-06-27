@@ -371,13 +371,7 @@ VALUES
 
 -- Tier 2: Important Engagement
 ('review_collection', 'Review & Feedback Collection', 'Collect customer reviews and feedback after purchase with satisfaction screening.', 'feedback', 'Star', 'whatsapp', 2, 6,
-  '[{"key":"satisfaction","name":"Satisfaction Check","body":"Hi {{name}}! How would you rate your recent purchase? Reply with a number:
-
-5 ⭐ Excellent
-4 ⭐ Good
-3 ⭐ Okay
-2 ⭐ Poor
-1 ⭐ Terrible","has_discount":false},{"key":"positive_review","name":"Review Request (Happy)","body":"Wonderful! 🎉 We''re so glad you''re happy! Would you mind sharing your experience? Leave a review here: {{review_link}} — it really helps us!","has_discount":false},{"key":"negative_followup","name":"Service Recovery","body":"We''re sorry to hear that, {{name}}. 😔 Your satisfaction is our priority. A team member will reach out within 24 hours to make this right.","has_discount":false}]'::jsonb,
+  '[{"key":"satisfaction","name":"Satisfaction Check","body":"Hi {{name}}! How would you rate your recent purchase? Reply with a number:\n\n5 ⭐ Excellent\n4 ⭐ Good\n3 ⭐ Okay\n2 ⭐ Poor\n1 ⭐ Terrible","has_discount":false},{"key":"positive_review","name":"Review Request (Happy)","body":"Wonderful! 🎉 We''re so glad you''re happy! Would you mind sharing your experience? Leave a review here: {{review_link}} — it really helps us!","has_discount":false},{"key":"negative_followup","name":"Service Recovery","body":"We''re sorry to hear that, {{name}}. 😔 Your satisfaction is our priority. A team member will reach out within 24 hours to make this right.","has_discount":false}]'::jsonb,
   '[{"step":1,"delay_minutes":10080,"message_key":"satisfaction"},{"step":2,"delay_minutes":0,"message_key":"positive_review","condition":"rating_gte_4"},{"step":3,"delay_minutes":0,"message_key":"negative_followup","condition":"rating_lte_2"}]'::jsonb,
   '{"segment":"recent_purchasers","min_days_since_purchase":7}'::jsonb,
   88.0, 45.0, 32.0),
