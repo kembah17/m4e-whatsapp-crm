@@ -14,6 +14,7 @@ import { WhatsAppConfig } from '@/components/settings/whatsapp-config';
 import { TemplateManager } from '@/components/settings/template-manager';
 import { FieldsAndTagsPanel } from '@/components/settings/fields-and-tags-panel';
 import { DealsSettings } from '@/components/settings/deals-settings';
+import { RecencySettings } from '@/components/settings/recency-settings';
 import { BranchesPanel } from '@/components/settings/branches-panel';
 import { MembersTab } from '@/components/settings/members-tab';
 import {
@@ -59,6 +60,7 @@ export default function SettingsPage() {
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
     deals: <DealsSettings />,
+    recency: <RecencySettings />,
     branches: <BranchesPanel />,
     members: <MembersTab />,
   };

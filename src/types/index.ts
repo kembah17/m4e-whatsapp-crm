@@ -699,6 +699,8 @@ export interface PurchaseHistory {
   product?: Product;
 }
 
+export type IndustryPreset = 'fmcg' | 'retail' | 'b2b' | 'healthcare' | 'real_estate' | 'custom';
+
 export interface ProductScoreSettings {
   id: string;
   account_id: string;
@@ -708,7 +710,61 @@ export interface ProductScoreSettings {
   weight_dormant_match: number;
   lead_magnet_cost_threshold: number;
   dormancy_threshold_days: number;
+  // Multi-tier dormancy thresholds
+  industry: IndustryPreset;
+  hot_dormant_days: number;
+  warm_dormant_days: number;
+  cold_dormant_days: number;
+  // Adaptive recommendation fields
+  adaptive_enabled: boolean;
+  recommended_hot_days: number | null;
+  recommended_warm_days: number | null;
+  recommended_cold_days: number | null;
+  data_sample_size: number;
+  data_confidence: number;
+  last_analysis_at: string | null;
   updated_at: string;
+}
+
+export interface RecencyAnalysis {
+  interval_stats: {
+    sample_size: number;
+    p50_days: number;
+    p75_days: number;
+    p90_days: number;
+    p95_days: number;
+    mean_days: number;
+    min_days: number;
+    max_days: number;
+  };
+  contact_stats: {
+    total_contacts: number;
+    repeat_customers: number;
+    avg_days_since_last: number;
+    median_days_since_last: number;
+  };
+  recommendations: {
+    hot_dormant_days: number;
+    warm_dormant_days: number;
+    cold_dormant_days: number;
+  };
+  confidence: number;
+  analyzed_at: string;
+}
+
+export const INDUSTRY_PRESETS: Record<IndustryPreset, {
+  label: string;
+  description: string;
+  hot: number;
+  warm: number;
+  cold: number;
+}> = {
+  fmcg:        { label: 'FMCG',        description: 'Fast-moving consumer goods',  hot: 30,  warm: 60,  cold: 120 },
+  retail:      { label: 'Retail',       description: 'General retail',              hot: 60,  warm: 120, cold: 240 },
+  b2b:         { label: 'B2B',          description: 'Business-to-business',        hot: 90,  warm: 180, cold: 365 },
+  healthcare:  { label: 'Healthcare',   description: 'Healthcare & pharma',         hot: 120, warm: 240, cold: 480 },
+  real_estate: { label: 'Real Estate',  description: 'Real estate & high-value',    hot: 180, warm: 365, cold: 730 },
+  custom:      { label: 'Custom',       description: 'User-defined thresholds',     hot: 60,  warm: 120, cold: 240 },
 }
 
 

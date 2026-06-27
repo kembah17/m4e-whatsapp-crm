@@ -201,6 +201,11 @@ export function SettingsOverview({
       subtitle: `${defaultCurrency} — ${currencyLabel}`,
     },
     {
+      section: 'recency',
+      loading: false,
+      subtitle: 'Purchase recency & customer segments',
+    },
+    {
       section: 'fields',
       loading: countsLoading,
       subtitle:

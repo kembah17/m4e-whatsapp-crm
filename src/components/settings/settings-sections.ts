@@ -9,6 +9,7 @@ import {
   User,
   UsersRound,
   GitBranch,
+  Timer,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export const SETTINGS_SECTIONS = [
   'templates',
   'fields',
   'deals',
+  'recency',
   'branches',
   'members',
 ] as const;
@@ -54,6 +56,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace' },
   fields: { id: 'fields', label: 'Fields & tags', icon: Tags, group: 'workspace' },
   deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace' },
+  recency: { id: 'recency', label: 'Recency & segments', icon: Timer, group: 'workspace' },
   branches: { id: 'branches', label: 'Branches', icon: GitBranch, group: 'workspace' },
   members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
 };
