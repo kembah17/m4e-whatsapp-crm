@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const startTime = Date.now()
+  const requestId = crypto.randomUUID()
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -102,11 +105,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Add monitoring headers to the response
+  supabaseResponse.headers.set('X-Request-Id', requestId)
+  supabaseResponse.headers.set('X-Response-Time', `${Date.now() - startTime}ms`)
+
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

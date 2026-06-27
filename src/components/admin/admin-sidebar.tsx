@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import {
+  Activity,
   ArrowLeft,
   BarChart3,
   Building2,
@@ -42,6 +43,7 @@ const navItems: NavItem[] = [
   { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
+  { href: "/admin/monitoring", label: "Monitoring", icon: Activity },
 ]
 
 interface AdminSidebarProps {
