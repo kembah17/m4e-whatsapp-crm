@@ -754,7 +754,7 @@ export default function CampaignsPage() {
 
       {/* Tabs */}
       {!loading && !error && campaigns.length > 0 && viewMode === "campaigns" && (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(v: string | null) => setActiveTab(v ?? "")}>
           <TabsList className="h-auto flex-wrap">
             {[
               { key: "all", label: "All" },

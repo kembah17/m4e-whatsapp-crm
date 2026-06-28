@@ -19,10 +19,12 @@ import {
   Loader2,
   Plus,
   RefreshCw,
+  Layers,
 } from "lucide-react"
 import { IntegrationSetupWizard } from "@/components/ecommerce/integration-setup-wizard"
 import { OrderList } from "@/components/ecommerce/order-list"
 import { CartList } from "@/components/ecommerce/cart-list"
+import { CatalogSync } from "@/components/catalog/catalog-sync"
 
 interface Integration {
   id: string
@@ -36,7 +38,7 @@ interface Integration {
   created_at: string
 }
 
-type TabValue = "integrations" | "orders" | "carts"
+type TabValue = "integrations" | "orders" | "carts" | "catalog"
 
 export default function EcommercePage() {
   const [activeTab, setActiveTab] = useState<TabValue>("integrations")
@@ -151,6 +153,10 @@ export default function EcommercePage() {
             <ShoppingCart className="h-3.5 w-3.5" />
             Carts
           </TabsTrigger>
+          <TabsTrigger value="catalog" className="gap-1.5">
+            <Layers className="h-3.5 w-3.5" />
+            Catalog
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -220,6 +226,7 @@ export default function EcommercePage() {
 
       {activeTab === "orders" && <OrderList />}
       {activeTab === "carts" && <CartList />}
+        {activeTab === "catalog" && <CatalogSync />}
 
       {/* Setup Wizard Dialog */}
       {showWizard && (

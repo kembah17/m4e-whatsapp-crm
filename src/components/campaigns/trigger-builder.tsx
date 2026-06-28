@@ -180,7 +180,7 @@ export function TriggerBuilder({ open, onClose, editTrigger }: TriggerBuilderPro
           {/* Trigger Event */}
           <div className="space-y-2">
             <Label>Trigger Event *</Label>
-            <Select value={triggerEvent} onValueChange={(v) => setTriggerEvent(v ?? "")}>
+            <Select value={triggerEvent} onValueChange={(v: string | null) => setTriggerEvent(v ?? "")}>
               <SelectTrigger>
                 <SelectValue placeholder="Select an event..." />
               </SelectTrigger>
@@ -210,7 +210,7 @@ export function TriggerBuilder({ open, onClose, editTrigger }: TriggerBuilderPro
                 Loading templates...
               </div>
             ) : (
-              <Select value={templateId} onValueChange={(v) => setTemplateId(v ?? "")}>
+              <Select value={templateId} onValueChange={(v: string | null) => setTemplateId(v ?? "")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>

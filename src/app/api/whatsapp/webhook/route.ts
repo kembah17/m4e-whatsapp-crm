@@ -12,6 +12,8 @@ import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
 } from '@/lib/whatsapp/template-webhook'
+import { trackCTWALead } from '@/lib/ctwa/tracker'
+import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,6 +54,18 @@ interface WhatsAppMessage {
   }
   /** Present when the customer swipe-replies to one of our messages. */
   context?: { id: string }
+  referral?: {
+    source_url: string
+    source_type: 'ad' | 'post'
+    source_id: string
+    headline: string
+    body: string
+    media_type?: 'image' | 'video'
+    image_url?: string
+    video_url?: string
+    thumbnail_url?: string
+    ctwa_clid?: string
+  }
 }
 
 interface WhatsAppWebhookEntry {
@@ -637,6 +651,16 @@ async function processMessage(
   // trigger installed in migration 003).
   await flagBroadcastReplyIfAny(accountId, contactRecord.id)
 
+  // CTWA lead tracking — fire-and-forget
+  if (message.referral) {
+    trackCTWALead({
+      accountId,
+      contactId: contactRecord.id,
+      conversationId: conversation.id,
+      referral: message.referral,
+    }).catch((err) => console.error('[ctwa] tracking failed:', err))
+  }
+
   // ============================================================
   // Flow runner dispatch.
   //
@@ -707,6 +731,18 @@ async function processMessage(
     } catch (err) {
       console.error('[ai-chatbot] error:', err)
     }
+  }
+
+  // Sentiment analysis — fire-and-forget, never blocks webhook
+  if (inboundText) {
+    triggerSentimentAnalysis({
+      accountId,
+      messageMetaId: message.id,
+      conversationId: conversation.id,
+      contactId: contactRecord.id,
+      contactName: contactRecord.name || undefined,
+      messageText: inboundText,
+    }).catch((err) => console.error('[sentiment] failed:', err))
   }
 
   const automationTriggers: (
