@@ -26,6 +26,7 @@ import {
   X,
   Zap,
   Bot,
+  HelpCircle,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -104,7 +105,8 @@ const navItems: NavItem[] = [
   { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
 ];
 
-const bottomNavItems = [
+const bottomNavItems: NavItem[] = [
+  { href: "/help", label: "Help & Guides", icon: HelpCircle },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

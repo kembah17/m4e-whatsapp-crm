@@ -18,6 +18,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip"
+import {
   Plus,
   Megaphone,
   BarChart3,
@@ -37,12 +43,22 @@ import {
   Pause,
   XCircle,
   FileText,
+  ChevronDown,
+  ChevronUp,
+  Lightbulb,
+  TrendingUp,
+  Rocket,
+  Eye,
+  ShoppingCart,
+  Sparkles,
+  LayoutGrid,
 } from "lucide-react"
 import type {
   Campaign,
   CampaignStatus,
   CampaignPerformance,
   CampaignTemplate,
+  CampaignCategory,
 } from "@/types/campaigns"
 import { TriggerList } from "@/components/campaigns/trigger-list"
 import { ExecutionLog } from "@/components/campaigns/execution-log"
@@ -101,6 +117,35 @@ const CHANNEL_COLORS: Record<string, string> = {
   auto: "bg-purple-50 text-purple-700 border-purple-200",
 }
 
+const GALLERY_CATEGORY_LABELS: Record<CampaignCategory | "all", string> = {
+  all: "All",
+  reactivation: "Reactivation",
+  cart_recovery: "Cart Recovery",
+  post_purchase: "Post Purchase",
+  lifecycle: "Lifecycle",
+  engagement: "Engagement",
+  revenue: "Revenue",
+  feedback: "Feedback",
+}
+
+const GALLERY_CATEGORY_COLORS: Record<CampaignCategory, string> = {
+  reactivation: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+  cart_recovery: "bg-red-500/10 text-red-400 border-red-500/30",
+  post_purchase: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+  lifecycle: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+  engagement: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+  revenue: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  feedback: "bg-teal-500/10 text-teal-400 border-teal-500/30",
+}
+
+const GALLERY_TIER_CONFIG: Record<1 | 2 | 3, { label: string; color: string }> = {
+  1: { label: "Basic", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+  2: { label: "Pro", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
+  3: { label: "Enterprise", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
+}
+
+const GALLERY_STORAGE_KEY = "m4e-campaign-gallery-collapsed"
+
 // ---------------------------------------------------------------------------
 // Skeleton
 // ---------------------------------------------------------------------------
@@ -133,6 +178,262 @@ function CampaignCardSkeleton() {
 }
 
 // ---------------------------------------------------------------------------
+// Campaign Gallery Component
+// ---------------------------------------------------------------------------
+
+function CampaignGallery({ templates }: { templates: CampaignTemplate[] }) {
+  const router = useRouter()
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem(GALLERY_STORAGE_KEY) === "true"
+  })
+  const [galleryCategory, setGalleryCategory] = useState<CampaignCategory | "all">("all")
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const toggleCollapse = () => {
+    const next = !isCollapsed
+    setIsCollapsed(next)
+    localStorage.setItem(GALLERY_STORAGE_KEY, String(next))
+  }
+
+  const filteredTemplates = useMemo(() => {
+    const active = templates.filter((t) => t.is_active).sort((a, b) => a.sort_order - b.sort_order)
+    if (galleryCategory === "all") return active
+    return active.filter((t) => t.category === galleryCategory)
+  }, [templates, galleryCategory])
+
+  const formatRate = (rate: number | null) => {
+    if (rate === null) return "—"
+    return `${Math.round(rate * 100)}%`
+  }
+
+  return (
+    <Card className="border-primary/20 bg-card">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">Campaign Gallery</CardTitle>
+            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+              {templates.filter((t) => t.is_active).length} templates
+            </Badge>
+          </div>
+          <Button variant="ghost" size="sm" onClick={toggleCollapse} className="gap-1.5 text-muted-foreground">
+            {isCollapsed ? (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Show
+              </>
+            ) : (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Hide
+              </>
+            )}
+          </Button>
+        </div>
+        {!isCollapsed && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Browse available campaign templates and launch one with a single click.
+          </p>
+        )}
+      </CardHeader>
+
+      {!isCollapsed && (
+        <CardContent className="pt-0 space-y-4">
+          {/* Category filter tabs */}
+          <Tabs
+            value={galleryCategory}
+            onValueChange={(v) => setGalleryCategory(v as CampaignCategory | "all")}
+          >
+            <TabsList className="flex flex-wrap h-auto gap-1 p-1">
+              {(Object.keys(GALLERY_CATEGORY_LABELS) as (CampaignCategory | "all")[]).map((cat) => {
+                const count =
+                  cat === "all"
+                    ? templates.filter((t) => t.is_active).length
+                    : templates.filter((t) => t.is_active && t.category === cat).length
+                if (cat !== "all" && count === 0) return null
+                return (
+                  <TabsTrigger key={cat} value={cat} className="text-xs px-2.5 py-1">
+                    {GALLERY_CATEGORY_LABELS[cat]}
+                    <span className="ml-1 text-[10px] opacity-60">{count}</span>
+                  </TabsTrigger>
+                )
+              })}
+            </TabsList>
+          </Tabs>
+
+          {/* Template grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {filteredTemplates.map((template) => {
+              const tierCfg = GALLERY_TIER_CONFIG[template.tier]
+              const isExpanded = expandedId === template.id
+              const hasDetails = !!(template.what_it_does || template.why_you_need_it)
+
+              return (
+                <Card
+                  key={template.id}
+                  className="group border-border/60 hover:border-primary/40 transition-all duration-200 hover:shadow-md"
+                >
+                  <CardContent className="p-4 space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-xl leading-none shrink-0">{template.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-sm leading-tight truncate text-foreground">
+                          {template.name}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {template.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-1">
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[9px] px-1.5 py-0", GALLERY_CATEGORY_COLORS[template.category])}
+                      >
+                        {GALLERY_CATEGORY_LABELS[template.category]}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[9px] px-1.5 py-0", tierCfg.color)}
+                      >
+                        {tierCfg.label}
+                      </Badge>
+                    </div>
+
+                    {/* What it does / Why you need it */}
+                    {template.what_it_does && (
+                      <div className="flex gap-2">
+                        <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                          {template.what_it_does}
+                        </p>
+                      </div>
+                    )}
+
+                    {template.why_you_need_it && (
+                      <div className="flex gap-2">
+                        <Target className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                          {template.why_you_need_it}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div className="space-y-2 pt-1 border-t border-border/50 animate-in fade-in slide-in-from-top-1 duration-200">
+                        {template.how_it_works && (
+                          <div className="text-[11px] text-muted-foreground space-y-0.5">
+                            <p className="font-semibold text-foreground text-[10px] uppercase tracking-wide">How It Works</p>
+                            {template.how_it_works.split("\n").map((step, i) => (
+                              <p key={i}>{step}</p>
+                            ))}
+                          </div>
+                        )}
+                        {template.best_for && (
+                          <div className="flex gap-2">
+                            <Users className="h-3 w-3 text-purple-400 shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-muted-foreground">
+                              <span className="font-medium text-foreground">Best for:</span> {template.best_for}
+                            </p>
+                          </div>
+                        )}
+                        {template.example_result && (
+                          <div className="flex gap-2 bg-emerald-500/10 rounded-md px-2 py-1.5 border border-emerald-500/20">
+                            <TrendingUp className="h-3 w-3 text-emerald-400 shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-emerald-300 font-medium">
+                              {template.example_result}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Expected rates */}
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="text-center p-1 bg-muted/50 rounded">
+                              <Eye className="h-2.5 w-2.5 text-muted-foreground mx-auto mb-0.5" />
+                              <p className="text-[10px] font-semibold text-foreground">
+                                {formatRate(template.expected_open_rate)}
+                              </p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Expected open rate</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="text-center p-1 bg-muted/50 rounded">
+                              <MessageSquare className="h-2.5 w-2.5 text-muted-foreground mx-auto mb-0.5" />
+                              <p className="text-[10px] font-semibold text-foreground">
+                                {formatRate(template.expected_reply_rate)}
+                              </p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Expected reply rate</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="text-center p-1 bg-muted/50 rounded">
+                              <ShoppingCart className="h-2.5 w-2.5 text-muted-foreground mx-auto mb-0.5" />
+                              <p className="text-[10px] font-semibold text-foreground">
+                                {formatRate(template.expected_conversion_rate)}
+                              </p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Expected conversion rate</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-7 text-xs gap-1"
+                        onClick={() => router.push(`/campaigns/new?template=${template.slug}`)}
+                      >
+                        <Rocket className="h-3 w-3" />
+                        Launch
+                      </Button>
+                      {hasDetails && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 text-muted-foreground"
+                          onClick={() => setExpandedId(isExpanded ? null : template.id)}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 
@@ -141,6 +442,7 @@ export default function CampaignsPage() {
   const { user } = useAuth()
 
   const [campaigns, setCampaigns] = useState<CampaignWithTemplate[]>([])
+  const [templates, setTemplates] = useState<CampaignTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"campaigns" | "triggers" | "executions">("campaigns")
@@ -154,12 +456,18 @@ export default function CampaignsPage() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch("/api/campaigns")
-      if (!res.ok) {
-        throw new Error("Failed to fetch campaigns")
+      const [campaignsRes, templatesRes] = await Promise.all([
+        fetch("/api/campaigns"),
+        fetch("/api/campaigns/templates"),
+      ])
+      if (!campaignsRes.ok) throw new Error("Failed to fetch campaigns")
+      const campaignsData = await campaignsRes.json()
+      setCampaigns(campaignsData.campaigns ?? [])
+
+      if (templatesRes.ok) {
+        const templatesData = await templatesRes.json()
+        setTemplates(templatesData.templates ?? [])
       }
-      const data = await res.json()
-      setCampaigns(data.campaigns ?? [])
     } catch (err: any) {
       setError(err.message || "Something went wrong")
       toast.error("Failed to load campaigns")
@@ -336,6 +644,11 @@ export default function CampaignsPage() {
           New Campaign
         </Button>
       </div>
+
+      {/* Campaign Gallery */}
+      {!loading && !error && templates.length > 0 && (
+        <CampaignGallery templates={templates} />
+      )}
 
       {/* Stats */}
       {!loading && !error && campaigns.length > 0 && (

@@ -59,6 +59,12 @@ export interface CampaignTemplate {
   is_active: boolean
   sort_order: number
   created_at: string
+  // Rich explanatory content (046 migration)
+  what_it_does: string | null
+  why_you_need_it: string | null
+  how_it_works: string | null
+  best_for: string | null
+  example_result: string | null
 }
 
 // ============================================================

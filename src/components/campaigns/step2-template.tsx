@@ -15,6 +15,11 @@ import {
   ShoppingCart,
   Filter,
   LayoutGrid,
+  Lightbulb,
+  Target,
+  ListOrdered,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,6 +98,9 @@ export function Step2Template({
     CampaignCategory | "all"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(
+    null
+  );
 
   const activeTemplates = useMemo(
     () =>
@@ -155,6 +163,21 @@ export function Step2Template({
     return `${Math.round(rate * 100)}%`;
   };
 
+  const toggleExpand = (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedTemplateId((prev) => (prev === templateId ? null : templateId));
+  };
+
+  const hasRichContent = (template: CampaignTemplate) => {
+    return !!(
+      template.what_it_does ||
+      template.why_you_need_it ||
+      template.how_it_works ||
+      template.best_for ||
+      template.example_result
+    );
+  };
+
   const renderTemplateCard = (
     template: CampaignTemplate,
     isRecommended: boolean = false
@@ -162,6 +185,8 @@ export function Step2Template({
     const isSelected = selectedTemplate?.id === template.id;
     const recommendation = getRecommendation(template);
     const tierConfig = TIER_CONFIG[template.tier];
+    const isExpanded = expandedTemplateId === template.id;
+    const showRichContent = hasRichContent(template);
 
     return (
       <Card
@@ -288,6 +313,110 @@ export function Step2Template({
                   Est. {formatCurrency(recommendation.estimated_revenue, "NGN")}{" "}
                   from {recommendation.audience_size.toLocaleString()} contacts
                 </span>
+              </div>
+            )}
+
+            {/* Expand/Collapse button for rich content */}
+            {showRichContent && (
+              <button
+                type="button"
+                onClick={(e) => toggleExpand(template.id, e)}
+                className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium w-full justify-center pt-1 transition-colors"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Hide details
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Learn more about this campaign
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Expanded Rich Content */}
+            {isExpanded && showRichContent && (
+              <div
+                className="space-y-3 pt-2 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {template.what_it_does && (
+                  <div className="flex gap-2.5">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-amber-50">
+                      <Lightbulb className="h-3.5 w-3.5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide mb-0.5">
+                        What It Does
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {template.what_it_does}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {template.why_you_need_it && (
+                  <div className="flex gap-2.5">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-red-50">
+                      <Target className="h-3.5 w-3.5 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide mb-0.5">
+                        Why You Need It
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {template.why_you_need_it}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {template.how_it_works && (
+                  <div className="flex gap-2.5">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-50">
+                      <ListOrdered className="h-3.5 w-3.5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide mb-0.5">
+                        How It Works
+                      </p>
+                      <div className="text-xs text-gray-600 leading-relaxed space-y-0.5">
+                        {template.how_it_works.split("\n").map((step, i) => (
+                          <p key={i}>{step}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {template.best_for && (
+                  <div className="flex gap-2.5">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-purple-50">
+                      <Users className="h-3.5 w-3.5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-700 uppercase tracking-wide mb-0.5">
+                        Best For
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {template.best_for}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {template.example_result && (
+                  <div className="flex items-center gap-1.5 text-xs bg-emerald-50 rounded-lg px-2.5 py-2 border border-emerald-200">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span className="text-emerald-700 font-medium">
+                      {template.example_result}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
