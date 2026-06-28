@@ -1,6 +1,7 @@
 -- 049_rls_policies_and_campaign_templates.sql
--- 
+--
 -- This migration:
+--   0. Ensures is_super_admin column exists on profiles (from migration 040)
 --   A. Adds RLS policies for 5 tables from migration 047 (qr_templates,
 --      whatsapp_flows, catalog_sync_status, ctwa_leads, message_sentiments)
 --   B. Adds super-admin SELECT policies for 5 monitoring tables from migration 045
@@ -10,6 +11,18 @@
 --
 -- All operations are idempotent (DROP IF EXISTS + CREATE, ON CONFLICT DO NOTHING).
 -- ============================================================
+
+-- ============================================================
+-- PART 0: Ensure is_super_admin column exists on profiles
+-- ============================================================
+-- Migration 040 adds this column, but it may not have been applied.
+-- IF NOT EXISTS makes this safe to run regardless.
+-- ============================================================
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS is_super_admin boolean NOT NULL DEFAULT false;
+
+CREATE INDEX IF NOT EXISTS idx_profiles_super_admin
+  ON profiles (is_super_admin) WHERE is_super_admin = true;
 
 -- ============================================================
 -- PART A: RLS Policies for Migration 047 Tables
