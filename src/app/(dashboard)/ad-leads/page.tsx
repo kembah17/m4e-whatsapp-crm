@@ -1,6 +1,7 @@
 "use client"
 
 import { CTWADashboard } from "@/components/ctwa/ctwa-dashboard"
+import { CTWALeadsPanel } from "@/components/ctwa/ctwa-leads-panel"
 import { Card, CardContent } from "@/components/ui/card"
 import { Megaphone, Info } from "lucide-react"
 
@@ -32,6 +33,9 @@ export default function AdLeadsPage() {
       </Card>
 
       <CTWADashboard />
+
+      {/* CTWA Leads with Nurture Tracking */}
+      <CTWALeadsPanel />
     </div>
   )
 }

@@ -18,6 +18,7 @@ import {
   Square,
   X,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GatedButton } from "@/components/ui/gated-button";
@@ -36,6 +37,7 @@ import {
   MEDIA_MAX_BYTES_BY_KIND,
 } from "@/lib/storage/upload-media";
 import { ReplyQuote } from "./reply-quote";
+import { QuickReplySelector } from "./quick-reply-selector";
 
 /** Media content types an agent can send from the composer. */
 export type ComposerMediaKind = "image" | "video" | "document" | "audio";
@@ -510,6 +512,15 @@ export function MessageComposer({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <QuickReplySelector
+            onInsert={(message) => {
+              setText(message);
+              adjustHeight();
+              textareaRef.current?.focus();
+            }}
+            disabled={inputsDisabled}
+          />
 
           <GatedButton
             variant="ghost"

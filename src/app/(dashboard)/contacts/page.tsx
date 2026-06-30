@@ -41,6 +41,7 @@ import {
   ChevronLeft,
   ChevronRight,
   SlidersHorizontal,
+  Sparkles,
 } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/contact-form';
 import { ContactDetailView } from '@/components/contacts/contact-detail-view';
@@ -50,6 +51,7 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BranchFilter } from '@/components/shared/branch-filter';
+import { BulkTagPanel } from '@/components/contacts/bulk-tag-panel';
 
 const PAGE_SIZE = 25;
 
@@ -85,6 +87,7 @@ export default function ContactsPage() {
   // Bulk selection (page-scoped — only the loaded rows are selectable)
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkTagOpen, setBulkTagOpen] = useState(false);
 
   // All tags for display
   const [tagsMap, setTagsMap] = useState<Record<string, Tag>>({});
@@ -350,6 +353,17 @@ export default function ContactsPage() {
             >
               Clear
             </Button>
+            <GatedButton
+              variant="outline"
+              size="sm"
+              canAct={canEdit}
+              gateReason="tag contacts"
+              onClick={() => setBulkTagOpen(true)}
+              className="border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Sparkles className="size-4" />
+              AI Tag
+            </GatedButton>
             <GatedButton
               variant="destructive"
               size="sm"
@@ -630,6 +644,18 @@ export default function ContactsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Bulk Tag Panel */}
+      <BulkTagPanel
+        open={bulkTagOpen}
+        onOpenChange={setBulkTagOpen}
+        contactIds={[...selected]}
+        onTagsApplied={() => {
+          setSelected(new Set());
+          fetchContacts();
+          fetchTags();
+        }}
+      />
 
       {/* Bulk Delete Confirmation */}
       <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>

@@ -19,6 +19,7 @@ import { BranchesPanel } from '@/components/settings/branches-panel';
 import { MembersTab } from '@/components/settings/members-tab';
 import { MetaCostPanel } from '@/components/settings/meta-cost-panel';
 import { SmsSenderIdGuide } from '@/components/settings/sms-sender-id';
+import { QuickRepliesPanel } from '@/components/settings/quick-replies-panel';
 import { SmsConfig } from '@/components/settings/sms-config';
 import {
   resolveSection,
@@ -67,6 +68,7 @@ export default function SettingsPage() {
     deals: <DealsSettings />,
     recency: <RecencySettings />,
     branches: <BranchesPanel />,
+    'quick-replies': <QuickRepliesPanel />,
     members: <MembersTab />,
   };
 

@@ -660,6 +660,18 @@ async function processMessage(
       conversationId: conversation.id,
       referral: message.referral,
     }).catch((err) => console.error('[ctwa] tracking failed:', err))
+
+    // CTWA nurture status — tag the contact for nurture sequence
+    supabaseAdmin()
+      .from('contacts')
+      .update({
+        ctwa_nurture_status: 'new',
+        ctwa_ad_source: message.referral.source_id || message.referral.headline || 'unknown',
+        ctwa_first_seen: new Date().toISOString(),
+      })
+      .eq('id', contactRecord.id)
+      .then(() => {})
+      .catch((err: unknown) => console.error('[ctwa] nurture tag failed:', err))
   }
 
   // ============================================================

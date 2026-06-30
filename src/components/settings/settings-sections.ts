@@ -12,6 +12,7 @@ import {
   UsersRound,
   GitBranch,
   Timer,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const SETTINGS_SECTIONS = [
   'deals',
   'recency',
   'branches',
+  'quick-replies',
   'members',
 ] as const;
 
@@ -64,6 +66,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace' },
   recency: { id: 'recency', label: 'Recency & segments', icon: Timer, group: 'workspace' },
   branches: { id: 'branches', label: 'Branches', icon: GitBranch, group: 'workspace' },
+  'quick-replies': { id: 'quick-replies', label: 'Quick replies', icon: Zap, group: 'workspace' },
   members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
 };
 
