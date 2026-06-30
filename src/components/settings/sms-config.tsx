@@ -350,7 +350,7 @@ export function SmsConfig() {
               <li>Ensure <strong className="text-slate-200">Brevo Email</strong> is configured (same API key)</li>
               <li>Purchase SMS credits in your <strong className="text-slate-200">Brevo dashboard</strong></li>
               <li>Set your <strong className="text-slate-200">Sender ID</strong> (3\u201311 alphanumeric chars)</li>
-              <li>For Nigerian carriers, <strong className="text-slate-200">register your Sender ID</strong> with Brevo support</li>
+              <li>For Nigerian carriers, <strong className="text-slate-200">register your Sender ID</strong> — see the Sender ID Registration section below for detailed NCC requirements and provider instructions</li>
               <li>Toggle <strong className="text-slate-200">Enable SMS</strong> and save</li>
               <li>Send a <strong className="text-slate-200">test SMS</strong> to verify delivery</li>
             </ol>

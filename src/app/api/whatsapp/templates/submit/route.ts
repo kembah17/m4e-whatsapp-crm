@@ -8,6 +8,7 @@ import {
   type TemplatePayload,
 } from '@/lib/whatsapp/template-validators'
 import { buildMetaTemplatePayload } from '@/lib/whatsapp/template-components'
+import { validateTemplate } from '@/lib/whatsapp/template-validator'
 import { ensureImageHeaderHandle } from '@/lib/whatsapp/template-header-handle'
 import { normalizeStatus } from '@/lib/whatsapp/template-status-normalize'
 
@@ -136,6 +137,35 @@ export async function POST(request: Request) {
         { error: e instanceof Error ? e.message : 'Validation failed.' },
         { status: 400 },
       )
+    }
+
+    // Enhanced validation with detailed feedback
+    const enhancedValidation = validateTemplate({
+      name: payload.name,
+      category: payload.category,
+      language: payload.language,
+      header_type: payload.header_type,
+      header_content: payload.header_content,
+      body_text: payload.body_text,
+      footer_text: payload.footer_text,
+      buttons: payload.buttons?.map(b => ({
+        type: b.type,
+        text: b.text,
+        url: 'url' in b ? (b as Record<string, string>).url : undefined,
+        phone: 'phone_number' in b ? (b as Record<string, string>).phone_number : undefined,
+      })),
+    });
+
+    if (!enhancedValidation.valid) {
+      return NextResponse.json(
+        {
+          error: 'Template validation failed.',
+          validation_errors: enhancedValidation.errors,
+          validation_warnings: enhancedValidation.warnings,
+          score: enhancedValidation.score,
+        },
+        { status: 400 },
+      );
     }
 
     const dryRun =

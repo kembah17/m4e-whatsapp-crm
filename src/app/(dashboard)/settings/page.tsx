@@ -17,6 +17,9 @@ import { DealsSettings } from '@/components/settings/deals-settings';
 import { RecencySettings } from '@/components/settings/recency-settings';
 import { BranchesPanel } from '@/components/settings/branches-panel';
 import { MembersTab } from '@/components/settings/members-tab';
+import { MetaCostPanel } from '@/components/settings/meta-cost-panel';
+import { SmsSenderIdGuide } from '@/components/settings/sms-sender-id';
+import { SmsConfig } from '@/components/settings/sms-config';
 import {
   resolveSection,
   type SettingsSection,
@@ -57,6 +60,8 @@ export default function SettingsPage() {
     security: <SecurityPanel />,
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppConfig />,
+    costs: <MetaCostPanel />,
+    sms: <div className="space-y-6"><SmsConfig /><SmsSenderIdGuide /></div>,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
     deals: <DealsSettings />,

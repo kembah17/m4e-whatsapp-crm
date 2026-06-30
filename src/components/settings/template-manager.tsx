@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SettingsPanelHead } from './settings-panel-head';
+import { validateTemplate, type ValidationResult } from '@/lib/whatsapp/template-validator';
 import {
   Dialog,
   DialogContent,
@@ -148,6 +149,7 @@ export function TemplateManager() {
   // submit route turns that into a Meta Resumable-Upload handle.
   const [uploadingHeader, setUploadingHeader] = useState(false);
   const headerFileRef = useRef<HTMLInputElement>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
   // Body variable indices — `[1, 2, 3]` for "{{1}} {{2}} {{3}}". We
   // re-run the extractor on every render to keep the sample-value rows
@@ -184,6 +186,34 @@ export function TemplateManager() {
     fetchTemplates(user.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.id]);
+  
+  // Debounced template validation for quality scoring
+  useEffect(() => {
+    if (!dialogOpen) {
+      setValidationResult(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const result = validateTemplate({
+        name: form.name,
+        category: form.category,
+        language: form.language,
+        header_type: form.header_format === 'none' ? undefined : form.header_format,
+        header_content: form.header_format === 'text' ? form.header_content : undefined,
+        body_text: form.body_text,
+        footer_text: form.footer_text || undefined,
+        buttons: form.buttons.map(b => ({
+          type: b.type,
+          text: b.text,
+          url: 'url' in b ? (b as Record<string, string>).url : undefined,
+          phone: 'phone_number' in b ? (b as Record<string, string>).phone_number : undefined,
+        })),
+      });
+      setValidationResult(result);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [dialogOpen, form.name, form.category, form.language, form.header_format, form.header_content, form.body_text, form.footer_text, form.buttons]);
+
 
   async function fetchTemplates(userId: string) {
     try {
@@ -1057,6 +1087,51 @@ export function TemplateManager() {
             </div>
           </div>
 
+          {/* Template Validation Panel */}
+          {validationResult && (form.name || form.body_text) && (
+            <div className="rounded-lg border border-border bg-muted/50 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Template Quality</span>
+                <Badge
+                  className={validationResult.score >= 80
+                    ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30'
+                    : validationResult.score >= 50
+                      ? 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30'
+                      : 'bg-red-600/20 text-red-400 border-red-600/30'
+                  }
+                >
+                  {validationResult.valid ? '✓' : '✗'} Score: {validationResult.score}/100
+                </Badge>
+              </div>
+              {validationResult.errors.length > 0 && (
+                <div className="space-y-1">
+                  {validationResult.errors.map((err, i) => (
+                    <div key={`err-${i}`} className="flex items-start gap-2 text-xs text-red-400">
+                      <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+                      <span><strong className="uppercase">{err.field}:</strong> {err.message}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {validationResult.warnings.length > 0 && (
+                <div className="space-y-1">
+                  {validationResult.warnings.map((warn, i) => (
+                    <div key={`warn-${i}`} className="flex items-start gap-2 text-xs text-yellow-400">
+                      <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+                      <span>
+                        <strong className="uppercase">{warn.field}:</strong> {warn.message}
+                        {warn.suggestion && <span className="text-muted-foreground"> — {warn.suggestion}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {validationResult.valid && validationResult.warnings.length === 0 && (
+                <p className="text-xs text-emerald-400">✓ Template passes all validation rules.</p>
+              )}
+            </div>
+          )}
+
           <DialogFooter className="bg-popover border-border">
             <Button
               variant="outline"
@@ -1067,7 +1142,7 @@ export function TemplateManager() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={submitting || form.category === 'Authentication'}
+              disabled={submitting || form.category === 'Authentication' || (validationResult !== null && !validationResult.valid)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {submitting ? (
