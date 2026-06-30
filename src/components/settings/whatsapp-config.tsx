@@ -28,6 +28,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { EmbeddedSignup } from './embedded-signup';
 import type { WhatsAppConfig as WhatsAppConfigType } from '@/types';
 
 const MASKED_TOKEN = '••••••••••••••••';
@@ -381,6 +383,23 @@ export function WhatsAppConfig() {
         title="WhatsApp connection"
         description="Connect your Meta WhatsApp Business API. Credentials, webhook, and setup steps all live here."
       />
+
+      <Tabs defaultValue="quick">
+        <TabsList className="w-full sm:w-auto mb-4">
+          <TabsTrigger value="quick">
+            <Zap className="size-3.5" />
+            Quick Setup
+          </TabsTrigger>
+          <TabsTrigger value="manual">
+            Manual Setup
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="quick">
+          <EmbeddedSignup />
+        </TabsContent>
+
+        <TabsContent value="manual">
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       {/* Main config form */}
       <div className="space-y-6">
@@ -841,6 +860,8 @@ export function WhatsAppConfig() {
         </Card>
       </div>
     </div>
+        </TabsContent>
+      </Tabs>
     </section>
   );
 }

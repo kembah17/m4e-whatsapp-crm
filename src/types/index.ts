@@ -246,6 +246,31 @@ export interface WhatsAppConfig {
   subscribed_apps_at?: string;
   /** Last error from /register; cleared on success. */
   last_registration_error?: string;
+  // --- Embedded Signup fields ---
+  setup_method?: 'manual' | 'embedded_signup';
+  meta_business_id?: string;
+  business_name?: string;
+  display_phone_number?: string;
+  quality_rating?: string;
+  messaging_limit?: string;
+  embedded_signup_completed_at?: string;
+  token_expires_at?: string;
+  phone_verified?: boolean;
+}
+
+export interface EmbeddedSignupSession {
+  id: string;
+  account_id: string;
+  state_token: string;
+  status: 'pending' | 'completed' | 'failed' | 'expired';
+  meta_code?: string;
+  waba_id?: string;
+  phone_number_id?: string;
+  meta_business_id?: string;
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
+  expires_at: string;
 }
 
 // Raw Meta status enum. We persist this verbatim from Meta (sync + webhook)
