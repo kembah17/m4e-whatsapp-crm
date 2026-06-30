@@ -29,7 +29,7 @@ const PRICING: Record<string, { input: number; output: number }> = {
   default: { input: 0.0002, output: 0.0006 },
 }
 
-export type AIFeature = 'chatbot' | 'sentiment' | 'bulk_tagging' | 'ghostwriter' | 'intent_detection'
+export type AIFeature = 'chatbot' | 'sentiment' | 'bulk_tagging' | 'ghostwriter' | 'intent_detection' | 'ocr_import'
 
 interface TrackUsageInput {
   accountId: string

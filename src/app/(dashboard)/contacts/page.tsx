@@ -46,6 +46,7 @@ import {
 import { ContactForm } from '@/components/contacts/contact-form';
 import { ContactDetailView } from '@/components/contacts/contact-detail-view';
 import { ImportModal } from '@/components/contacts/import-modal';
+import { ImportWizard } from '@/components/contacts/import-wizard';
 import { CustomFieldsManager } from '@/components/contacts/custom-fields-manager';
 import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
@@ -79,6 +80,7 @@ export default function ContactsPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailContactId, setDetailContactId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null);
@@ -305,6 +307,16 @@ export default function ContactsPage() {
           >
             <Upload className="size-4" />
             Import
+          </GatedButton>
+          <GatedButton
+            variant="outline"
+            canAct={canEdit}
+            gateReason="add or import contacts"
+            onClick={() => setWizardOpen(true)}
+            className="border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+          >
+            <Sparkles className="size-4" />
+            Smart Import
           </GatedButton>
           <GatedButton
             canAct={canEdit}
@@ -601,6 +613,13 @@ export default function ContactsPage() {
       <ImportModal
         open={importOpen}
         onOpenChange={setImportOpen}
+        onImported={fetchContacts}
+      />
+
+      {/* Smart Import Wizard */}
+      <ImportWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
         onImported={fetchContacts}
       />
 

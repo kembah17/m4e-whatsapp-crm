@@ -21,6 +21,7 @@ import { MetaCostPanel } from '@/components/settings/meta-cost-panel';
 import { SmsSenderIdGuide } from '@/components/settings/sms-sender-id';
 import { QuickRepliesPanel } from '@/components/settings/quick-replies-panel';
 import { SmsConfig } from '@/components/settings/sms-config';
+import { ChannelMatrix } from '@/components/settings/channel-matrix';
 import {
   resolveSection,
   type SettingsSection,
@@ -63,6 +64,7 @@ export default function SettingsPage() {
     whatsapp: <WhatsAppConfig />,
     costs: <MetaCostPanel />,
     sms: <div className="space-y-6"><SmsConfig /><SmsSenderIdGuide /></div>,
+    channels: <ChannelMatrix />,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
     deals: <DealsSettings />,
