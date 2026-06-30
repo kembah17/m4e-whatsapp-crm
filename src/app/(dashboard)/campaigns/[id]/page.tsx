@@ -52,6 +52,9 @@ import {
   GitBranch,
   FileText,
   Calendar,
+  Download,
+  Share2,
+  ChevronDown as ChevronDownIcon,
 } from "lucide-react"
 import type {
   Campaign,
@@ -60,6 +63,14 @@ import type {
   CampaignMessageTemplate,
   CampaignSequenceStep,
 } from "@/types/campaigns"
+import { CampaignMonitor } from "@/components/campaigns/campaign-monitor"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import type { CampaignReport } from "@/lib/campaigns/report-generator"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -327,6 +338,88 @@ export default function CampaignDetailPage() {
   )
 
   // -----------------------------------------------------------------------
+  // Report download & share handlers
+  // -----------------------------------------------------------------------
+
+  const [reportLoading, setReportLoading] = useState(false)
+
+  const handleDownloadCSV = useCallback(async () => {
+    try {
+      setReportLoading(true)
+      const res = await fetch(`/api/campaigns/${campaignId}/report/csv`)
+      if (!res.ok) throw new Error("Failed to generate CSV")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `campaign-report.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success("CSV report downloaded")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Download failed"
+      toast.error(message)
+    } finally {
+      setReportLoading(false)
+    }
+  }, [campaignId])
+
+  const handleDownloadMarkdown = useCallback(async () => {
+    try {
+      setReportLoading(true)
+      const res = await fetch(`/api/campaigns/${campaignId}/report/pdf`)
+      if (!res.ok) throw new Error("Failed to generate report")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `campaign-report.md`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success("Report downloaded")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Download failed"
+      toast.error(message)
+    } finally {
+      setReportLoading(false)
+    }
+  }, [campaignId])
+
+  const handleShareReport = useCallback(async () => {
+    try {
+      setReportLoading(true)
+      const res = await fetch(`/api/campaigns/${campaignId}/report`)
+      if (!res.ok) throw new Error("Failed to fetch report")
+      const data = await res.json()
+      const r = data.report as CampaignReport
+      const startDate = r.started_at ? new Date(r.started_at).toLocaleDateString() : "N/A"
+      const endDate = r.completed_at ? new Date(r.completed_at).toLocaleDateString() : "In Progress"
+      const dr = (r.delivery_rate * 100).toFixed(1)
+      const rr = (r.read_rate * 100).toFixed(1)
+      const rpr = (r.reply_rate * 100).toFixed(1)
+      const costStr = r.estimated_cost_ngn.toLocaleString("en-NG", { minimumFractionDigits: 2 })
+      const summary = [
+        `📊 Campaign Report: ${r.campaign_name}`,
+        `📅 ${startDate} → ${endDate}`,
+        `📨 Sent: ${r.sent} | ✅ Delivered: ${r.delivered} (${dr}%) | 👁 Read: ${r.read} (${rr}%) | 💬 Replied: ${r.replied} (${rpr}%)`,
+        `❌ Failed: ${r.failed}`,
+        `💰 Est. Cost: ₦${costStr}`,
+      ].join("\n")
+      await navigator.clipboard.writeText(summary)
+      toast.success("Report summary copied to clipboard")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to share report"
+      toast.error(message)
+    } finally {
+      setReportLoading(false)
+    }
+  }, [campaignId])
+
+  // -----------------------------------------------------------------------
   // Loading / Error states
   // -----------------------------------------------------------------------
 
@@ -518,6 +611,50 @@ export default function CampaignDetailPage() {
               Delete
             </Button>
           )}
+          {/* Download & Share - show for non-draft campaigns */}
+          {campaign.status !== "draft" && (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium",
+                    "border border-input bg-background px-3 h-8",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    "disabled:pointer-events-none disabled:opacity-50"
+                  )}
+                  disabled={reportLoading}
+                >
+                  {reportLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Report
+                  <ChevronDownIcon className="h-3 w-3 opacity-50" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleDownloadCSV}>
+                    <Download className="h-3.5 w-3.5 mr-2" />
+                    Download CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                    <FileText className="h-3.5 w-3.5 mr-2" />
+                    Download Report
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={reportLoading}
+                className="gap-1.5"
+                onClick={handleShareReport}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -679,6 +816,15 @@ export default function CampaignDetailPage() {
         </Card>
       )}
 
+
+      {/* Campaign Monitor - show for active/completed/paused campaigns */}
+      {campaign.status !== "draft" && campaign.status !== "scheduled" && campaign.status !== "cancelled" && (
+        <CampaignMonitor
+          campaignId={campaignId}
+          campaignStatus={campaign.status}
+          campaignName={campaign.name}
+        />
+      )}
       {/* Campaign details + Message sequence */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Info card */}
