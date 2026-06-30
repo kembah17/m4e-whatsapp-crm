@@ -6,6 +6,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { keywordBasedSentiment } from './sentiment-keywords'
+import { trackAIUsage } from './usage-tracker'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _adminClient: any = null
@@ -145,7 +146,7 @@ export async function triggerSentimentAnalysis(opts: {
     .eq('conversation_id', conversationId)
     .maybeSingle()
 
-  // Analyze
+  // Analyze (tracking happens inside analyzeSentiment, but we also track with account context)
   const result = await analyzeSentiment({ messageText, contactName })
 
   // Insert sentiment record

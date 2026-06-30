@@ -7,6 +7,8 @@
 // hand off to a human agent.
 // ============================================================
 
+import { trackAIUsage } from './usage-tracker'
+
 interface DetectionInput {
   messageText: string
   contactName: string

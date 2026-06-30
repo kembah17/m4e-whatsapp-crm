@@ -14,6 +14,7 @@ import {
 } from '@/lib/whatsapp/template-webhook'
 import { trackCTWALead } from '@/lib/ctwa/tracker'
 import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
+import { checkAndRecord as circuitBreakerCheck } from '@/lib/safety/circuit-breaker'
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -710,6 +711,17 @@ async function processMessage(
   const inboundText = contentText ?? message.text?.body ?? ''
 
   // ============================================================
+  // Circuit breaker check — prevent message loops.
+  // Check rate limits before any outbound message path.
+  // ============================================================
+  const cbResult = circuitBreakerCheck(accountId, contactRecord.id)
+  if (!cbResult.allowed) {
+    console.warn(
+      `[circuit-breaker] Outbound blocked for contact ${contactRecord.id}: ${cbResult.blockedBy}`
+    )
+  }
+
+  // ============================================================
   // AI Chatbot dispatch.
   //
   // If the flow didn't consume the message and it's a text message,
@@ -718,7 +730,7 @@ async function processMessage(
   // Wrapped in try/catch so AI errors never break the webhook.
   // ============================================================
   let aiHandled = false
-  if (!flowConsumed && inboundText) {
+  if (!flowConsumed && inboundText && cbResult.allowed) {
     try {
       const aiResult = await tryAIChatbotResponse({
         accountId,
@@ -764,16 +776,21 @@ async function processMessage(
   // listens to only one trigger runs only when that trigger matches.
   if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
   if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
-  for (const triggerType of automationTriggers) {
-    runAutomationsForTrigger({
-      accountId,
-      triggerType,
-      contactId: contactRecord.id,
-      context: {
-        message_text: inboundText,
-        conversation_id: conversation.id,
-      },
-    }).catch((err) => console.error('[automations] dispatch failed:', err))
+  // Only dispatch automations if circuit breaker allows outbound
+  if (cbResult.allowed) {
+    for (const triggerType of automationTriggers) {
+      runAutomationsForTrigger({
+        accountId,
+        triggerType,
+        contactId: contactRecord.id,
+        context: {
+          message_text: inboundText,
+          conversation_id: conversation.id,
+        },
+      }).catch((err) => console.error('[automations] dispatch failed:', err))
+    }
+  } else {
+    console.warn('[circuit-breaker] Automations suppressed due to rate limit')
   }
 }
 

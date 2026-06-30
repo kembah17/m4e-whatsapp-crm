@@ -18,6 +18,7 @@ import { isWithinBusinessHours } from './business-hours'
 import { engineSendText } from '@/lib/automations/meta-send'
 import type { AIChatbotConfig, AIChatbotResult } from '@/types/ai'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { trackAIUsage } from './usage-tracker'
 
 interface ChatbotInput {
   accountId: string
