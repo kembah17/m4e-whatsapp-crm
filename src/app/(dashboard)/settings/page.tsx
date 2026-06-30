@@ -21,7 +21,9 @@ import { MetaCostPanel } from '@/components/settings/meta-cost-panel';
 import { SmsSenderIdGuide } from '@/components/settings/sms-sender-id';
 import { QuickRepliesPanel } from '@/components/settings/quick-replies-panel';
 import { SmsConfig } from '@/components/settings/sms-config';
+import { SmsTestPanel } from '@/components/settings/sms-test-panel';
 import { ChannelMatrix } from '@/components/settings/channel-matrix';
+import { WebsiteSyncSettings } from '@/components/settings/website-sync';
 import {
   resolveSection,
   type SettingsSection,
@@ -63,7 +65,7 @@ export default function SettingsPage() {
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppConfig />,
     costs: <MetaCostPanel />,
-    sms: <div className="space-y-6"><SmsConfig /><SmsSenderIdGuide /></div>,
+    sms: <div className="space-y-6"><SmsConfig /><SmsTestPanel /><SmsSenderIdGuide /></div>,
     channels: <ChannelMatrix />,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
@@ -72,6 +74,7 @@ export default function SettingsPage() {
     branches: <BranchesPanel />,
     'quick-replies': <QuickRepliesPanel />,
     members: <MembersTab />,
+    'website-sync': <WebsiteSyncSettings />,
   };
 
   return (

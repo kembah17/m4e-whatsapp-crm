@@ -14,6 +14,7 @@ import {
   Timer,
   Zap,
   Globe,
+  RefreshCw,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -41,6 +42,7 @@ export const SETTINGS_SECTIONS = [
   'branches',
   'quick-replies',
   'members',
+  'website-sync',
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -71,6 +73,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   branches: { id: 'branches', label: 'Branches', icon: GitBranch, group: 'workspace' },
   'quick-replies': { id: 'quick-replies', label: 'Quick replies', icon: Zap, group: 'workspace' },
   members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
+  'website-sync': { id: 'website-sync', label: 'Website sync', icon: RefreshCw, group: 'workspace' },
 };
 
 export const RAIL_GROUPS: { label: string | null; group: SectionMeta['group'] }[] = [

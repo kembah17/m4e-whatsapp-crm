@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/layout/mode-toggle";
+import { BranchSwitcher } from "@/components/layout/branch-switcher";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -67,6 +68,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
           {title}
         </h1>
+        <BranchSwitcher />
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

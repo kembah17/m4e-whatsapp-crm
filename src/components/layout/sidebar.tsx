@@ -31,6 +31,7 @@ import {
   FileInput,
   Megaphone,
   Brain,
+  Target,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -111,6 +112,7 @@ const navItems: NavItem[] = [
     { href: "/whatsapp-flows", label: "WA Flows", icon: FileInput, beta: true },
     { href: "/ad-leads", label: "Ad Leads", icon: Megaphone, beta: true },
     { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
+    { href: "/segments", label: "Segments", icon: Target, beta: true },
 ];
 
 const bottomNavItems: NavItem[] = [
