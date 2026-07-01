@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { completeEmbeddedSignup } from '@/lib/whatsapp/embedded-signup'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 async function resolveAccountId(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -39,6 +40,10 @@ function supabaseAdmin() {
  */
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`auth:${clientIp}`, RATE_LIMITS.auth);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient()
     const {
       data: { user },

@@ -27,7 +27,11 @@ const DEFAULT_SCHEDULE: BusinessHoursConfig['schedule'] = {
   sunday: null,
 }
 
-export function AISettingsForm() {
+interface AISettingsFormProps {
+  readOnly?: boolean;
+}
+
+export function AISettingsForm({ readOnly = false }: AISettingsFormProps) {
   const [config, setConfig] = useState<AIChatbotConfig | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -163,7 +167,7 @@ export function AISettingsForm() {
       {/* Model Selection */}
       <div className="bg-white rounded-lg border p-6 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">AI Model</h3>
-        <select
+        <select disabled={readOnly}
           value={config.model}
           onChange={(e) => updateConfig({ model: e.target.value })}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
@@ -187,7 +191,7 @@ export function AISettingsForm() {
             {config.confidence_threshold.toFixed(2)}
           </span>
         </div>
-        <input
+        <input readOnly={readOnly}
           type="range"
           min="0"
           max="1"
@@ -208,7 +212,7 @@ export function AISettingsForm() {
       {/* Max Auto-Replies */}
       <div className="bg-white rounded-lg border p-6 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Max Auto-Replies (per contact, 24h)</h3>
-        <input
+        <input readOnly={readOnly}
           type="number"
           min={1}
           max={50}
@@ -227,7 +231,7 @@ export function AISettingsForm() {
           <h3 className="text-lg font-semibold text-gray-900">System Prompt</h3>
           <span className="text-xs text-gray-400">{config.system_prompt.length} chars</span>
         </div>
-        <textarea
+        <textarea readOnly={readOnly}
           value={config.system_prompt}
           onChange={(e) => updateConfig({ system_prompt: e.target.value })}
           rows={6}
@@ -246,7 +250,7 @@ export function AISettingsForm() {
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Greeting Message</label>
-            <input
+            <input readOnly={readOnly}
               type="text"
               value={config.greeting_message}
               onChange={(e) => updateConfig({ greeting_message: e.target.value })}
@@ -256,7 +260,7 @@ export function AISettingsForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fallback Message</label>
-            <input
+            <input readOnly={readOnly}
               type="text"
               value={config.fallback_message}
               onChange={(e) => updateConfig({ fallback_message: e.target.value })}
@@ -267,7 +271,7 @@ export function AISettingsForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Handoff Message</label>
-            <input
+            <input readOnly={readOnly}
               type="text"
               value={config.handoff_message}
               onChange={(e) => updateConfig({ handoff_message: e.target.value })}
@@ -320,14 +324,14 @@ export function AISettingsForm() {
                     </button>
                     {isActive && schedule ? (
                       <>
-                        <input
+                        <input readOnly={readOnly}
                           type="time"
                           value={schedule.start}
                           onChange={(e) => updateDaySchedule(day, { ...schedule, start: e.target.value })}
                           className="border border-gray-300 rounded px-2 py-1 text-sm"
                         />
                         <span className="text-gray-400">to</span>
-                        <input
+                        <input readOnly={readOnly}
                           type="time"
                           value={schedule.end}
                           onChange={(e) => updateDaySchedule(day, { ...schedule, end: e.target.value })}
@@ -363,7 +367,7 @@ export function AISettingsForm() {
                 <label className="text-sm font-medium text-gray-700">Temperature</label>
                 <span className="text-sm font-mono text-gray-500">{config.temperature}</span>
               </div>
-              <input
+              <input readOnly={readOnly}
                 type="range"
                 min="0"
                 max="2"
@@ -381,7 +385,7 @@ export function AISettingsForm() {
             {/* Max Tokens */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
-              <input
+              <input readOnly={readOnly}
                 type="number"
                 min={100}
                 max={4000}
@@ -397,7 +401,7 @@ export function AISettingsForm() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Excluded Labels (comma-separated)
               </label>
-              <input
+              <input readOnly={readOnly}
                 type="text"
                 value={config.excluded_labels.join(', ')}
                 onChange={(e) =>
@@ -423,7 +427,7 @@ export function AISettingsForm() {
       <div className="flex items-center gap-4">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || readOnly}
           className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 disabled:opacity-50 transition-colors"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

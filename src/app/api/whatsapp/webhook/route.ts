@@ -15,6 +15,7 @@ import {
 import { trackCTWALead } from '@/lib/ctwa/tracker'
 import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
 import { checkAndRecord as circuitBreakerCheck } from '@/lib/safety/circuit-breaker'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +98,10 @@ interface WhatsAppWebhookEntry {
 // GET - Webhook verification
 export async function GET(request: Request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`webhook:${clientIp}`, RATE_LIMITS.webhook);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { searchParams } = new URL(request.url)
     const mode = searchParams.get('hub.mode')
     const challenge = searchParams.get('hub.challenge')

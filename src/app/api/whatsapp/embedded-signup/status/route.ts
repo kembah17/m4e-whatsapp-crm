@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 async function resolveAccountId(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -20,8 +21,12 @@ async function resolveAccountId(
  * Returns the most recent embedded signup session for the current
  * account. Used by the frontend to poll/check completion status.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`auth:${clientIp}`, RATE_LIMITS.auth);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient()
     const {
       data: { user },

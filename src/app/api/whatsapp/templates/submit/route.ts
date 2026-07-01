@@ -11,6 +11,7 @@ import { buildMetaTemplatePayload } from '@/lib/whatsapp/template-components'
 import { validateTemplate } from '@/lib/whatsapp/template-validator'
 import { ensureImageHeaderHandle } from '@/lib/whatsapp/template-header-handle'
 import { normalizeStatus } from '@/lib/whatsapp/template-status-normalize'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * Shared upsert payload builder — both the Meta-failure path and the
@@ -89,6 +90,10 @@ async function upsertTemplateRow(
  */
 export async function POST(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`templateOps:${rlIp}`, RATE_LIMITS.templateOps);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient()
     const {
       data: { user },

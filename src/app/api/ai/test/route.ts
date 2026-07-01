@@ -3,6 +3,7 @@ import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
 import { detectIntentAndRespond } from '@/lib/ai/intent-detector'
 import { searchKnowledgeBase } from '@/lib/ai/knowledge-base'
 import { supabaseAdmin } from '@/lib/ai/admin-client'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * POST /api/ai/test
@@ -13,6 +14,10 @@ import { supabaseAdmin } from '@/lib/ai/admin-client'
  */
 export async function POST(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const body = await request.json()
 

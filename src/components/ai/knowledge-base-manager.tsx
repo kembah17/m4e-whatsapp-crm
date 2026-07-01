@@ -35,7 +35,11 @@ const EMPTY_FORM: EntryForm = {
   priority: 0,
 }
 
-export function KnowledgeBaseManager() {
+interface KnowledgeBaseManagerProps {
+  readOnly?: boolean;
+}
+
+export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerProps) {
   const [entries, setEntries] = useState<AIKnowledgeEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<KnowledgeCategory | 'all'>('all')
@@ -206,13 +210,15 @@ export function KnowledgeBaseManager() {
           </div>
           <button
             onClick={() => setShowBulkImport(true)}
-            className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+            disabled={readOnly}
+            className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="h-4 w-4" /> Import
           </button>
           <button
             onClick={() => { setShowForm(true); setEditingId(null); setForm(EMPTY_FORM) }}
-            className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            disabled={readOnly}
+            className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" /> Add Entry
           </button>
@@ -310,7 +316,7 @@ export function KnowledgeBaseManager() {
             </button>
             <button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || readOnly}
               className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
@@ -348,7 +354,7 @@ export function KnowledgeBaseManager() {
             </button>
             <button
               onClick={handleBulkImport}
-              disabled={bulkImporting || !bulkJson.trim()}
+              disabled={readOnly || bulkImporting || !bulkJson.trim()}
               className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
               {bulkImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -432,7 +438,8 @@ export function KnowledgeBaseManager() {
                         </button>
                         <button
                           onClick={() => handleDelete(entry.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+                          disabled={readOnly}
+                          className="p-1.5 text-gray-400 hover:text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

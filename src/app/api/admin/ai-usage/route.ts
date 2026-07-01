@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 function supabaseAdmin() {
   return createClient(
@@ -10,6 +11,10 @@ function supabaseAdmin() {
 
 export async function GET(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get('account_id')
     const days = parseInt(searchParams.get('days') || '30', 10)

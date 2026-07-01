@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
 import type { KnowledgeCategory } from '@/types/ai'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 const VALID_CATEGORIES: KnowledgeCategory[] = [
   'faq', 'product', 'policy', 'shipping', 'returns', 'pricing', 'general',
@@ -16,6 +17,10 @@ interface RouteContext {
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const { id } = await context.params
     const body = await request.json()
@@ -55,8 +60,12 @@ export async function PUT(request: Request, context: RouteContext) {
  * DELETE /api/ai/knowledge/:id
  * Delete a knowledge base entry.
  */
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const { id } = await context.params
 

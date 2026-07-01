@@ -160,7 +160,7 @@ export function Step2Template({
 
   const formatRate = (rate: number | null) => {
     if (rate === null) return "—";
-    return `${Math.round(rate * 100)}%`;
+    return `${rate.toFixed(1)}%`;
   };
 
   const toggleExpand = (templateId: string, e: React.MouseEvent) => {

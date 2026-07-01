@@ -13,22 +13,31 @@ import { listFlowTemplates } from '@/lib/flows/templates'
  * Available to any signed-in user. Flows is in soft-GA.
  */
 export async function GET() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    // Shallow shape so the client gallery doesn't have to know about
+    // the full node tree.
+    const templates = listFlowTemplates().map((t) => ({
+      slug: t.slug,
+      name: t.name,
+      description: t.description,
+      icon: t.icon,
+      trigger_type: t.trigger_type,
+      node_count: t.nodes.length,
+    }))
+    return NextResponse.json({ templates })
+
+  } catch (error) {
+    console.error('[FLOWS_TEMPLATES_GET] Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-  // Shallow shape so the client gallery doesn't have to know about
-  // the full node tree.
-  const templates = listFlowTemplates().map((t) => ({
-    slug: t.slug,
-    name: t.name,
-    description: t.description,
-    icon: t.icon,
-    trigger_type: t.trigger_type,
-    node_count: t.nodes.length,
-  }))
-  return NextResponse.json({ templates })
 }

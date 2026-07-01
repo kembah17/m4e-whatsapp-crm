@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * GET /api/ai/config
  * Get AI chatbot config for current account. Creates default if not exists.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
 
     // Try to get existing config
@@ -42,6 +47,10 @@ export async function GET() {
  */
 export async function PUT(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const body = await request.json()
 

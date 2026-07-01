@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/ecommerce/admin-client'
 import { PaystackAdapter } from '@/lib/payments/paystack'
 import { fireTrigger } from '@/lib/campaigns/trigger-engine'
 import { matchContactByPhoneOrEmail } from '@/lib/ecommerce/sync'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * POST /api/webhooks/paystack
@@ -15,6 +16,10 @@ import { matchContactByPhoneOrEmail } from '@/lib/ecommerce/sync'
  * are not yet implemented. Webhook reception and trigger firing work.
  */
 export async function POST(request: Request): Promise<Response> {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`webhook:${clientIp}`, RATE_LIMITS.webhook);
+    if (!rl.success) return rateLimitResponse(rl);
+
   const body = await request.text()
   const signature = request.headers.get('x-paystack-signature') ?? ''
 

@@ -141,6 +141,26 @@ export const RATE_LIMITS = {
    *  while still bounding accidental abuse from a script run in a
    *  loop or a compromised admin session spamming role flips. */
   adminAction: { limit: 30, windowMs: 60_000 },
+  /** Campaign launch — expensive operation, 3/min per user. */
+  campaignLaunch: { limit: 3, windowMs: 60_000 },
+  /** Campaign analysis — AI-powered, 3/min per user. */
+  campaignAnalyze: { limit: 3, windowMs: 60_000 },
+  /** AI endpoints — model calls, 10/min per user. */
+  ai: { limit: 10, windowMs: 60_000 },
+  /** Webhook receivers — external services, 100/min per IP. */
+  webhook: { limit: 100, windowMs: 60_000 },
+  /** Auth-related endpoints — 5/min per IP to prevent brute force. */
+  auth: { limit: 5, windowMs: 60_000 },
+  /** SMS sending — external API calls, 10/min per user. */
+  smsSend: { limit: 10, windowMs: 60_000 },
+  /** WhatsApp template operations — Meta API calls, 10/min per user. */
+  templateOps: { limit: 10, windowMs: 60_000 },
+  /** General API — standard CRUD, 30/min per user. */
+  general: { limit: 30, windowMs: 60_000 },
+  /** Contact import — bulk operations, 5/min per user. */
+  contactImport: { limit: 5, windowMs: 60_000 },
+  /** Sentiment analysis — AI-powered, 10/min per user. */
+  sentimentAnalyze: { limit: 10, windowMs: 60_000 },
 } as const;
 
 /** Test-only helper. Clears the in-memory state so unit tests don't

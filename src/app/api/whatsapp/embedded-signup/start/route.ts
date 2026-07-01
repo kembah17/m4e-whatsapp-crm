@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 async function resolveAccountId(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -21,8 +22,12 @@ async function resolveAccountId(
  * Returns the state_token, app_id, and config_id needed by the
  * frontend to launch the Facebook SDK popup.
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`auth:${clientIp}`, RATE_LIMITS.auth);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient()
     const {
       data: { user },

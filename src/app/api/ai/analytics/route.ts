@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * GET /api/ai/analytics
@@ -10,6 +11,10 @@ import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
  */
 export async function GET(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const { searchParams } = new URL(request.url)
     const days = Math.min(parseInt(searchParams.get('days') || '30', 10), 90)

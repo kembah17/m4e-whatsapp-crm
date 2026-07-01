@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { processImageForContacts } from '@/lib/import/ocr-processor';
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rlIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`contactImport:${rlIp}`, RATE_LIMITS.contactImport);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient();
     const {
       data: { user },

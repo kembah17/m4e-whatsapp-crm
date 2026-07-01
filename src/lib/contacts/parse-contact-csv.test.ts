@@ -33,6 +33,8 @@ describe('parseContactCsv', () => {
     expect(parseContactCsv(csv)).toEqual({
       hasTagsColumn: true,
       hasCompanyColumn: false,
+      hasBranchColumn: false,
+      channelBreakdown: { whatsapp: 2, email: 0, skipped: 0 },
       rows: [
         {
           phone: '+15551234567',
@@ -40,6 +42,8 @@ describe('parseContactCsv', () => {
           email: undefined,
           company: undefined,
           tagNames: ['VIP', 'Lead'],
+          branchName: undefined,
+          primaryChannel: 'whatsapp',
         },
         {
           phone: '+15559876543',
@@ -47,6 +51,8 @@ describe('parseContactCsv', () => {
           email: undefined,
           company: undefined,
           tagNames: ['Customer'],
+          branchName: undefined,
+          primaryChannel: 'whatsapp',
         },
       ],
     });
@@ -59,6 +65,8 @@ describe('parseContactCsv', () => {
     expect(parseContactCsv(csv)).toEqual({
       hasTagsColumn: false,
       hasCompanyColumn: false,
+      hasBranchColumn: false,
+      channelBreakdown: { whatsapp: 1, email: 0, skipped: 0 },
       rows: [
         {
           phone: '+15551234567',
@@ -66,8 +74,41 @@ describe('parseContactCsv', () => {
           email: undefined,
           company: undefined,
           tagNames: [],
+          branchName: undefined,
+          primaryChannel: 'whatsapp',
         },
       ],
+    });
+  });
+
+  it('classifies email-only rows correctly', () => {
+    const csv = `email,name
+alice@example.com,Alice`;
+
+    const result = parseContactCsv(csv);
+    expect(result.channelBreakdown).toEqual({ whatsapp: 0, email: 1, skipped: 0 });
+    expect(result.rows[0].primaryChannel).toBe('email');
+    expect(result.rows[0].phone).toBe('');
+  });
+
+  it('parses branch column when present', () => {
+    const csv = `phone,name,branch
++15551234567,Alice,Lagos`;
+
+    const result = parseContactCsv(csv);
+    expect(result.hasBranchColumn).toBe(true);
+    expect(result.rows[0].branchName).toBe('Lagos');
+  });
+
+  it('returns empty result for header-only CSV', () => {
+    const csv = `phone,name`;
+
+    expect(parseContactCsv(csv)).toEqual({
+      rows: [],
+      hasTagsColumn: false,
+      hasCompanyColumn: false,
+      hasBranchColumn: false,
+      channelBreakdown: { whatsapp: 0, email: 0, skipped: 0 },
     });
   });
 });

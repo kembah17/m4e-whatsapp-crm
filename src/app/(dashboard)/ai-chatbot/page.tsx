@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from 'react'
-import { Bot, BookOpen, FlaskConical, ScrollText, BarChart3 } from 'lucide-react'
+import { Bot, BookOpen, FlaskConical, ScrollText, BarChart3, ShieldAlert } from 'lucide-react'
 import { AISettingsForm } from '@/components/ai/ai-settings-form'
 import { KnowledgeBaseManager } from '@/components/ai/knowledge-base-manager'
 import { AITestChat } from '@/components/ai/ai-test-chat'
 import { AILogsViewer } from '@/components/ai/ai-logs-viewer'
 import { AIAnalyticsDashboard } from '@/components/ai/ai-analytics-dashboard'
+import { useCan } from '@/hooks/use-can'
 import { cn } from '@/lib/utils'
 
 const TABS = [
@@ -21,6 +22,7 @@ type TabId = (typeof TABS)[number]['id']
 
 export default function AIChatbotPage() {
   const [activeTab, setActiveTab] = useState<TabId>('settings')
+  const canEdit = useCan('edit-settings')
 
   return (
     <div className="space-y-6">
@@ -34,6 +36,17 @@ export default function AIChatbotPage() {
           Configure your AI-powered customer service assistant for WhatsApp
         </p>
       </div>
+
+      {/* Read-only banner for non-admin users */}
+      {!canEdit && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600" />
+          <p>
+            <span className="font-medium">Read-only access.</span>{' '}
+            Contact your administrator to change AI settings, model configuration, or system prompts.
+          </p>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
@@ -61,8 +74,8 @@ export default function AIChatbotPage() {
 
       {/* Tab Content */}
       <div>
-        {activeTab === 'settings' && <AISettingsForm />}
-        {activeTab === 'knowledge' && <KnowledgeBaseManager />}
+        {activeTab === 'settings' && <AISettingsForm readOnly={!canEdit} />}
+        {activeTab === 'knowledge' && <KnowledgeBaseManager readOnly={!canEdit} />}
         {activeTab === 'test' && <AITestChat />}
         {activeTab === 'logs' && <AILogsViewer />}
         {activeTab === 'analytics' && <AIAnalyticsDashboard />}

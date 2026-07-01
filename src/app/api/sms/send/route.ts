@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendTransactionalSms, formatNigerianPhone, sendTestSms } from '@/lib/sms/brevo-sms'
 import { decrypt } from '@/lib/whatsapp/encryption'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * Resolve the caller's account_id from their profile.
@@ -32,6 +33,10 @@ async function resolveAccountId(
  */
 export async function POST(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`smsSend:${rlIp}`, RATE_LIMITS.smsSend);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

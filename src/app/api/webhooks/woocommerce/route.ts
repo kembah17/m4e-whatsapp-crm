@@ -9,6 +9,7 @@ import {
 import { syncProduct, syncOrder, syncCart, deleteProduct } from '@/lib/ecommerce/sync'
 import { fireTrigger } from '@/lib/campaigns/trigger-engine'
 import type { TriggerEvent, TriggerContext } from '@/types/campaigns'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * POST /api/webhooks/woocommerce
@@ -17,6 +18,10 @@ import type { TriggerEvent, TriggerContext } from '@/types/campaigns'
  * The integration is identified by the X-WC-Webhook-Source header (store URL).
  */
 export async function POST(request: Request): Promise<Response> {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`webhook:${clientIp}`, RATE_LIMITS.webhook);
+    if (!rl.success) return rateLimitResponse(rl);
+
   const body = await request.text()
   const signature = request.headers.get('x-wc-webhook-signature') ?? ''
   const topic = request.headers.get('x-wc-webhook-topic') ?? ''

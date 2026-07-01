@@ -54,34 +54,43 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ token: string }> },
 ) {
-  // Rate-limit by IP first. Returns 429 to a serial bruteforcer
-  // before we ever touch the DB.
-  const ip = getClientIp(request);
-  const limit = checkRateLimit(`peek:${ip}`, RATE_LIMITS.invitationPeek);
-  if (!limit.success) return rateLimitResponse(limit);
+  try {
+    // Rate-limit by IP first. Returns 429 to a serial bruteforcer
+    // before we ever touch the DB.
+    const ip = getClientIp(request);
+    const limit = checkRateLimit(`peek:${ip}`, RATE_LIMITS.invitationPeek);
+    if (!limit.success) return rateLimitResponse(limit);
 
-  const { token } = await params;
-  if (!token || typeof token !== "string") {
+    const { token } = await params;
+    if (!token || typeof token !== "string") {
+      return NextResponse.json(
+        { ok: false, reason: "not_found" },
+        { status: 404 },
+      );
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("peek_invitation", {
+      p_token_hash: hashInviteToken(token),
+    });
+
+    if (error) {
+      console.error("[peek] rpc error:", error);
+      return NextResponse.json(
+        { ok: false, reason: "server_error" },
+        { status: 500 },
+      );
+    }
+
+    // The RPC always returns a json object — either ok:true with
+    // metadata or ok:false with a reason. Forward verbatim.
+    return NextResponse.json(data);
+
+  } catch (error) {
+    console.error('[INVITATIONS_TOKEN_PEEK_GET] Error:', error);
     return NextResponse.json(
-      { ok: false, reason: "not_found" },
-      { status: 404 },
+      { error: 'Internal server error' },
+      { status: 500 }
     );
   }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("peek_invitation", {
-    p_token_hash: hashInviteToken(token),
-  });
-
-  if (error) {
-    console.error("[peek] rpc error:", error);
-    return NextResponse.json(
-      { ok: false, reason: "server_error" },
-      { status: 500 },
-    );
-  }
-
-  // The RPC always returns a json object — either ok:true with
-  // metadata or ok:false with a reason. Forward verbatim.
-  return NextResponse.json(data);
 }

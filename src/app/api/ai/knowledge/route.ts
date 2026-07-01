@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
 import type { KnowledgeCategory } from '@/types/ai'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 const VALID_CATEGORIES: KnowledgeCategory[] = [
   'faq', 'product', 'policy', 'shipping', 'returns', 'pricing', 'general',
@@ -12,6 +13,10 @@ const VALID_CATEGORIES: KnowledgeCategory[] = [
  */
 export async function GET(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
@@ -51,6 +56,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
+    const rlIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`ai:${rlIp}`, RATE_LIMITS.ai);
+    if (!rl.success) return rateLimitResponse(rl);
+
     const { accountId, supabase } = await getCurrentAccount()
     const body = await request.json()
 

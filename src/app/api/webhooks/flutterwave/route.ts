@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/ecommerce/admin-client'
 import { FlutterwaveAdapter } from '@/lib/payments/flutterwave'
 import { fireTrigger } from '@/lib/campaigns/trigger-engine'
 import { matchContactByPhoneOrEmail } from '@/lib/ecommerce/sync'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * POST /api/webhooks/flutterwave
@@ -14,6 +15,10 @@ import { matchContactByPhoneOrEmail } from '@/lib/ecommerce/sync'
  * but the FlutterwaveAdapter payment methods are not yet implemented.
  */
 export async function POST(request: Request): Promise<Response> {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`webhook:${clientIp}`, RATE_LIMITS.webhook);
+    if (!rl.success) return rateLimitResponse(rl);
+
   const body = await request.text()
   const verifHash = request.headers.get('verif-hash') ?? ''
 
