@@ -8,6 +8,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { ExtractedContact } from '@/lib/import/ocr-processor';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 // ── Admin Client (singleton, same pattern as webhook) ───────
 
@@ -139,7 +140,32 @@ export async function addContacts(
   }
 
   const existing: ExtractedContact[] = session.collected_contacts || [];
-  const merged = [...existing, ...contacts];
+  const maxPerSession = IMPORT_LIMITS.session.maxContactsPerSession;
+  const currentCount = existing.length;
+  let warning: string | undefined;
+  let truncated = false;
+
+  // Enforce session limit
+  let contactsToAdd = contacts;
+  if (currentCount >= maxPerSession) {
+    return {
+      total: currentCount,
+      warning: `Session limit reached (${maxPerSession.toLocaleString()} contacts). ` +
+        `Confirm the current batch, then start a new import session for more.`,
+      truncated: true,
+    };
+  }
+
+  const remaining = maxPerSession - currentCount;
+  if (contacts.length > remaining) {
+    contactsToAdd = contacts.slice(0, remaining);
+    warning = `Session limit: only ${remaining.toLocaleString()} of ${contacts.length.toLocaleString()} contacts were added. ` +
+      `Session now has ${maxPerSession.toLocaleString()} contacts (maximum). ` +
+      `Confirm this batch, then start a new session for the rest.`;
+    truncated = true;
+  }
+
+  const merged = [...existing, ...contactsToAdd];
   const sources: string[] = session.source_types || [];
   if (!sources.includes(sourceType)) {
     sources.push(sourceType);
@@ -159,7 +185,7 @@ export async function addContacts(
     return null;
   }
 
-  return { total: merged.length };
+  return { total: merged.length, warning, truncated };
 }
 
 /**

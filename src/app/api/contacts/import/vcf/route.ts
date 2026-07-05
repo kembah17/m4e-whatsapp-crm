@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { parseVCard } from '@/lib/import/vcard-parser';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -49,11 +50,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contacts = parseVCard(text);
+    let contacts = parseVCard(text);
+    const originalCount = contacts.length;
+    const limit = IMPORT_LIMITS.web.vcf.perFile;
+    let truncated = false;
+    let warning: string | undefined;
+
+    if (contacts.length > limit) {
+      warning = `File contained ${originalCount.toLocaleString()} contacts. Only the first ${limit.toLocaleString()} were imported. Please upload the remaining contacts in a separate file.`;
+      contacts = contacts.slice(0, limit);
+      truncated = true;
+    }
 
     return NextResponse.json({
       contacts,
       total: contacts.length,
+      originalCount,
+      truncated,
+      ...(warning && { warning }),
       source: 'vcf',
     });
   } catch (err) {

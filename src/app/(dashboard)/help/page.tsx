@@ -135,6 +135,16 @@ const HELP_SECTIONS: HelpSection[] = [
           "The recency score measures how recently a customer interacted with your business. It\u2019s calculated automatically based on their last purchase date, last message, and last visit. Higher scores mean more recent activity. This helps you identify dormant customers who need reactivation.",
       },
       {
+        question: "What are the import limits for each method?",
+        answer:
+          "Each import method has its own limit: CSV/Excel files support up to 10,000 contacts per file, vCard (.vcf) files up to 5,000, Google Sheets up to 10,000 rows, photo/OCR up to 50 contacts per image, and text paste up to 200 contacts. Via WhatsApp: contact cards support 20 per message, VCF files up to 5,000, Excel/CSV files up to 10,000, photos up to 50, and typed lists up to 100 per message. Each import session supports up to 10,000 contacts total.",
+      },
+      {
+        question: "Can I import more than 10,000 contacts?",
+        answer:
+          "Yes! Each import session supports up to 10,000 contacts. Simply start a new session for additional contacts. You can run up to 10 import sessions per day, allowing up to 100,000 contacts daily. For very large databases, we recommend splitting your file into chunks of 10,000 and importing them one at a time.",
+      },
+      {
         question: "Can I segment contacts for targeted campaigns?",
         answer:
           "Yes! You can create segments based on tags, recency scores, purchase history, location, and custom fields. When creating a campaign, you\u2019ll choose which segment to target. Smart segments update automatically as contact data changes.",

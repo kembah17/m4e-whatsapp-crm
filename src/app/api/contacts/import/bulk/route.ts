@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 interface BulkContact {
   name: string;
@@ -40,16 +41,29 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { contacts, tagName } = body as {
+    const { contacts: rawContacts, tagName } = body as {
       contacts: BulkContact[];
       tagName?: string;
     };
 
-    if (!Array.isArray(contacts) || contacts.length === 0) {
+    if (!Array.isArray(rawContacts) || rawContacts.length === 0) {
       return NextResponse.json(
         { error: 'contacts array is required and must not be empty' },
         { status: 400 },
       );
+    }
+
+    // Enforce bulk import limit
+    const limit = IMPORT_LIMITS.session.maxContactsPerSession;
+    const originalCount = rawContacts.length;
+    let truncated = false;
+    let warning: string | undefined;
+    let contacts = rawContacts;
+
+    if (contacts.length > limit) {
+      warning = `Request contained ${originalCount.toLocaleString()} contacts. Only the first ${limit.toLocaleString()} were processed. Please submit the remaining contacts in a separate request.`;
+      contacts = contacts.slice(0, limit);
+      truncated = true;
     }
 
     const accountId = profile.account_id;
@@ -182,7 +196,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ imported, duplicates, failed });
+    return NextResponse.json({ imported, duplicates, failed, originalCount, truncated, ...(warning && { warning }) });
   } catch (err) {
     console.error('[bulk-import] error:', err);
     return NextResponse.json(

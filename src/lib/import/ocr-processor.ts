@@ -6,6 +6,7 @@
 // ============================================================
 
 import { trackAIUsage, extractTokensFromResponse } from '@/lib/ai/usage-tracker';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 // ── Interfaces ──────────────────────────────────────────────
 
@@ -231,6 +232,16 @@ Rules:
       ? contacts.reduce((s, c) => s + c.confidence, 0) / contacts.length
       : 0;
 
+  // Enforce OCR import limit
+  const ocrLimit = IMPORT_LIMITS.web.photoOcr.perImage;
+  if (contacts.length > ocrLimit) {
+    warnings.push(
+      `Limit reached: only the first ${ocrLimit} contacts were imported from this image. ` +
+      `The image contained ${contacts.length} contacts.`
+    );
+    contacts.splice(ocrLimit);
+  }
+
   return {
     contacts,
     rawText: parsed.rawText || content,
@@ -399,6 +410,16 @@ export function processSpreadsheetText(input: ProcessTextInput): OCRResult {
     if (contacts.length === 0) {
       warnings.push('No phone numbers or emails found in the text');
     }
+  }
+
+  // Enforce text paste import limit
+  const textLimit = IMPORT_LIMITS.web.textPaste.perPaste;
+  if (contacts.length > textLimit) {
+    warnings.push(
+      `Limit reached: only the first ${textLimit} contacts were imported. ` +
+      `Your text contained ${contacts.length} contacts. Paste the rest separately.`
+    );
+    contacts.splice(textLimit);
   }
 
   const avgConfidence =

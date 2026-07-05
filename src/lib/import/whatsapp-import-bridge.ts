@@ -24,6 +24,7 @@ import {
 } from '@/lib/import/import-session';
 import { createClient } from '@supabase/supabase-js';
 import { normalizeNigerianPhone } from '@/lib/import/ocr-processor';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 // ── Admin Client (singleton) ────────────────────────────────
 
@@ -303,14 +304,16 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
           return;
         }
         await send(
-          `\u{1F4E5} *Import Mode Active*\n\n` +
-          `Send me contacts in any format:\n` +
-          `\u{1F4F7} Photos of contact lists or business cards\n` +
-          `\u{1F4CE} Excel, CSV, or vCard files\n` +
-          `\u{1F464} WhatsApp contact cards\n` +
-          `\u{1F4DD} Typed or pasted text\n\n` +
-          `Type *DONE* when finished, or *CANCEL* to abort.\n` +
-          `Session expires in 30 minutes.`
+          `\u{1F4E5} *Import Mode Active!*\n\n` +
+          `Send me your contacts in any format:\n` +
+          `\u{1F464} Contact cards (up to 20 per message)\n` +
+          `\u{1F4CE} VCF file (up to 5,000 contacts)\n` +
+          `\u{1F4CA} Excel/CSV file (up to 10,000 contacts)\n` +
+          `\u{1F4F8} Photo of a list (up to 50 contacts)\n` +
+          `\u{270D} Type names & numbers (up to 100 per message)\n\n` +
+          `You can send multiple messages. I\u2019ll collect them all.\n` +
+          `When done, I\u2019ll show a preview for you to confirm.\n\n` +
+          `Type *DONE* when finished or *CANCEL* to stop.`
         );
         return;
       }
@@ -339,11 +342,13 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
         return;
       }
       const result = await addContacts(session.id, contacts, 'contact-card');
-      await send(
-        `\u{2705} Extracted ${contacts.length} contact(s) from card(s).\n` +
-        `Total collected: ${result?.total || contacts.length}\n\n` +
-        `Send more or type *DONE* to preview.`
-      );
+      let msg = `\u{2705} Extracted ${contacts.length} contact(s) from card(s).\n` +
+        `Total collected: ${result?.total || contacts.length}`;
+      if (result?.warning) {
+        msg += `\n\u{26A0} ${result.warning}`;
+      }
+      msg += `\n\nSend more or type *DONE* to preview.`;
+      await send(msg);
       return;
     }
 
@@ -372,7 +377,9 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
         const result = await addContacts(session.id, contacts, `document:${mimeType}`);
         let msg = `\u{2705} Extracted ${contacts.length} contact(s) from ${filename || 'document'}.\n` +
           `Total collected: ${result?.total || contacts.length}`;
-        if (warnings.length > 0) {
+        if (result?.warning) {
+          msg += `\n\u{26A0} ${result.warning}`;
+        } else if (warnings.length > 0) {
           msg += `\n\u{26A0} ${warnings[0]}`;
         }
         msg += `\n\nSend more or type *DONE* to preview.`;
@@ -402,11 +409,13 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
         }
 
         const result = await addContacts(session.id, contacts, 'image-ocr');
-        await send(
-          `\u{2705} Extracted ${contacts.length} contact(s) from image.\n` +
-          `Total collected: ${result?.total || contacts.length}\n\n` +
-          `Send more or type *DONE* to preview.`
-        );
+        let ocrMsg = `\u{2705} Extracted ${contacts.length} contact(s) from image.\n` +
+          `Total collected: ${result?.total || contacts.length}`;
+        if (result?.warning) {
+          ocrMsg += `\n\u{26A0} ${result.warning}`;
+        }
+        ocrMsg += `\n\nSend more or type *DONE* to preview.`;
+        await send(ocrMsg);
       } catch (err) {
         console.error('[import-bridge] image OCR error:', err);
         await send('\u{26A0} Error scanning image. Please try again with a clearer photo.');
@@ -443,12 +452,19 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
               warnings: valid ? [] : [`Phone "${p}" may not be valid`],
             };
           });
+          // Enforce text message limit
+          const textLimit = IMPORT_LIMITS.whatsapp.textMessage.perMessage;
+          if (extracted.length > textLimit) {
+            extracted.splice(textLimit);
+          }
           const result = await addContacts(session.id, extracted, 'text-phones');
-          await send(
-            `\u{2705} Found ${extracted.length} phone number(s).\n` +
-            `Total collected: ${result?.total || extracted.length}\n\n` +
-            `Send more or type *DONE* to preview.`
-          );
+          let phonesMsg = `\u{2705} Found ${extracted.length} phone number(s).\n` +
+            `Total collected: ${result?.total || extracted.length}`;
+          if (result?.warning) {
+            phonesMsg += `\n\u{26A0} ${result.warning}`;
+          }
+          phonesMsg += `\n\nSend more or type *DONE* to preview.`;
+          await send(phonesMsg);
         } else {
           await send(
             '\u{26A0} Could not extract contacts from that text.\n' +
@@ -463,11 +479,13 @@ export async function handleImportMessage(params: HandleImportParams): Promise<v
       }
 
       const result = await addContacts(session.id, contacts, 'text-paste');
-      await send(
-        `\u{2705} Extracted ${contacts.length} contact(s) from text.\n` +
-        `Total collected: ${result?.total || contacts.length}\n\n` +
-        `Send more or type *DONE* to preview.`
-      );
+      let pasteMsg = `\u{2705} Extracted ${contacts.length} contact(s) from text.\n` +
+        `Total collected: ${result?.total || contacts.length}`;
+      if (result?.warning) {
+        pasteMsg += `\n\u{26A0} ${result.warning}`;
+      }
+      pasteMsg += `\n\nSend more or type *DONE* to preview.`;
+      await send(pasteMsg);
       return;
     }
 

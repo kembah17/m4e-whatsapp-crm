@@ -8,6 +8,7 @@
 
 import type { ExtractedContact } from '@/lib/import/ocr-processor';
 import { normalizeNigerianPhone } from '@/lib/import/ocr-processor';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 // ── Helpers ─────────────────────────────────────────────────
 
@@ -172,5 +173,46 @@ export function parseVCard(vcfContent: string): ExtractedContact[] {
     }
   }
 
+  // Enforce VCF import limit
+  const limit = IMPORT_LIMITS.web.vcf.perFile;
+  const warnings: string[] = [];
+  let truncated = false;
+
+  if (contacts.length > limit) {
+    warnings.push(
+      `Limit reached: only the first ${limit.toLocaleString()} contacts were imported. ` +
+      `Split your file to import the remaining ${(contacts.length - limit).toLocaleString()} contacts.`
+    );
+    contacts.splice(limit);
+    truncated = true;
+  }
+
   return contacts;
+}
+
+/**
+ * Parse vCard with limit enforcement — returns contacts + warnings.
+ */
+export function parseVCardWithLimits(vcfContent: string): {
+  contacts: ExtractedContact[];
+  warnings: string[];
+  truncated: boolean;
+  originalCount: number;
+} {
+  const allContacts = parseVCard(vcfContent);
+  const limit = IMPORT_LIMITS.web.vcf.perFile;
+  const warnings: string[] = [];
+  let truncated = false;
+  const originalCount = allContacts.length;
+
+  if (allContacts.length > limit) {
+    warnings.push(
+      `Limit reached: only the first ${limit.toLocaleString()} contacts were imported. ` +
+      `Split your file to import the remaining ${(allContacts.length - limit).toLocaleString()} contacts.`
+    );
+    allContacts.splice(limit);
+    truncated = true;
+  }
+
+  return { contacts: allContacts, warnings, truncated, originalCount };
 }

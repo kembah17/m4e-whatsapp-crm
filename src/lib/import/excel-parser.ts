@@ -9,6 +9,7 @@
 import * as XLSX from 'xlsx';
 import type { ExtractedContact } from '@/lib/import/ocr-processor';
 import { normalizeNigerianPhone } from '@/lib/import/ocr-processor';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 
 // ── Header Matching ─────────────────────────────────────────
 
@@ -208,5 +209,20 @@ export function parseExcel(
     warnings.push('No contacts could be extracted from the Excel file');
   }
 
-  return { contacts, warnings };
+  // Enforce Excel import limit
+  const limit = IMPORT_LIMITS.web.excel.perFile;
+  let truncated = false;
+  const originalCount = contacts.length;
+
+  if (contacts.length > limit) {
+    warnings.push(
+      `Limit reached: only the first ${limit.toLocaleString()} contacts were imported. ` +
+      `Your file contained ${originalCount.toLocaleString()} contacts. ` +
+      `Split your file to import the remaining ${(originalCount - limit).toLocaleString()} contacts.`
+    );
+    contacts.splice(limit);
+    truncated = true;
+  }
+
+  return { contacts, warnings, truncated, originalCount };
 }

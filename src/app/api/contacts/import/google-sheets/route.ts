@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { processSpreadsheetText } from '@/lib/import/ocr-processor';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -90,11 +91,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contacts = processSpreadsheetText(csvText);
+    const result = processSpreadsheetText(csvText);
+    const limit = IMPORT_LIMITS.web.googleSheets.perSheet;
+    let contacts = result.contacts;
+    const originalCount = contacts.length;
+    let truncated = false;
+    let warning: string | undefined;
+
+    if (contacts.length > limit) {
+      warning = `Sheet contained ${originalCount.toLocaleString()} rows. Only the first ${limit.toLocaleString()} were imported. Split your data across multiple sheets for the rest.`;
+      contacts = contacts.slice(0, limit);
+      truncated = true;
+    }
 
     return NextResponse.json({
       contacts,
+      warnings: result.warnings,
       total: contacts.length,
+      originalCount,
+      truncated,
+      ...(warning && { warning }),
       source: 'google-sheets',
     });
   } catch (err) {

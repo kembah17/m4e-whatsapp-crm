@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { parseExcel } from '@/lib/import/excel-parser';
+import { IMPORT_LIMITS } from '@/lib/import/import-limits';
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -45,11 +46,25 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     const result = parseExcel(buffer);
+    const limit = IMPORT_LIMITS.web.excel.perFile;
+    let contacts = result.contacts;
+    const originalCount = contacts.length;
+    let truncated = false;
+    let warning: string | undefined;
+
+    if (contacts.length > limit) {
+      warning = `File contained ${originalCount.toLocaleString()} contacts. Only the first ${limit.toLocaleString()} were imported. Please upload the remaining contacts in a separate file.`;
+      contacts = contacts.slice(0, limit);
+      truncated = true;
+    }
 
     return NextResponse.json({
-      contacts: result.contacts,
+      contacts,
       warnings: result.warnings,
-      total: result.contacts.length,
+      total: contacts.length,
+      originalCount,
+      truncated,
+      ...(warning && { warning }),
       source: 'excel',
     });
   } catch (err) {

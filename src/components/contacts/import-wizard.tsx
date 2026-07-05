@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import type { ExtractedContact } from '@/lib/import/ocr-processor';
 import type { Tag } from '@/types';
+import { IMPORT_LIMITS_SUMMARY } from '@/lib/import/import-limits';
 
 // ── Types ───────────────────────────────────────────────────
 
@@ -250,8 +251,13 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
 
         const data = await res.json();
         const reviewed = await checkDuplicates(data.contacts || []);
+        const csvWarnings = [...(data.warnings || [])];
+        if (data.warning) csvWarnings.push(data.warning);
         setContacts(reviewed);
-        setWarnings(data.warnings || []);
+        setWarnings(csvWarnings);
+        if (data.truncated) {
+          toast.warning(`File truncated: only ${data.total?.toLocaleString()} contacts imported`);
+        }
         await loadTags();
         setStep(3);
       } catch (err) {
@@ -458,7 +464,10 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
         const data = await res.json();
         const reviewed = await checkDuplicates(data.contacts || []);
         setContacts(reviewed);
-        setWarnings([]);
+        setWarnings(data.warning ? [data.warning] : []);
+        if (data.truncated) {
+          toast.warning(`File truncated: ${data.originalCount?.toLocaleString()} contacts found, ${data.total?.toLocaleString()} imported`);
+        }
         await loadTags();
         setStep(3);
       } catch (err) {
@@ -497,8 +506,13 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
 
         const data = await res.json();
         const reviewed = await checkDuplicates(data.contacts || []);
+        const allWarnings = [...(data.warnings || [])];
+        if (data.warning) allWarnings.push(data.warning);
         setContacts(reviewed);
-        setWarnings(data.warnings || []);
+        setWarnings(allWarnings);
+        if (data.truncated) {
+          toast.warning(`File truncated: ${data.originalCount?.toLocaleString()} contacts found, ${data.total?.toLocaleString()} imported`);
+        }
         await loadTags();
         setStep(3);
       } catch (err) {
@@ -540,7 +554,10 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
         const data = await res.json();
         const reviewed = await checkDuplicates(data.contacts || []);
         setContacts(reviewed);
-        setWarnings([]);
+        setWarnings(data.warning ? [data.warning] : (data.warnings || []));
+        if (data.truncated) {
+          toast.warning(`Sheet truncated: ${data.originalCount?.toLocaleString()} rows found, ${data.total?.toLocaleString()} imported`);
+        }
         await loadTags();
         setStep(3);
       } catch (err) {
@@ -664,6 +681,10 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
         {/* ── Step 1: Choose Source ─────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
+            {/* Session limit info */}
+            <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              ℹ️ Each import session supports up to <strong className="text-foreground">10,000 contacts</strong>. You can run up to 10 sessions per day.
+            </div>
             {/* Source selection */}
             {!source && (
               <div className="grid grid-cols-2 gap-3">
@@ -711,6 +732,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   <p className="text-xs text-muted-foreground">
                     Supports .csv, .tsv, and .txt files
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📊 Maximum: 10,000 contacts per file
+                  </p>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -741,6 +765,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   <p className="text-xs text-muted-foreground">
                     Business cards, handwritten lists, printed spreadsheets
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📸 Maximum: 50 contacts per photo
+                  </p>
                 </div>
                 <input
                   ref={imageInputRef}
@@ -769,6 +796,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   placeholder={`Paste contacts here…\n\nExamples:\nJohn Doe, 08012345678, john@email.com\nJane Smith\t09087654321\tjane@email.com\n\nOr just a list of phone numbers:\n08012345678\n09087654321`}
                   className="h-40 w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
                 />
+                <p className="text-xs text-muted-foreground">
+                  ✍ Maximum: 200 contacts per paste
+                </p>
                 <Button
                   onClick={() => processText(pastedText)}
                   disabled={!pastedText.trim()}
@@ -799,6 +829,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   <p className="text-xs text-muted-foreground">
                     Supports .vcf files exported from phones, Google Contacts, Outlook, etc.
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📇 Maximum: 5,000 contacts per file
+                  </p>
                 </div>
                 <input
                   ref={vcfInputRef}
@@ -828,6 +861,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   <p className="text-sm text-foreground">Click to upload Excel file</p>
                   <p className="text-xs text-muted-foreground">
                     Supports .xlsx and .xls spreadsheets
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📊 Maximum: 10,000 contacts per file
                   </p>
                 </div>
                 <input
@@ -862,6 +898,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                     placeholder="https://docs.google.com/spreadsheets/d/..."
                     className="text-sm"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    🌐 Maximum: 10,000 rows per sheet
+                  </p>
                   <Button
                     onClick={() => processGoogleSheets(googleSheetsUrl)}
                     disabled={!googleSheetsUrl.trim()}
@@ -928,6 +967,37 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   </Button>
                 </div>
               </div>
+            )}
+            {/* Import Limits Summary */}
+            {!source && (
+              <details className="mt-2 text-xs text-muted-foreground">
+                <summary className="cursor-pointer font-medium hover:text-foreground">
+                  📋 View All Import Limits
+                </summary>
+                <div className="mt-2 max-h-48 overflow-auto rounded-lg border border-border">
+                  <table className="w-full text-left">
+                    <thead className="sticky top-0 bg-background">
+                      <tr className="border-b border-border">
+                        <th className="px-2 py-1.5 font-medium">Method</th>
+                        <th className="px-2 py-1.5 font-medium">Limit</th>
+                        <th className="px-2 py-1.5 font-medium">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {IMPORT_LIMITS_SUMMARY.map((row) => (
+                        <tr key={row.method} className="border-b border-border/50">
+                          <td className="px-2 py-1">{row.method}</td>
+                          <td className="px-2 py-1 font-mono">{row.limit}</td>
+                          <td className="px-2 py-1">{row.notes}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-1.5 text-muted-foreground">
+                  💡 You can run up to 10 import sessions per day (up to 100,000 contacts daily).
+                </p>
+              </details>
             )}
           </div>
         )}
