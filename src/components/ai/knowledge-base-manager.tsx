@@ -52,17 +52,19 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
   const [showBulkImport, setShowBulkImport] = useState(false)
   const [bulkJson, setBulkJson] = useState('')
   const [bulkImporting, setBulkImporting] = useState(false)
+  const [quota, setQuota] = useState<{ current: number; limit: number; tier: string } | null>(null)
 
   const fetchEntries = useCallback(async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({ active: 'false' })
+      const params = new URLSearchParams({ active: 'false', include_quota: 'true' })
       if (activeCategory !== 'all') params.set('category', activeCategory)
       if (search) params.set('search', search)
       const res = await fetch(`/api/ai/knowledge?${params}`)
       if (!res.ok) throw new Error('Failed to load')
       const data = await res.json()
       setEntries(data.entries)
+      if (data.quota) setQuota(data.quota)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load')
     } finally {
@@ -231,6 +233,32 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
           {error}
           <button onClick={() => setError(null)} className="ml-auto"><X className="h-4 w-4" /></button>
+        </div>
+      )}
+
+      {/* Knowledge Quota */}
+      {quota && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-500">
+              Knowledge Entries: {quota.current} / {quota.limit} ({quota.tier} tier)
+            </span>
+            <span className={cn(
+              'font-medium',
+              quota.current / quota.limit < 0.8 ? 'text-emerald-600' : quota.current / quota.limit < 1 ? 'text-yellow-600' : 'text-red-600'
+            )}>
+              {Math.round((quota.current / quota.limit) * 100)}% used
+            </span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-200">
+            <div
+              className={cn(
+                'h-1.5 rounded-full transition-all',
+                quota.current / quota.limit < 0.8 ? 'bg-emerald-500' : quota.current / quota.limit < 1 ? 'bg-yellow-500' : 'bg-red-500'
+              )}
+              style={{ width: `${Math.min((quota.current / quota.limit) * 100, 100)}%` }}
+            />
+          </div>
         </div>
       )}
 

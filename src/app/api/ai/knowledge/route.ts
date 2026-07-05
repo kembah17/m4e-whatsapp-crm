@@ -44,7 +44,25 @@ export async function GET(request: Request) {
 
     const { data, error } = await query
     if (error) throw error
-    return NextResponse.json({ entries: data ?? [] })
+    // Include quota info if requested
+    const includeQuota = searchParams.get('include_quota') === 'true'
+    let quota = null
+    if (includeQuota) {
+      const { count } = await supabase
+        .from('ai_knowledge_base')
+        .select('*', { count: 'exact', head: true })
+        .eq('account_id', accountId)
+      const { data: acct } = await supabase
+        .from('accounts')
+        .select('pricing_tier, knowledge_entry_limit')
+        .eq('id', accountId)
+        .single()
+      const TIER_LIMITS: Record<string, number> = { starter: 100, professional: 200, business: 500 }
+      const limit = acct?.knowledge_entry_limit ?? TIER_LIMITS[acct?.pricing_tier ?? 'starter'] ?? 100
+      quota = { current: count ?? 0, limit, tier: acct?.pricing_tier ?? 'starter' }
+    }
+
+    return NextResponse.json({ entries: data ?? [], ...(quota ? { quota } : {}) })
   } catch (err) {
     return toErrorResponse(err)
   }
@@ -61,6 +79,39 @@ export async function POST(request: Request) {
     if (!rl.success) return rateLimitResponse(rl);
 
     const { accountId, supabase } = await getCurrentAccount()
+
+    // Check knowledge entry limit
+    const { count: currentCount } = await supabase
+      .from('ai_knowledge_base')
+      .select('*', { count: 'exact', head: true })
+      .eq('account_id', accountId)
+
+    const { data: accountData } = await supabase
+      .from('accounts')
+      .select('pricing_tier, knowledge_entry_limit')
+      .eq('id', accountId)
+      .single()
+
+    const TIER_LIMITS: Record<string, number> = {
+      starter: 100,
+      professional: 200,
+      business: 500,
+    }
+    const limit = accountData?.knowledge_entry_limit
+      ?? TIER_LIMITS[accountData?.pricing_tier ?? 'starter']
+      ?? 100
+
+    if ((currentCount ?? 0) >= limit) {
+      return NextResponse.json(
+        {
+          error: `Knowledge entry limit reached (${currentCount}/${limit}). Upgrade your plan for more entries.`,
+          limit,
+          current: currentCount,
+        },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
 
     const { category, question, answer, keywords, priority } = body

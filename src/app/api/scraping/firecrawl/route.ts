@@ -14,6 +14,7 @@ function supabaseAdmin(): SupabaseClient<any, 'public', any> {
  * POST /api/scraping/firecrawl
  * Admin-only endpoint for triggering web scrapes.
  * Requires FIRECRAWL_API_KEY to be configured.
+ * Rate limited: 10/hour, 50/day per account.
  */
 export async function POST(request: Request) {
   try {
@@ -35,8 +36,61 @@ export async function POST(request: Request) {
       )
     }
 
-    const client = new FirecrawlClient()
     const db = supabaseAdmin()
+
+    // Rate limiting: check firecrawl_audit_log for recent requests
+    if (accountId) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
+      const [hourlyRes, dailyRes] = await Promise.all([
+        db
+          .from('firecrawl_audit_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('account_id', accountId)
+          .gte('created_at', oneHourAgo),
+        db
+          .from('firecrawl_audit_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('account_id', accountId)
+          .gte('created_at', oneDayAgo),
+      ])
+
+      const hourlyCount = hourlyRes.count ?? 0
+      const dailyCount = dailyRes.count ?? 0
+
+      if (hourlyCount >= 10) {
+        const retryAfter = 3600
+        return NextResponse.json(
+          { error: 'Hourly scrape limit reached (10/hour). Please try again later.', retry_after_seconds: retryAfter },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter),
+              'X-RateLimit-Limit': '10',
+              'X-RateLimit-Remaining': '0',
+            },
+          }
+        )
+      }
+
+      if (dailyCount >= 50) {
+        const retryAfter = 86400
+        return NextResponse.json(
+          { error: 'Daily scrape limit reached (50/day). Please try again tomorrow.', retry_after_seconds: retryAfter },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter),
+              'X-RateLimit-Limit': '50',
+              'X-RateLimit-Remaining': '0',
+            },
+          }
+        )
+      }
+    }
+
+    const client = new FirecrawlClient()
     let result: { success: boolean; data?: Record<string, unknown>; error?: string }
 
     if (action === 'extract' && urls && schema) {

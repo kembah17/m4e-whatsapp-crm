@@ -2,15 +2,17 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { Brain, Shield } from "lucide-react"
+import { Brain, Database, Shield } from "lucide-react"
 import { AIUsageDashboard } from "@/components/admin/ai-usage-dashboard"
 import { CircuitBreakerPanel } from "@/components/admin/circuit-breaker-panel"
+import { RagModelSwitcher } from "@/components/admin/rag-model-switcher"
 
-type SafetyTab = "ai-usage" | "circuit-breaker"
+type SafetyTab = "ai-usage" | "circuit-breaker" | "rag-model"
 
 const TABS: { key: SafetyTab; label: string; icon: typeof Brain }[] = [
   { key: "ai-usage", label: "AI Usage", icon: Brain },
   { key: "circuit-breaker", label: "Safety", icon: Shield },
+  { key: "rag-model", label: "RAG & Embeddings", icon: Database },
 ]
 
 export default function AdminSafetyPage() {
@@ -49,6 +51,7 @@ export default function AdminSafetyPage() {
       {/* Tab content */}
       {activeTab === "ai-usage" && <AIUsageDashboard />}
       {activeTab === "circuit-breaker" && <CircuitBreakerPanel />}
+      {activeTab === "rag-model" && <RagModelSwitcher />}
     </div>
   )
 }

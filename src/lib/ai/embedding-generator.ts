@@ -12,12 +12,72 @@ function supabaseAdmin() {
   return _admin
 }
 
+/** Cached model info to avoid DB hit on every embedding call */
+let _cachedModel: { model: string; dimensions: number; fetchedAt: number } | null = null
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Get the active embedding model, with fallback chain:
+ * 1. Optional parameter
+ * 2. DB global_rag_settings
+ * 3. EMBEDDING_MODEL env var
+ * 4. Default 'openai/text-embedding-3-small'
+ */
+async function getActiveModel(overrideModel?: string): Promise<{ model: string; dimensions: number }> {
+  if (overrideModel) {
+    const KNOWN: Record<string, number> = {
+      'openai/text-embedding-3-small': 1536,
+      'nvidia/llama-3.2-nv-embedqa-1b-v2': 768,
+      'perplexity/embed-v1': 768,
+      'qwen/qwen3-embedding-8b': 1024,
+      'baai/bge-m3': 1024,
+    }
+    return { model: overrideModel, dimensions: KNOWN[overrideModel] ?? 1536 }
+  }
+
+  // Check cache
+  if (_cachedModel && Date.now() - _cachedModel.fetchedAt < CACHE_TTL_MS) {
+    return { model: _cachedModel.model, dimensions: _cachedModel.dimensions }
+  }
+
+  // Try DB
+  try {
+    const db = supabaseAdmin()
+    const { data } = await db
+      .from('global_rag_settings')
+      .select('active_model, active_dimensions')
+      .eq('id', 1)
+      .single()
+    if (data?.active_model) {
+      _cachedModel = {
+        model: data.active_model,
+        dimensions: data.active_dimensions ?? 1536,
+        fetchedAt: Date.now(),
+      }
+      return { model: data.active_model, dimensions: data.active_dimensions ?? 1536 }
+    }
+  } catch {
+    // DB not available, fall through
+  }
+
+  // Env var fallback
+  const envModel = process.env.EMBEDDING_MODEL
+  if (envModel) {
+    return { model: envModel, dimensions: 1536 }
+  }
+
+  // Ultimate default
+  return { model: 'openai/text-embedding-3-small', dimensions: 1536 }
+}
+
 /**
  * Generate embedding vector for text using OpenRouter.
  */
-async function generateEmbedding(text: string): Promise<number[]> {
+async function generateEmbedding(text: string, overrideModel?: string): Promise<number[]> {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured')
+
+  const { model } = await getActiveModel(overrideModel)
 
   const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
     method: 'POST',
@@ -26,7 +86,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'openai/text-embedding-3-small',
+      model,
       input: text,
     }),
   })
@@ -73,6 +133,7 @@ export async function generateAndStoreEmbeddings(input: {
 }): Promise<{ chunksCreated: number }> {
   const db = supabaseAdmin()
   const { accountId, knowledgeEntryId, question, answer } = input
+  const { model } = await getActiveModel()
 
   // Delete existing embeddings for this entry
   await db
@@ -96,7 +157,7 @@ export async function generateAndStoreEmbeddings(input: {
         chunk_text: chunks[i],
         chunk_index: i,
         embedding: JSON.stringify(embedding),
-        model: 'text-embedding-3-small',
+        model: model.split('/').pop() || model,
       })
 
       chunksCreated++

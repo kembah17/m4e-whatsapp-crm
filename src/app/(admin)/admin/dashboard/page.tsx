@@ -9,6 +9,7 @@ import type {
 } from "@/types/admin"
 import {
   Building2,
+  Database,
   MessageSquare,
   Radio,
   Users,
@@ -35,6 +36,12 @@ export default function AdminDashboardPage() {
 
   const [accounts, setAccounts] = useState<PlatformAccountRow[] | null>(null)
   const [accountsLoading, setAccountsLoading] = useState(true)
+
+  const [vectorStats, setVectorStats] = useState<{
+    total_rows: number
+    estimated_size_mb: number
+    free_tier_pct: number
+  } | null>(null)
 
   const loadAll = useCallback(async () => {
     const db = createClient()
@@ -84,6 +91,17 @@ export default function AdminDashboardPage() {
       console.error("[admin] accounts error:", err)
     } finally {
       setAccountsLoading(false)
+    }
+
+    // Load vector storage stats
+    try {
+      const res = await fetch('/api/admin/rag-stats')
+      if (res.ok) {
+        const { stats } = await res.json()
+        setVectorStats(stats)
+      }
+    } catch (err) {
+      console.error('[admin] vector stats error:', err)
     }
   }, [])
 
@@ -175,6 +193,15 @@ export default function AdminDashboardPage() {
                 label: "last 7 days",
               }}
             />
+            {vectorStats && (
+              <AdminMetricCard
+                title="Vector Storage"
+                value={`${vectorStats.estimated_size_mb} MB`}
+                icon={Database}
+                accent={vectorStats.free_tier_pct < 50 ? 'green' : vectorStats.free_tier_pct < 80 ? 'amber' : 'amber'}
+                subtitle={`${vectorStats.total_rows.toLocaleString()} embeddings · ${vectorStats.free_tier_pct}% of 150 MB`}
+              />
+            )}
           </>
         )}
       </div>
