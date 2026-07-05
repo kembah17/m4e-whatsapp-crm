@@ -21,6 +21,7 @@ import {
 } from '@/lib/rate-limit'
 import type { MessageTemplate } from '@/types'
 import { isMessageTemplate } from '@/lib/whatsapp/template-row-guard'
+import { canSendMessage, recordSend } from '@/lib/whatsapp/ban-avoidance'
 
 export async function POST(request: Request) {
   try {
@@ -271,6 +272,25 @@ export async function POST(request: Request) {
       templateRow = data ?? null
     }
 
+    // ── Ban Avoidance Engine check ──────────────────────────────
+    const banCheck = await canSendMessage({
+      accountId,
+      contactId: contact.id,
+      phoneNumberId: config.phone_number_id,
+      templateCategory:
+        message_type === 'template'
+          ? (templateRow?.category ?? 'marketing')
+          : undefined,
+      templateName: template_name ?? undefined,
+      isTemplate: message_type === 'template',
+    })
+    if (!banCheck.allowed) {
+      return NextResponse.json(
+        { error: banCheck.reason, rule: banCheck.rule },
+        { status: 429 },
+      )
+    }
+
     const attempt = async (phone: string): Promise<string> => {
       if (message_type === 'template') {
         const result = await sendTemplateMessage({
@@ -428,6 +448,18 @@ export async function POST(request: Request) {
         err instanceof Error ? err.message : err,
       )
     }
+
+    // ── Record send for ban-avoidance tracking ─────────────────
+    void recordSend({
+      accountId,
+      contactId: contact.id,
+      phoneNumberId: config.phone_number_id,
+      templateName: template_name ?? undefined,
+      templateCategory:
+        message_type === 'template'
+          ? (templateRow?.category ?? undefined)
+          : undefined,
+    })
 
     return NextResponse.json({
       success: true,

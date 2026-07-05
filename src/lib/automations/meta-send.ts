@@ -1,3 +1,4 @@
+import { canSendMessage, recordSend } from '@/lib/whatsapp/ban-avoidance'
 import { sendTextMessage, sendTemplateMessage } from '@/lib/whatsapp/meta-api'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import {
@@ -94,6 +95,20 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
 
   const accessToken = decrypt(config.access_token)
 
+  // ── Ban Avoidance Engine check ──────────────────────────────
+  const banCheck = await canSendMessage({
+    accountId: input.accountId,
+    contactId: input.contactId,
+    phoneNumberId: config.phone_number_id,
+    templateCategory: input.kind === 'template' ? 'utility' : undefined,
+    templateName: input.kind === 'template' ? input.templateName : undefined,
+    isTemplate: input.kind === 'template',
+  })
+  if (!banCheck.allowed) {
+    throw new Error(`Ban avoidance blocked: ${banCheck.reason} [${banCheck.rule}]`)
+  }
+
+
   const attempt = async (phone: string): Promise<string> => {
     if (input.kind === 'template') {
       const r = await sendTemplateMessage({
@@ -171,6 +186,15 @@ async function sendViaMeta(input: SendInput): Promise<{ whatsapp_message_id: str
       updated_at: new Date().toISOString(),
     })
     .eq('id', input.conversationId)
+
+  // Record send for ban-avoidance tracking
+  void recordSend({
+    accountId: input.accountId,
+    contactId: input.contactId,
+    phoneNumberId: config.phone_number_id,
+    templateName: input.kind === 'template' ? input.templateName : undefined,
+    templateCategory: input.kind === 'template' ? 'utility' : undefined,
+  })
 
   return { whatsapp_message_id: waMessageId }
 }

@@ -16,6 +16,7 @@ import { trackCTWALead } from '@/lib/ctwa/tracker'
 import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
 import { checkAndRecord as circuitBreakerCheck } from '@/lib/safety/circuit-breaker'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { handleQualityRatingUpdate } from '@/lib/whatsapp/ban-avoidance'
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,6 +229,42 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
         )
         continue
       }
+      // Handle phone number quality rating updates from Meta
+      if (change.field === 'phone_number_quality_update' || change.field === 'account_update') {
+        try {
+          const qValue = change.value as Record<string, unknown>
+          // Meta sends quality updates with current_limit mapping:
+          // TIER_1000 = GREEN, TIER_250 = YELLOW, TIER_50 = RED
+          const qualityMap: Record<string, 'GREEN' | 'YELLOW' | 'RED'> = {
+            'TIER_1000': 'GREEN',
+            'TIER_10000': 'GREEN',
+            'TIER_100000': 'GREEN',
+            'TIER_UNLIMITED': 'GREEN',
+            'TIER_250': 'YELLOW',
+            'TIER_50': 'RED',
+          }
+          const currentLimit = String(qValue.current_limit || '')
+          const qualityRating = qualityMap[currentLimit]
+          if (qualityRating && qValue.display_phone_number) {
+            // Find account by phone number
+            const { data: configs } = await supabaseAdmin()
+              .from('whatsapp_config')
+              .select('account_id, phone_number_id')
+              .eq('phone_number_id', String(qValue.display_phone_number))
+            if (configs?.[0]) {
+              await handleQualityRatingUpdate({
+                accountId: configs[0].account_id,
+                phoneNumberId: configs[0].phone_number_id,
+                qualityRating,
+              })
+            }
+          }
+        } catch (err) {
+          console.error('[webhook] quality rating update failed:', err)
+        }
+        continue
+      }
+
 
       const value = change.value
 

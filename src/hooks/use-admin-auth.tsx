@@ -14,6 +14,7 @@ import type { User } from "@supabase/supabase-js"
 
 interface AdminProfile {
   user_id: string
+  account_id: string
   full_name: string | null
   email: string | null
   avatar_url: string | null
@@ -58,7 +59,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
         const { data: p } = await supabase
           .from("profiles")
-          .select("user_id, full_name, email, avatar_url, is_super_admin")
+          .select("user_id, account_id, full_name, email, avatar_url, is_super_admin")
           .eq("user_id", u.id)
           .maybeSingle()
 

@@ -1,3 +1,4 @@
+import { canSendMessage, recordSend } from '@/lib/whatsapp/ban-avoidance'
 import {
   sendInteractiveButtons,
   sendInteractiveList,
@@ -88,6 +89,17 @@ export async function engineSendText(
 
   const accessToken = decrypt(config.access_token)
 
+  // ── Ban Avoidance Engine check ──────────────────────────────
+  const banCheck = await canSendMessage({
+    accountId: args.accountId,
+    contactId: args.contactId,
+    phoneNumberId: config.phone_number_id,
+    isTemplate: false,
+  })
+  if (!banCheck.allowed) {
+    throw new Error(`Ban avoidance blocked: ${banCheck.reason} [${banCheck.rule}]`)
+  }
+
   const attempt = async (phone: string): Promise<string> => {
     const r = await sendTextMessage({
       phoneNumberId: config.phone_number_id,
@@ -140,6 +152,13 @@ export async function engineSendText(
       updated_at: new Date().toISOString(),
     })
     .eq('id', args.conversationId)
+
+  // Record send for ban-avoidance tracking
+  void recordSend({
+    accountId: args.accountId,
+    contactId: args.contactId,
+    phoneNumberId: config.phone_number_id,
+  })
 
   return { whatsapp_message_id: waMessageId }
 }
@@ -196,6 +215,17 @@ export async function engineSendMedia(
   }
 
   const accessToken = decrypt(config.access_token)
+
+  // ── Ban Avoidance Engine check ──────────────────────────────
+  const banCheck = await canSendMessage({
+    accountId: args.accountId,
+    contactId: args.contactId,
+    phoneNumberId: config.phone_number_id,
+    isTemplate: false,
+  })
+  if (!banCheck.allowed) {
+    throw new Error(`Ban avoidance blocked: ${banCheck.reason} [${banCheck.rule}]`)
+  }
 
   const attempt = async (phone: string): Promise<string> => {
     const r = await sendMediaMessage({
@@ -257,6 +287,13 @@ export async function engineSendMedia(
       updated_at: new Date().toISOString(),
     })
     .eq('id', args.conversationId)
+
+  // Record send for ban-avoidance tracking
+  void recordSend({
+    accountId: args.accountId,
+    contactId: args.contactId,
+    phoneNumberId: config.phone_number_id,
+  })
 
   return { whatsapp_message_id: waMessageId }
 }
@@ -349,6 +386,17 @@ async function sendInteractiveViaMeta(
 
   const accessToken = decrypt(config.access_token)
 
+  // ── Ban Avoidance Engine check ──────────────────────────────
+  const banCheck = await canSendMessage({
+    accountId: input.accountId,
+    contactId: input.contactId,
+    phoneNumberId: config.phone_number_id,
+    isTemplate: false,
+  })
+  if (!banCheck.allowed) {
+    throw new Error(`Ban avoidance blocked: ${banCheck.reason} [${banCheck.rule}]`)
+  }
+
   const attempt = async (phone: string): Promise<string> => {
     if (input.kind === 'buttons') {
       const r = await sendInteractiveButtons({
@@ -429,6 +477,13 @@ async function sendInteractiveViaMeta(
       updated_at: new Date().toISOString(),
     })
     .eq('id', input.conversationId)
+
+  // Record send for ban-avoidance tracking
+  void recordSend({
+    accountId: input.accountId,
+    contactId: input.contactId,
+    phoneNumberId: config.phone_number_id,
+  })
 
   return { whatsapp_message_id: waMessageId }
 }

@@ -119,3 +119,42 @@ export function dedupeByPhone<T extends { phone: string; email?: string }>(
 
   return { unique, duplicates };
 }
+
+
+/**
+ * Find contact by BSUID (Business Stable User ID).
+ * BSUID is Meta's new stable identifier that persists across phone changes.
+ */
+export async function findByBsuid(
+  db: ReturnType<typeof import('@supabase/supabase-js').createClient>,
+  accountId: string,
+  bsuid: string,
+): Promise<{ id: string; phone: string | null } | null> {
+  if (!bsuid) return null
+  const { data } = await db
+    .from('contacts')
+    .select('id, phone')
+    .eq('account_id', accountId)
+    .eq('bsuid', bsuid)
+    .maybeSingle()
+  return data ?? null
+}
+
+/**
+ * Find contact by WhatsApp username.
+ * Username is the user-chosen handle (when Meta rolls out usernames).
+ */
+export async function findByUsername(
+  db: ReturnType<typeof import('@supabase/supabase-js').createClient>,
+  accountId: string,
+  username: string,
+): Promise<{ id: string; phone: string | null } | null> {
+  if (!username) return null
+  const { data } = await db
+    .from('contacts')
+    .select('id, phone')
+    .eq('account_id', accountId)
+    .eq('whatsapp_username', username)
+    .maybeSingle()
+  return data ?? null
+}

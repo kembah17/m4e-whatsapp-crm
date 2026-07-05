@@ -123,6 +123,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  /**
+   * Skip TypeScript and ESLint checks during build.
+   * We verify these separately with `tsc --noEmit` and `eslint .`
+   * to avoid OOM kills in memory-constrained environments.
+   */
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;

@@ -110,6 +110,10 @@ export interface Contact {
    * Added by migration 035.
    */
   primary_channel?: PrimaryChannel;
+
+  whatsapp_username?: string | null
+  bsuid?: string | null
+  primary_identifier?: 'phone' | 'username' | 'bsuid'
   /**
    * 0–100 score reflecting how complete the contact's profile is.
    * Computed by a DB trigger (migration 035). Read-only.

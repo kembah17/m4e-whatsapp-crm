@@ -10,6 +10,7 @@ import {
   phoneVariants,
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
+import { canSendMessage, recordSend } from '@/lib/whatsapp/ban-avoidance'
 import {
   checkRateLimit,
   rateLimitResponse,
@@ -194,6 +195,35 @@ export async function POST(request: Request) {
 
       // Retry with phone variants on "not in allowed list" so numbers
       // that differ only in a trunk-prefix 0 still reach recipients.
+      // ── Ban Avoidance Engine check ──────────────────────────
+      // Resolve contact for this phone to check frequency caps etc.
+      const { data: recipientContact } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('account_id', accountId)
+        .eq('phone', recipient.phone)
+        .maybeSingle()
+
+      if (recipientContact) {
+        const banCheck = await canSendMessage({
+          accountId,
+          contactId: recipientContact.id,
+          phoneNumberId: config.phone_number_id,
+          templateCategory: templateRow?.category ?? 'marketing',
+          templateName: template_name,
+          isTemplate: true,
+        })
+        if (!banCheck.allowed) {
+          results.push({
+            phone: recipient.phone,
+            status: 'failed',
+            error: `Blocked: ${banCheck.reason}`,
+          })
+          failedCount++
+          continue
+        }
+      }
+
       const variants = phoneVariants(sanitized)
       let sentMessageId: string | null = null
       let lastError: string | null = null
@@ -232,7 +262,17 @@ export async function POST(request: Request) {
           whatsapp_message_id: sentMessageId,
         })
         sentCount++
-      } else {
+
+        // Record send for ban-avoidance tracking
+        if (recipientContact) {
+          void recordSend({
+            accountId,
+            contactId: recipientContact.id,
+            phoneNumberId: config.phone_number_id,
+            templateName: template_name,
+            templateCategory: templateRow?.category ?? undefined,
+          })
+        }      } else {
         console.error(
           `Failed to send broadcast to ${recipient.phone}:`,
           lastError

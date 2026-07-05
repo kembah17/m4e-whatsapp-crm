@@ -18,6 +18,7 @@ import {
   User,
   X,
   Brain,
+  ShieldAlert,
 } from "lucide-react"
 import {
   Avatar,
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
   { href: "/admin/monitoring", label: "Monitoring", icon: Activity },
   { href: "/admin/safety", label: "AI & Safety", icon: Shield },
+  { href: "/admin/ban-avoidance", label: "Ban Avoidance", icon: ShieldAlert },
 ]
 
 interface AdminSidebarProps {

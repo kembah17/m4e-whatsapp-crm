@@ -32,6 +32,7 @@ import {
   Megaphone,
   Brain,
   Target,
+  Sparkles,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -107,6 +108,7 @@ const navItems: NavItem[] = [
   { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },
   { href: "/automations", label: "Automations", icon: Zap },
   { href: "/flows", label: "Flows", icon: Workflow, beta: true },
+  { href: "/ai-playground", label: "AI Playground", icon: Sparkles },
   { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
     { href: "/qr-codes", label: "QR Codes", icon: QrCode },
     { href: "/whatsapp-flows", label: "WA Flows", icon: FileInput, beta: true },

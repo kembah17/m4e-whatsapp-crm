@@ -1,21 +1,22 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MetricCard } from '@/components/dashboard/metric-card';
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
-  MessageSquare: () => <svg data-testid="icon" />,
-  UserPlus: () => <svg data-testid="icon" />,
-  DollarSign: () => <svg data-testid="icon" />,
-  Send: () => <svg data-testid="icon" />,
-  TrendingUp: () => <svg data-testid="icon" />,
-  TrendingDown: () => <svg data-testid="icon" />,
-  ArrowUp: () => <svg data-testid="icon" />,
-  ArrowDown: () => <svg data-testid="icon" />,
+  MessageSquare: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  UserPlus: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  DollarSign: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  Send: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  TrendingUp: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  TrendingDown: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  ArrowUp: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  ArrowDown: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
+  Users: (props: Record<string, unknown>) => <svg data-testid="icon" {...props} />,
 }));
 
-import { vi } from 'vitest';
+import { Users, DollarSign } from 'lucide-react';
 
 describe('MetricCard', () => {
   it('renders with basic props', () => {
@@ -23,7 +24,7 @@ describe('MetricCard', () => {
       <MetricCard
         title="Total Contacts"
         value="1,234"
-        icon="users"
+        icon={Users}
       />
     );
     const text = container.textContent || '';
@@ -36,8 +37,8 @@ describe('MetricCard', () => {
       <MetricCard
         title="Revenue"
         value="₦500,000"
-        icon="revenue"
-        change={12.5}
+        icon={DollarSign}
+        delta={{ sign: 1, label: "+12.5% vs last week" }}
       />
     );
     const text = container.textContent || '';
