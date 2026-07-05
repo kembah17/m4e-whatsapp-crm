@@ -17,6 +17,8 @@ import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
 import { checkAndRecord as circuitBreakerCheck } from '@/lib/safety/circuit-breaker'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 import { handleQualityRatingUpdate } from '@/lib/whatsapp/ban-avoidance'
+import { isImportTrigger, handleImportMessage } from '@/lib/import/whatsapp-import-bridge'
+import { getActiveSession } from '@/lib/import/import-session'
 
 // Lazy-initialized to avoid build-time crash when env vars are missing
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,6 +57,14 @@ interface WhatsAppMessage {
     button_reply?: { id: string; title: string }
     list_reply?: { id: string; title: string; description?: string }
   }
+  /** WhatsApp contact card(s) shared by the customer. */
+  contacts?: Array<{
+    name: { formatted_name?: string; first_name?: string; last_name?: string }
+    phones?: Array<{ phone?: string; type?: string; wa_id?: string }>
+    emails?: Array<{ email?: string; type?: string }>
+    addresses?: Array<{ street?: string; city?: string; state?: string; country?: string }>
+    org?: { company?: string }
+  }>
   /** Present when the customer swipe-replies to one of our messages. */
   context?: { id: string }
   referral?: {
@@ -333,7 +343,8 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // inserts that need it for NOT NULL FK compliance. Always
           // the admin who saved the WhatsApp config.
           config.user_id,
-          decryptedAccessToken
+          decryptedAccessToken,
+          config.phone_number_id
         )
       }
     }
@@ -567,7 +578,8 @@ async function processMessage(
   // (contacts, conversations). Always the admin who saved the
   // WhatsApp config; the choice is arbitrary post-017 but stable.
   configOwnerUserId: string,
-  accessToken: string
+  accessToken: string,
+  phoneNumberId: string
 ) {
   const senderPhone = normalizePhone(message.from)
   const contactName = contact.profile.name
@@ -589,6 +601,31 @@ async function processMessage(
     contactRecord.id
   )
   if (!conversation) return
+
+  // ── Import Bridge ──────────────────────────────────────────
+  // Check if there's an active import session or if this is an import trigger.
+  // If so, route to the import bridge instead of normal processing.
+  try {
+    const activeImportSession = await getActiveSession(accountId, conversation.id)
+    const isTextTrigger = message.type === 'text' && message.text?.body && isImportTrigger(message.text.body)
+
+    if (activeImportSession || isTextTrigger || message.type === 'contacts') {
+      await handleImportMessage({
+        accountId,
+        conversationId: conversation.id,
+        contactId: contactRecord.id,
+        message,
+        accessToken,
+        phoneNumberId,
+        senderPhone,
+      })
+      // Still insert the message into the DB for history, but skip automations/flows/AI.
+      // Fall through to message insertion below.
+    }
+  } catch (err) {
+    console.error('[import-bridge] error:', err)
+    // Fall through to normal processing on error
+  }
 
   // Reactions short-circuit here — they aren't messages. We never insert
   // into `messages`, never bump unread_count, never update last_message_text.
@@ -984,6 +1021,14 @@ async function parseMessageContent(
       }
       return { ...empty, contentText: '[Interactive reply]' }
     }
+
+    case 'contacts':
+      return {
+        ...empty,
+        contentText: message.contacts
+          ? `[${message.contacts.length} contact card(s) shared]`
+          : '[Contact card]',
+      }
 
     default:
       return {

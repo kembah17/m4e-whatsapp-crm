@@ -40,7 +40,7 @@ interface ProcessTextInput {
 // ── Helpers ─────────────────────────────────────────────────
 
 /** Normalise a Nigerian phone number to +234 format. */
-function normalizeNigerianPhone(raw: string): { phone: string; valid: boolean } {
+export function normalizeNigerianPhone(raw: string): { phone: string; valid: boolean } {
   // Strip everything except digits and leading +
   let digits = raw.replace(/[^\d+]/g, '');
 

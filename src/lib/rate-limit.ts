@@ -159,6 +159,8 @@ export const RATE_LIMITS = {
   general: { limit: 30, windowMs: 60_000 },
   /** Contact import — bulk operations, 5/min per user. */
   contactImport: { limit: 5, windowMs: 60_000 },
+  /** Import sessions — 10 per day per account. */
+  importSession: { limit: 10, windowMs: 86_400_000 },
   /** Sentiment analysis — AI-powered, 10/min per user. */
   sentimentAnalyze: { limit: 10, windowMs: 60_000 },
 } as const;
