@@ -173,7 +173,7 @@ CREATE POLICY "package_configs_admin" ON package_configs FOR ALL TO authenticate
 -- package_milestones: account members can read, super admin can write
 ALTER TABLE package_milestones ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "milestones_read" ON package_milestones FOR SELECT TO authenticated
-  USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
+  USING (is_account_member(account_id)
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
 CREATE POLICY "milestones_admin" ON package_milestones FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
@@ -181,7 +181,7 @@ CREATE POLICY "milestones_admin" ON package_milestones FOR ALL TO authenticated
 -- package_transitions: same pattern
 ALTER TABLE package_transitions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "transitions_read" ON package_transitions FOR SELECT TO authenticated
-  USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
+  USING (is_account_member(account_id)
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
 CREATE POLICY "transitions_admin" ON package_transitions FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
@@ -189,7 +189,7 @@ CREATE POLICY "transitions_admin" ON package_transitions FOR ALL TO authenticate
 -- execution_metrics: account members read, system/admin write
 ALTER TABLE execution_metrics ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "exec_metrics_read" ON execution_metrics FOR SELECT TO authenticated
-  USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
+  USING (is_account_member(account_id)
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
 CREATE POLICY "exec_metrics_admin" ON execution_metrics FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
@@ -202,7 +202,7 @@ CREATE POLICY "improvement_log_admin" ON improvement_log FOR ALL TO authenticate
 -- client_outcomes: account members read, admin write
 ALTER TABLE client_outcomes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "outcomes_read" ON client_outcomes FOR SELECT TO authenticated
-  USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
+  USING (is_account_member(account_id)
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
 CREATE POLICY "outcomes_admin" ON client_outcomes FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
@@ -215,7 +215,7 @@ CREATE POLICY "validations_admin" ON package_validations FOR ALL TO authenticate
 -- guided_access_config: account members read, admin write
 ALTER TABLE guided_access_config ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "guided_access_read" ON guided_access_config FOR SELECT TO authenticated
-  USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
+  USING (is_account_member(account_id)
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
 CREATE POLICY "guided_access_admin" ON guided_access_config FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_super_admin = true));
