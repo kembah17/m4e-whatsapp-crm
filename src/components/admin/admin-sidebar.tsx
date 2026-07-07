@@ -14,12 +14,14 @@ import {
   LayoutDashboard,
   LogOut,
   Megaphone,
+  Package,
   Shield,
+  ShieldAlert,
+  Target,
+  TrendingUp,
   User,
   Users,
   X,
-  Brain,
-  ShieldAlert,
 } from "lucide-react"
 import {
   Avatar,
@@ -50,6 +52,9 @@ const navItems: NavItem[] = [
   { href: "/admin/monitoring", label: "Monitoring", icon: Activity },
   { href: "/admin/safety", label: "AI & Safety", icon: Shield },
   { href: "/admin/ban-avoidance", label: "Ban Avoidance", icon: ShieldAlert },
+  { href: "/admin/packages", label: "Packages", icon: Package },
+  { href: "/admin/insights", label: "Insights", icon: TrendingUp },
+  { href: "/admin/strategy-session", label: "Strategy", icon: Target },
 ]
 
 interface AdminSidebarProps {
