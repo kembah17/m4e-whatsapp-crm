@@ -17,6 +17,9 @@ import {
   Settings,
   HelpCircle,
   BookOpen,
+  Shield,
+  CreditCard,
+  Activity,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -375,6 +378,113 @@ const HELP_SECTIONS: HelpSection[] = [
         question: "What is recency scoring and how do I configure it?",
         answer:
           "Recency scoring automatically rates how recently each customer interacted with your business. Go to Settings \u2192 Recency Scoring to configure the scoring rules: which activities count (purchases, messages, visits), how much weight each gets, and the decay rate over time.",
+      },
+    ],
+  },
+  {
+    id: "meta-verification",
+    title: "Meta Verification & Setup",
+    icon: Shield,
+    description: "Understanding Meta Business Verification and WhatsApp API setup",
+    faqs: [
+      {
+        question: "What is Meta Business Verification?",
+        answer:
+          "Meta verifies your business identity before allowing WhatsApp API access. M4E handles the entire process. You need: CAC certificate, business email, Facebook Business Page (optional but helpful).",
+      },
+      {
+        question: "How long does verification take?",
+        answer:
+          "Usually 24–72 hours. Some businesses may take up to 7 days if Meta requests additional documentation.",
+      },
+      {
+        question: "What if my business is not registered with CAC?",
+        answer:
+          "We can explore alternative verification paths. Contact your M4E account manager to discuss options.",
+      },
+      {
+        question: "Can I use my existing WhatsApp number?",
+        answer:
+          "Yes. Meta\u2019s Coexistence feature allows the WhatsApp Business App and API to work on the same number simultaneously.",
+      },
+    ],
+  },
+  {
+    id: "messaging-rules",
+    title: "WhatsApp Messaging Rules",
+    icon: MessageSquare,
+    description: "Rules, templates, and compliance for WhatsApp Business messaging",
+    faqs: [
+      {
+        question: "What is the 24-hour conversation window?",
+        answer:
+          "When a customer messages you, a 24-hour window opens where you can reply freely. After it closes, you must use approved message templates. The CRM handles this automatically.",
+      },
+      {
+        question: "What are message templates?",
+        answer:
+          "Pre-approved message formats required for outbound campaigns. Four categories: Marketing (promotions), Utility (order updates), Authentication (verification codes), Service (free replies within 24hr window).",
+      },
+      {
+        question: "What can I NOT send on WhatsApp?",
+        answer:
+          "Messages to non-opted-in contacts, spam, misleading content, adult content, requests for sensitive info (passwords, BVN, bank details). The CRM\u2019s Ban Avoidance Engine blocks most violations automatically.",
+      },
+      {
+        question: "How do I handle opt-outs?",
+        answer:
+          "Include \u2018Reply STOP to unsubscribe\u2019 in marketing messages. The CRM automatically detects opt-out keywords (STOP, UNSUBSCRIBE, CANCEL) and removes contacts from campaigns.",
+      },
+      {
+        question: "What is the quality rating?",
+        answer:
+          "Meta rates your account Green (good), Yellow (warning), or Red (restricted) based on customer engagement. The CRM monitors this and pauses campaigns if quality drops.",
+      },
+    ],
+  },
+  {
+    id: "pricing-costs",
+    title: "Pricing & Costs",
+    icon: CreditCard,
+    description: "Understanding WhatsApp API messaging costs and how to optimise spend",
+    faqs: [
+      {
+        question: "How much do WhatsApp messages cost?",
+        answer:
+          "Meta charges per conversation (24-hour window). Marketing: approximately N45–75, Utility: approximately N20–35, Authentication: approximately N15–25, Service (customer-initiated): Free. Entry point conversations (from ads/QR codes): Free for 72 hours.",
+      },
+      {
+        question: "How can I see my messaging costs?",
+        answer:
+          "Your CRM dashboard shows real-time cost tracking. Go to the Cost Transparency section in your dashboard for detailed breakdowns.",
+      },
+      {
+        question: "How does M4E help reduce costs?",
+        answer:
+          "Smart scheduling maximises the 24-hour window, ban avoidance prevents costly account restrictions, frequency capping prevents over-messaging, and quality monitoring keeps your account in good standing.",
+      },
+    ],
+  },
+  {
+    id: "account-health",
+    title: "Account Health",
+    icon: Activity,
+    description: "Monitoring and maintaining your WhatsApp Business account health",
+    faqs: [
+      {
+        question: "What are messaging tier limits?",
+        answer:
+          "New accounts start at Tier 1 (250 unique customers/day). Maintaining green quality for 7 days upgrades you: Tier 2 (1,000), Tier 3 (10,000), Tier 4 (100,000), Unlimited. The CRM manages sending within your tier.",
+      },
+      {
+        question: "How do I improve a low quality rating?",
+        answer:
+          "Pause marketing campaigns, review message relevance, reduce frequency, improve targeting to engaged customers only, and wait 7 days for recovery.",
+      },
+      {
+        question: "What is the Ban Avoidance Engine?",
+        answer:
+          "Seven automatic rules protecting your account: new number warm-up, hourly rate limiting, daily/weekly frequency caps, opt-out detection, quality score monitoring, and template pre-validation.",
       },
     ],
   },
