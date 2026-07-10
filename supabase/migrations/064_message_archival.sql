@@ -42,9 +42,7 @@ ALTER TABLE archived_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE infrastructure_snapshots ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Account members can view archives" ON archived_messages
-  FOR SELECT USING (
-    account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid())
-  );
+  FOR SELECT USING (is_account_member(account_id));
 
 CREATE POLICY "Super admins full access archives" ON archived_messages
   FOR ALL USING (
