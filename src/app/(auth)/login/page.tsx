@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
+import { MfaChallenge } from "@/components/auth/mfa-challenge";
 
 export default function LoginPage() {
   return (
@@ -34,8 +35,17 @@ function LoginPageInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showMfaChallenge, setShowMfaChallenge] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const navigateAfterLogin = () => {
+    if (inviteToken) {
+      router.push(`/join/${encodeURIComponent(inviteToken)}`);
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,12 +63,40 @@ function LoginPageInner() {
       return;
     }
 
-    if (inviteToken) {
-      router.push(`/join/${encodeURIComponent(inviteToken)}`);
-    } else {
-      router.push("/dashboard");
+    // Check if MFA verification is needed
+    const { data: aalData } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (
+      aalData &&
+      aalData.currentLevel === "aal1" &&
+      aalData.nextLevel === "aal2"
+    ) {
+      // User has MFA enrolled but hasn't completed the challenge yet
+      setShowMfaChallenge(true);
+      setLoading(false);
+      return;
     }
+
+    // No MFA required — proceed to dashboard
+    navigateAfterLogin();
   };
+
+  // Show MFA challenge screen
+  if (showMfaChallenge) {
+    return (
+      <MfaChallenge
+        onVerified={navigateAfterLogin}
+        onCancel={() => {
+          // Sign out and go back to login form
+          supabase.auth.signOut();
+          setShowMfaChallenge(false);
+          setEmail("");
+          setPassword("");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0C0B22] px-4" style={{ background: 'radial-gradient(ellipse at center top, #1E1B4B 0%, #151338 35%, #0C0B22 70%)' }}>

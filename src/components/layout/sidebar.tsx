@@ -296,6 +296,30 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               );
             })}
           </ul>
+
+          {/* Super Admin panel link — only visible to platform admins */}
+          {profile?.is_super_admin && (
+            <>
+              <div className="my-4 border-t border-amber-500/20" />
+              <Link
+                href="/admin/dashboard"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
+                  pathname.startsWith("/admin")
+                    ? "bg-amber-500/15 text-amber-300"
+                    : "text-amber-400/70 hover:bg-amber-500/10 hover:text-amber-300",
+                )}
+              >
+                <Shield className="h-4 w-4" />
+                <span className="flex-1">Admin Panel</span>
+                <span
+                  className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
+                >
+                  Super
+                </span>
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* User section */}

@@ -25,6 +25,8 @@ interface Profile {
   full_name: string | null;
   email: string;
   avatar_url: string | null;
+  /** True when the user has platform-wide super admin privileges. */
+  is_super_admin: boolean;
   role: string | null;
   /**
    * Opted-in beta feature keys for this account. No current feature
@@ -101,6 +103,8 @@ interface AuthContextValue {
   canEditSettings: boolean;
   /** True if the caller can send messages and edit operational data (agent+). */
   canSendMessages: boolean;
+  /** True when the user has MFA enrolled but has not yet completed the challenge (AAL1 → AAL2). */
+  mfaRequired: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -120,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // settles later. Callers that gate on `profile.*` need to know which
   // window they're in — see the type doc above.
   const [profileLoading, setProfileLoading] = useState(true);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   // Shared across init, auth-state-change listener, and the exposed
   // refreshProfile() callback. Reads the current session's user id and
@@ -136,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // missing account collapses to null rather than a half-
           // populated row (shouldn't happen post-017 NOT NULL, but
           // belt-and-braces against forks running older schemas).
-          "id, full_name, email, avatar_url, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency)",
+          "id, full_name, email, avatar_url, is_super_admin, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency)",
         )
         .eq("user_id", userId)
         .maybeSingle();
@@ -188,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           full_name: data.full_name,
           email: data.email,
           avatar_url: data.avatar_url,
+          is_super_admin: data.is_super_admin === true,
           role: data.role,
           // `beta_features` is `NOT NULL DEFAULT ARRAY[]` in the DB, but
           // narrow defensively in case the column hasn't been migrated yet
@@ -203,6 +209,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("[AuthProvider] fetchProfile threw:", err);
     } finally {
       setProfileLoading(false);
+    }
+  }, []);
+
+  // Check whether the current session requires MFA step-up.
+  const checkMfa = useCallback(async () => {
+    const supabase = createClient();
+    try {
+      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (data && data.currentLevel === "aal1" && data.nextLevel === "aal2") {
+        setMfaRequired(true);
+      } else {
+        setMfaRequired(false);
+      }
+    } catch {
+      setMfaRequired(false);
     }
   }, []);
 
@@ -237,6 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // profile enriches async. Callers that need to branch on
           // profile data gate on `profileLoading` instead.
           fetchProfile(currentUser.id);
+          checkMfa();
         } else {
           // No user → no profile to load. Flip profileLoading off so
           // pages that gate on it don't wait forever on the logged-out
@@ -262,9 +284,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (currentUser) {
         fetchProfile(currentUser.id);
+        checkMfa();
       } else {
         setProfile(null);
         setAccount(null);
+        setMfaRequired(false);
         setProfileLoading(false);
       }
 
@@ -276,7 +300,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, checkMfa]);
 
   const signOut = useCallback(async () => {
     const supabase = createClient();
@@ -322,6 +346,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshProfile,
         account,
         defaultCurrency: account?.default_currency ?? DEFAULT_CURRENCY,
+        mfaRequired,
         ...derived,
       }}
     >
@@ -361,6 +386,7 @@ export function useAuth(): AuthContextValue {
       canManageMembers: false,
       canEditSettings: false,
       canSendMessages: false,
+      mfaRequired: false,
     };
   }
   return ctx;
