@@ -24,6 +24,11 @@ import { SmsConfig } from '@/components/settings/sms-config';
 import { SmsTestPanel } from '@/components/settings/sms-test-panel';
 import { ChannelMatrix } from '@/components/settings/channel-matrix';
 import { WebsiteSyncSettings } from '@/components/settings/website-sync';
+import { TrustScoreSettings } from '@/components/settings/trust-score-settings';
+import { InvoicingSettings } from '@/components/settings/invoicing-settings';
+import { LoyaltySettingsPanel } from '@/components/settings/loyalty-settings-panel';
+import { ReferralSettingsPanel } from '@/components/settings/referral-settings-panel';
+import { TierAccessPanel } from '@/components/settings/tier-access-panel';
 import {
   resolveSection,
   type SettingsSection,
@@ -75,6 +80,11 @@ export default function SettingsPage() {
     'quick-replies': <QuickRepliesPanel />,
     members: <MembersTab />,
     'website-sync': <WebsiteSyncSettings />,
+    'trust-score': <TrustScoreSettings />,
+    'invoicing': <InvoicingSettings />,
+    'loyalty-settings': <LoyaltySettingsPanel />,
+    'referral-settings': <ReferralSettingsPanel />,
+    'tier-access': <TierAccessPanel />,
   };
 
   return (

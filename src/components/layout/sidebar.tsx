@@ -34,6 +34,13 @@ import {
   Brain,
   Target,
   Sparkles,
+  FileText,
+  Warehouse,
+  BookOpen,
+  CalendarClock,
+  UserPlus,
+  Award,
+  Lightbulb,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -103,7 +110,11 @@ const navItems: NavItem[] = [
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/contacts", label: "Contacts", icon: Users },
   { href: "/pipelines", label: "Pipelines", icon: GitBranch },
+  { href: "/debt-book", label: "Debt Book", icon: BookOpen },
+  { href: "/installments", label: "Installments", icon: CalendarClock },
+  { href: "/invoices", label: "Invoices", icon: FileText },
   { href: "/products", label: "Products", icon: Package },
+  { href: "/inventory", label: "Inventory", icon: Warehouse },
   { href: "/broadcasts", label: "Broadcasts", icon: Radio },
   { href: "/campaigns", label: "Campaigns", icon: Rocket },
   { href: "/funnel", label: "Funnel", icon: Filter },
@@ -111,12 +122,15 @@ const navItems: NavItem[] = [
   { href: "/automations", label: "Automations", icon: Zap },
   { href: "/flows", label: "Flows", icon: Workflow, beta: true },
   { href: "/ai-playground", label: "AI Playground", icon: Sparkles },
+  { href: "/insights", label: "AI Insights", icon: Lightbulb },
   { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
     { href: "/qr-codes", label: "QR Codes", icon: QrCode },
     { href: "/whatsapp-flows", label: "WA Flows", icon: FileInput, beta: true },
     { href: "/ad-leads", label: "Ad Leads", icon: Megaphone, beta: true },
     { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
     { href: "/segments", label: "Segments", icon: Target, beta: true },
+    { href: "/referrals", label: "Referrals", icon: UserPlus },
+    { href: "/loyalty", label: "Loyalty", icon: Award },
 ];
 
 const bottomNavItems: NavItem[] = [

@@ -66,6 +66,14 @@ export async function POST(request: Request) {
       seasonal_end: body.seasonal_end || null,
       tags: Array.isArray(body.tags) ? body.tags : [],
       ai_generated_fields: body.ai_generated_fields || {},
+      // Inventory fields
+      track_inventory: body.track_inventory ?? false,
+      stock_quantity: body.track_inventory ? (Number(body.stock_quantity) || 0) : 0,
+      reorder_point: Number(body.reorder_point) || 5,
+      reorder_quantity: Number(body.reorder_quantity) || 20,
+      unit_of_measure: body.unit_of_measure || 'pieces',
+      supplier_name: body.supplier_name?.trim() || null,
+      supplier_phone: body.supplier_phone?.trim() || null,
     };
 
     const { data, error } = await ctx.supabase

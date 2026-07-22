@@ -39,6 +39,9 @@ export async function PUT(
       'cost', 'image_url', 'sku', 'lead_magnet_eligible', 'lead_magnet_cost',
       'upsell_product_id', 'seasonal_start', 'seasonal_end', 'tags',
       'ai_generated_fields',
+      // Inventory fields
+      'track_inventory', 'stock_quantity', 'reorder_point', 'reorder_quantity',
+      'unit_of_measure', 'supplier_name', 'supplier_phone',
     ] as const;
     for (const k of fields) {
       if (k in body) update[k] = body[k];

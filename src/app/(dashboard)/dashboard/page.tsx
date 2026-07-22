@@ -34,6 +34,7 @@ import { PipelineDonut } from '@/components/dashboard/pipeline-donut'
 import { ResponseTimeChart } from '@/components/dashboard/response-time-chart'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import { AutomationRecommendations } from '@/components/dashboard/automation-recommendations'
+import { OperationalSummary } from '@/components/dashboard/operational-summary'
 
 type RangeDays = 7 | 30 | 90
 
@@ -179,6 +180,9 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {/* Operational summary */}
+      <OperationalSummary />
 
       {/* Quick actions */}
       <QuickActions />

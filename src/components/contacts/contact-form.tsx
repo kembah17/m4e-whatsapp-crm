@@ -12,6 +12,14 @@ import {
   type ExistingContact,
 } from '@/lib/contacts/dedupe';
 import {
+  getNigerianStates,
+  getLGAsByState,
+  PREFERRED_LANGUAGES,
+  CONTACT_TYPES,
+  REFERRAL_SOURCES,
+} from '@/lib/contacts/nigerian-fields';
+import type { NigerianState, NigerianLGA } from '@/types/business-growth';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -19,11 +27,18 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface ContactFormProps {
   open: boolean;
@@ -48,16 +63,37 @@ export function ContactForm({
   const { accountId } = useAuth();
   const isEdit = !!contact;
 
+  // Core fields
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Duplicate-phone detection for NEW contacts. `exact` (same digits)
-  // hard-blocks the save; a fuzzy trunk-variant match only warns. The
-  // DB unique index (migration 022) is the real backstop — this is the
-  // friendly heads-up before we get there.
+  // Location fields
+  const [state, setState] = useState('');
+  const [lga, setLga] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  const [nigerianStates, setNigerianStates] = useState<NigerianState[]>([]);
+  const [lgas, setLgas] = useState<NigerianLGA[]>([]);
+  const [loadingLgas, setLoadingLgas] = useState(false);
+
+  // Personal fields
+  const [birthday, setBirthday] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState('');
+
+  // Classification fields
+  const [contactType, setContactType] = useState('');
+  const [referralSource, setReferralSource] = useState('');
+
+  // Section visibility
+  const [showLocation, setShowLocation] = useState(false);
+  const [showPersonal, setShowPersonal] = useState(false);
+  const [showClassification, setShowClassification] = useState(false);
+
+  // Duplicate-phone detection
   const [dupMatch, setDupMatch] = useState<
     { contact: ExistingContact; exact: boolean } | null
   >(null);
@@ -69,18 +105,66 @@ export function ContactForm({
 
   useEffect(() => {
     if (open) {
+      // Core fields
       setName(contact?.name ?? '');
       setPhone(contact?.phone ?? '');
       setEmail(contact?.email ?? '');
       setCompany(contact?.company ?? '');
+
+      // Location fields
+      setState((contact as any)?.state ?? '');
+      setLga((contact as any)?.lga ?? '');
+      setCity((contact as any)?.city ?? '');
+      setAddress((contact as any)?.address ?? '');
+
+      // Personal fields
+      setBirthday((contact as any)?.birthday ?? '');
+      setOccupation((contact as any)?.occupation ?? '');
+      setPreferredLanguage((contact as any)?.preferred_language ?? '');
+
+      // Classification fields
+      setContactType((contact as any)?.contact_type ?? '');
+      setReferralSource((contact as any)?.referral_source ?? '');
+
+      // Auto-expand sections if contact has data in them
+      const hasLocation = !!((contact as any)?.state || (contact as any)?.lga || (contact as any)?.city || (contact as any)?.address);
+      const hasPersonal = !!((contact as any)?.birthday || (contact as any)?.occupation || (contact as any)?.preferred_language);
+      const hasClassification = !!((contact as any)?.contact_type || (contact as any)?.referral_source);
+      setShowLocation(hasLocation);
+      setShowPersonal(hasPersonal);
+      setShowClassification(hasClassification);
+
       setSelectedTagIds(contactTags.map((ct) => ct.tag_id));
       setDupMatch(null);
       fetchTags();
+      loadStates();
     }
   }, [open, contact]);
 
-  // Look up an existing contact with this number (new contacts only).
-  // Runs on blur so we don't query on every keystroke.
+  // Load LGAs when state changes
+  useEffect(() => {
+    if (state) {
+      const selectedState = nigerianStates.find(
+        (s) => s.name === state || String(s.id) === state
+      );
+      if (selectedState) {
+        setLoadingLgas(true);
+        getLGAsByState(selectedState.id).then((data) => {
+          setLgas(data);
+          setLoadingLgas(false);
+        });
+      }
+    } else {
+      setLgas([]);
+      setLga('');
+    }
+  }, [state, nigerianStates]);
+
+  async function loadStates() {
+    const states = await getNigerianStates();
+    setNigerianStates(states);
+  }
+
   async function checkDuplicate() {
     if (isEdit || !accountId) return;
     const value = phone.trim();
@@ -127,8 +211,6 @@ export function ContactForm({
       return;
     }
 
-    // Hard-block an exact duplicate on create (the DB unique index is
-    // the real backstop; this avoids a round-trip + a raw error toast).
     if (!isEdit && dupMatch?.exact) {
       toast.error('A contact with this phone number already exists');
       return;
@@ -146,6 +228,19 @@ export function ContactForm({
 
       let contactId = contact?.id;
 
+      // Build the extended fields payload
+      const extendedFields = {
+        state: state.trim() || null,
+        lga: lga.trim() || null,
+        city: city.trim() || null,
+        address: address.trim() || null,
+        birthday: birthday || null,
+        occupation: occupation.trim() || null,
+        preferred_language: preferredLanguage || null,
+        contact_type: contactType || null,
+        referral_source: referralSource || null,
+      };
+
       if (isEdit && contactId) {
         const { error } = await supabase
           .from('contacts')
@@ -154,6 +249,7 @@ export function ContactForm({
             phone: phone.trim(),
             email: email.trim() || null,
             company: company.trim() || null,
+            ...extendedFields,
             updated_at: new Date().toISOString(),
           })
           .eq('id', contactId);
@@ -168,6 +264,7 @@ export function ContactForm({
             phone: phone.trim(),
             email: email.trim() || null,
             company: company.trim() || null,
+            ...extendedFields,
           })
           .select('id')
           .single();
@@ -198,10 +295,6 @@ export function ContactForm({
       onOpenChange(false);
       onSaved();
     } catch (err: unknown) {
-      // The unique index (migration 022) rejects a duplicate phone that
-      // slipped past the on-blur check (race, or a format that
-      // normalizes equal). Surface it as the friendly duplicate notice
-      // and, for new contacts, point the user at the existing record.
       if (isUniqueViolation(err)) {
         toast.error('A contact with this phone number already exists');
         if (!isEdit && accountId) {
@@ -221,9 +314,22 @@ export function ContactForm({
     }
   }
 
+  function SectionToggle({ label, open: isOpen, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full py-1"
+      >
+        {isOpen ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+        {label}
+      </button>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-popover border-border text-popover-foreground sm:max-w-md">
+      <DialogContent className="bg-popover border-border text-popover-foreground sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-popover-foreground">
             {isEdit ? 'Edit Contact' : 'Add Contact'}
@@ -236,6 +342,7 @@ export function ContactForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* === Core Fields === */}
           <div className="space-y-2">
             <Label htmlFor="cf-name" className="text-muted-foreground">
               Name
@@ -292,7 +399,7 @@ export function ContactForm({
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
-                Include country code, e.g. +1 for US
+                Include country code, e.g. +234 for Nigeria
               </p>
             )}
           </div>
@@ -324,6 +431,187 @@ export function ContactForm({
             />
           </div>
 
+          {/* === Location Section (Collapsible) === */}
+          <div className="border border-border/50 rounded-md px-3 py-2">
+            <SectionToggle
+              label="Location"
+              open={showLocation}
+              onToggle={() => setShowLocation(!showLocation)}
+            />
+            {showLocation && (
+              <div className="space-y-3 mt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">State</Label>
+                    <Select
+                      value={state}
+                      onValueChange={(v) => {
+                        setState(v === '__none__' ? '' : (v ?? ''));
+                        setLga('');
+                      }}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {nigerianStates.map((s) => (
+                          <SelectItem key={s.id} value={s.name}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">LGA</Label>
+                    <Select
+                      value={lga}
+                      onValueChange={(v) => setLga(v === '__none__' ? '' : (v ?? ''))}
+                      disabled={!state || loadingLgas}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder={loadingLgas ? 'Loading...' : 'Select LGA'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {lgas.map((l) => (
+                          <SelectItem key={l.id} value={l.name}>
+                            {l.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground text-xs">City</Label>
+                  <Input
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="e.g. Ikeja"
+                    className="bg-muted border-border text-foreground h-8 text-sm placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground text-xs">Address</Label>
+                  <Input
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Street address"
+                    className="bg-muted border-border text-foreground h-8 text-sm placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* === Personal Section (Collapsible) === */}
+          <div className="border border-border/50 rounded-md px-3 py-2">
+            <SectionToggle
+              label="Personal"
+              open={showPersonal}
+              onToggle={() => setShowPersonal(!showPersonal)}
+            />
+            {showPersonal && (
+              <div className="space-y-3 mt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">Birthday</Label>
+                    <Input
+                      type="date"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      className="bg-muted border-border text-foreground h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">Preferred Language</Label>
+                    <Select
+                      value={preferredLanguage}
+                      onValueChange={(v) => setPreferredLanguage(v === '__none__' ? '' : (v ?? ''))}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {PREFERRED_LANGUAGES.map((lang) => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-muted-foreground text-xs">Occupation</Label>
+                  <Input
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value)}
+                    placeholder="e.g. Business Owner"
+                    className="bg-muted border-border text-foreground h-8 text-sm placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* === Classification Section (Collapsible) === */}
+          <div className="border border-border/50 rounded-md px-3 py-2">
+            <SectionToggle
+              label="Classification"
+              open={showClassification}
+              onToggle={() => setShowClassification(!showClassification)}
+            />
+            {showClassification && (
+              <div className="space-y-3 mt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">Contact Type</Label>
+                    <Select
+                      value={contactType}
+                      onValueChange={(v) => setContactType(v === '__none__' ? '' : (v ?? ''))}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {CONTACT_TYPES.map((ct) => (
+                          <SelectItem key={ct.value} value={ct.value}>
+                            {ct.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-muted-foreground text-xs">Referral Source</Label>
+                    <Select
+                      value={referralSource}
+                      onValueChange={(v) => setReferralSource(v === '__none__' ? '' : (v ?? ''))}
+                    >
+                      <SelectTrigger className="bg-muted border-border text-foreground h-8 text-sm">
+                        <SelectValue placeholder="Select source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None</SelectItem>
+                        {REFERRAL_SOURCES.map((src) => (
+                          <SelectItem key={src} value={src}>
+                            {src}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* === Tags === */}
           <div className="space-y-2">
             <Label className="text-muted-foreground">Tags</Label>
             {loadingTags ? (

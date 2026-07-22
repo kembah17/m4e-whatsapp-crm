@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal, PurchaseHistory, Product, Branch } from '@/types';
+import type { ContactExtensions } from '@/types/business-growth';
 import {
   Sheet,
   SheetContent,
@@ -53,6 +54,8 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { getTrustScoreColor, getTrustScoreBgColor, getTrustScoreLabel } from '@/lib/contacts/trust-score';
+import { Shield, Wallet, Star } from 'lucide-react';
 
 interface ContactDetailViewProps {
   open: boolean;
@@ -539,6 +542,53 @@ export function ContactDetailView({
                 </div>
               </div>
             </SheetHeader>
+
+            {/* Business Growth Badges */}
+            {(() => {
+              const ext = contact as Contact & Partial<ContactExtensions>;
+              const { trust_score, outstanding_balance, loyalty_points, loyalty_tier } = ext;
+              const hasBadges = trust_score != null || (outstanding_balance != null && outstanding_balance > 0) || (loyalty_points != null && loyalty_points > 0);
+              if (!hasBadges) return null;
+            
+              const tierColor: Record<string, string> = {
+                platinum: 'border-slate-300/50 text-slate-300',
+                gold: 'border-amber-400/50 text-amber-400',
+                silver: 'border-slate-400/50 text-slate-400',
+                bronze: 'border-orange-400/50 text-orange-400',
+              };
+            
+              return (
+                <div className="px-4 py-2 border-b border-border/50 flex flex-wrap items-center gap-2">
+                  {trust_score != null && (
+                    <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${getTrustScoreBgColor(trust_score)}`}>
+                      <Shield className={`size-3 ${getTrustScoreColor(trust_score)}`} />
+                      <span className={getTrustScoreColor(trust_score)}>Trust: {trust_score}/100</span>
+                      <span className="text-muted-foreground">({getTrustScoreLabel(trust_score)})</span>
+                    </div>
+                  )}
+                  {outstanding_balance != null && outstanding_balance > 0 && (
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium">
+                      <Wallet className="size-3 text-red-400" />
+                      <span className="text-red-400">Owes: {formatCurrency(outstanding_balance, defaultCurrency)}</span>
+                    </div>
+                  )}
+                  {loyalty_points != null && loyalty_points > 0 && (
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium">
+                      <Star className="size-3 text-amber-400" />
+                      <span className="text-amber-400">{loyalty_points.toLocaleString()} pts</span>
+                      {loyalty_tier && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${tierColor[loyalty_tier] || tierColor.bronze}`}
+                        >
+                          {loyalty_tier.charAt(0).toUpperCase() + loyalty_tier.slice(1)}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Tabs */}
             <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">

@@ -75,6 +75,15 @@ export function ProductForm({
   const [tagsInput, setTagsInput] = useState('');
   const [aiGeneratedFields, setAiGeneratedFields] = useState<Record<string, boolean>>({});
 
+  // Inventory state
+  const [trackInventory, setTrackInventory] = useState(false);
+  const [stockQuantity, setStockQuantity] = useState('');
+  const [reorderPoint, setReorderPoint] = useState('5');
+  const [reorderQuantity, setReorderQuantity] = useState('20');
+  const [unitOfMeasure, setUnitOfMeasure] = useState('pieces');
+  const [supplierName, setSupplierName] = useState('');
+  const [supplierPhone, setSupplierPhone] = useState('');
+
   // Suggestions state
   const [suggestions, setSuggestions] = useState<Suggestions>({});
   const [confidence, setConfidence] = useState<Record<string, number>>({});
@@ -105,6 +114,14 @@ export function ProductForm({
       setSeasonalEnd(product.seasonal_end ?? '');
       setTagsInput((product.tags ?? []).join(', '));
       setAiGeneratedFields(product.ai_generated_fields ?? {});
+      // Inventory fields
+      setTrackInventory((product as any).track_inventory === true);
+      setStockQuantity(String((product as any).stock_quantity ?? ''));
+      setReorderPoint(String((product as any).reorder_point ?? '5'));
+      setReorderQuantity(String((product as any).reorder_quantity ?? '20'));
+      setUnitOfMeasure(String((product as any).unit_of_measure ?? 'pieces'));
+      setSupplierName(String((product as any).supplier_name ?? ''));
+      setSupplierPhone(String((product as any).supplier_phone ?? ''));
     } else {
       setName('');
       setPrice('');
@@ -120,6 +137,14 @@ export function ProductForm({
       setSeasonalEnd('');
       setTagsInput('');
       setAiGeneratedFields({});
+      // Reset inventory fields
+      setTrackInventory(false);
+      setStockQuantity('');
+      setReorderPoint('5');
+      setReorderQuantity('20');
+      setUnitOfMeasure('pieces');
+      setSupplierName('');
+      setSupplierPhone('');
     }
   }, [open, product]);
 
@@ -216,6 +241,14 @@ export function ProductForm({
       seasonal_end: seasonalEnd || null,
       tags,
       ai_generated_fields: aiGeneratedFields,
+      // Inventory fields
+      track_inventory: trackInventory,
+      stock_quantity: trackInventory ? (parseInt(stockQuantity) || 0) : 0,
+      reorder_point: trackInventory ? (parseInt(reorderPoint) || 5) : 5,
+      reorder_quantity: trackInventory ? (parseInt(reorderQuantity) || 20) : 20,
+      unit_of_measure: unitOfMeasure || 'pieces',
+      supplier_name: supplierName.trim() || null,
+      supplier_phone: supplierPhone.trim() || null,
     };
 
     try {
@@ -459,6 +492,111 @@ export function ProductForm({
               className="bg-slate-800/50 border-slate-700"
             />
             <SuggestionHint field="tags" label="Tags" />
+
+          <Separator className="bg-slate-800" />
+
+          {/* Inventory Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Track Inventory</Label>
+                <p className="text-xs text-slate-500">Enable stock tracking for this product</p>
+              </div>
+              <Switch
+                checked={trackInventory}
+                onCheckedChange={setTrackInventory}
+              />
+            </div>
+
+            {trackInventory && (
+              <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-800/30 p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="stock-qty">Current Stock</Label>
+                    <Input
+                      id="stock-qty"
+                      type="number"
+                      min="0"
+                      value={stockQuantity}
+                      onChange={(e) => setStockQuantity(e.target.value)}
+                      placeholder="0"
+                      className="bg-slate-800/50 border-slate-700"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Unit of Measure</Label>
+                    <Select value={unitOfMeasure} onValueChange={(v) => setUnitOfMeasure(v ?? "pieces")}>
+                      <SelectTrigger className="bg-slate-800/50 border-slate-700">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pieces">Pieces</SelectItem>
+                        <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                        <SelectItem value="litres">Litres</SelectItem>
+                        <SelectItem value="boxes">Boxes</SelectItem>
+                        <SelectItem value="cartons">Cartons</SelectItem>
+                        <SelectItem value="dozen">Dozen</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reorder-point">Reorder Point</Label>
+                    <Input
+                      id="reorder-point"
+                      type="number"
+                      min="0"
+                      value={reorderPoint}
+                      onChange={(e) => setReorderPoint(e.target.value)}
+                      placeholder="5"
+                      className="bg-slate-800/50 border-slate-700"
+                    />
+                    <p className="text-[10px] text-slate-500">Alert when stock falls below this</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reorder-qty">Reorder Quantity</Label>
+                    <Input
+                      id="reorder-qty"
+                      type="number"
+                      min="1"
+                      value={reorderQuantity}
+                      onChange={(e) => setReorderQuantity(e.target.value)}
+                      placeholder="20"
+                      className="bg-slate-800/50 border-slate-700"
+                    />
+                    <p className="text-[10px] text-slate-500">Suggested quantity to reorder</p>
+                  </div>
+                </div>
+
+                <Separator className="bg-slate-700" />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="supplier-name">Supplier Name</Label>
+                    <Input
+                      id="supplier-name"
+                      value={supplierName}
+                      onChange={(e) => setSupplierName(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-slate-800/50 border-slate-700"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="supplier-phone">Supplier Phone</Label>
+                    <Input
+                      id="supplier-phone"
+                      value={supplierPhone}
+                      onChange={(e) => setSupplierPhone(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-slate-800/50 border-slate-700"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           </div>
 
           <Separator className="bg-slate-800" />
