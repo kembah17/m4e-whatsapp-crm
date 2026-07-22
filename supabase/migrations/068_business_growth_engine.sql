@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS trust_score_config (
 
 ALTER TABLE trust_score_config ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "trust_score_config_account" ON trust_score_config
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 
 -- Trust score history for tracking changes
 CREATE TABLE IF NOT EXISTS trust_score_history (
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS trust_score_history (
 
 ALTER TABLE trust_score_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "trust_score_history_account" ON trust_score_history
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_trust_history_contact ON trust_score_history(contact_id, created_at DESC);
 
 -- ============================================================
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
 
 ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "stock_movements_account" ON stock_movements
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_stock_movements_product ON stock_movements(product_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_type ON stock_movements(movement_type);
 
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS inventory_alerts (
 
 ALTER TABLE inventory_alerts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "inventory_alerts_account" ON inventory_alerts
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_inventory_alerts_unresolved ON inventory_alerts(account_id, is_resolved) WHERE is_resolved = false;
 
 -- ============================================================
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS debt_entries (
 
 ALTER TABLE debt_entries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "debt_entries_account" ON debt_entries
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_debt_entries_contact ON debt_entries(contact_id);
 CREATE INDEX IF NOT EXISTS idx_debt_entries_status ON debt_entries(account_id, status);
 CREATE INDEX IF NOT EXISTS idx_debt_entries_due ON debt_entries(due_date) WHERE status IN ('outstanding', 'partial');
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS debt_payments (
 
 ALTER TABLE debt_payments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "debt_payments_account" ON debt_payments
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_debt_payments_entry ON debt_payments(debt_entry_id);
 CREATE INDEX IF NOT EXISTS idx_debt_payments_contact ON debt_payments(contact_id);
 
@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS installment_plans (
 
 ALTER TABLE installment_plans ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "installment_plans_account" ON installment_plans
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_installment_plans_contact ON installment_plans(contact_id);
 CREATE INDEX IF NOT EXISTS idx_installment_plans_status ON installment_plans(account_id, status);
 CREATE INDEX IF NOT EXISTS idx_installment_plans_next_due ON installment_plans(next_due_date) WHERE status = 'active';
@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS installment_schedule (
 
 ALTER TABLE installment_schedule ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "installment_schedule_account" ON installment_schedule
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_installment_schedule_plan ON installment_schedule(plan_id, installment_number);
 CREATE INDEX IF NOT EXISTS idx_installment_schedule_due ON installment_schedule(due_date) WHERE status IN ('pending', 'overdue');
 
@@ -339,7 +339,7 @@ CREATE TABLE IF NOT EXISTS invoices (
 
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "invoices_account" ON invoices
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_invoices_contact ON invoices(contact_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(account_id, status);
 CREATE INDEX IF NOT EXISTS idx_invoices_doc_type ON invoices(account_id, doc_type);
@@ -369,7 +369,7 @@ ALTER TABLE invoice_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "invoice_items_via_invoice" ON invoice_items
   FOR ALL USING (invoice_id IN (
     SELECT id FROM invoices WHERE account_id IN (
-      SELECT account_id FROM account_members WHERE user_id = auth.uid()
+      SELECT account_id FROM profiles WHERE user_id = auth.uid()
     )
   ));
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoice_id, sort_order);
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS price_negotiations (
 
 ALTER TABLE price_negotiations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "price_negotiations_account" ON price_negotiations
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_price_negotiations_contact ON price_negotiations(contact_id);
 CREATE INDEX IF NOT EXISTS idx_price_negotiations_product ON price_negotiations(product_id);
 
@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS voice_transcriptions (
 
 ALTER TABLE voice_transcriptions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "voice_transcriptions_account" ON voice_transcriptions
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_voice_transcriptions_message ON voice_transcriptions(message_id);
 CREATE INDEX IF NOT EXISTS idx_voice_transcriptions_contact ON voice_transcriptions(contact_id);
 CREATE INDEX IF NOT EXISTS idx_voice_transcriptions_search ON voice_transcriptions USING gin(to_tsvector('english', COALESCE(transcript, '')));
@@ -486,7 +486,7 @@ CREATE TABLE IF NOT EXISTS scanned_receipts (
 
 ALTER TABLE scanned_receipts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "scanned_receipts_account" ON scanned_receipts
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_scanned_receipts_contact ON scanned_receipts(contact_id);
 CREATE INDEX IF NOT EXISTS idx_scanned_receipts_status ON scanned_receipts(account_id, status);
 
@@ -526,7 +526,7 @@ CREATE TABLE IF NOT EXISTS business_insights (
 
 ALTER TABLE business_insights ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "business_insights_account" ON business_insights
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_business_insights_type ON business_insights(account_id, insight_type);
 CREATE INDEX IF NOT EXISTS idx_business_insights_priority ON business_insights(account_id, priority) WHERE is_dismissed = false;
 CREATE INDEX IF NOT EXISTS idx_business_insights_category ON business_insights(account_id, category);
@@ -556,7 +556,7 @@ CREATE TABLE IF NOT EXISTS referral_config (
 
 ALTER TABLE referral_config ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "referral_config_account" ON referral_config
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 
 CREATE TABLE IF NOT EXISTS referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -583,7 +583,7 @@ CREATE TABLE IF NOT EXISTS referrals (
 
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "referrals_account" ON referrals
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_contact_id);
 CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_contact_id);
 CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code) WHERE referral_code IS NOT NULL;
@@ -623,7 +623,7 @@ CREATE TABLE IF NOT EXISTS loyalty_config (
 
 ALTER TABLE loyalty_config ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "loyalty_config_account" ON loyalty_config
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 
 -- Loyalty transactions (points earned/redeemed)
 CREATE TABLE IF NOT EXISTS loyalty_transactions (
@@ -646,7 +646,7 @@ CREATE TABLE IF NOT EXISTS loyalty_transactions (
 
 ALTER TABLE loyalty_transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "loyalty_transactions_account" ON loyalty_transactions
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_contact ON loyalty_transactions(contact_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_type ON loyalty_transactions(account_id, transaction_type);
 CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_expiry ON loyalty_transactions(expires_at) WHERE expires_at IS NOT NULL AND points > 0;
@@ -681,7 +681,7 @@ CREATE TABLE IF NOT EXISTS feature_access_config (
 
 ALTER TABLE feature_access_config ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "feature_access_config_account" ON feature_access_config
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 
 -- ============================================================
 -- 14. OPERATIONAL ANALYTICS SNAPSHOTS
@@ -724,13 +724,15 @@ CREATE TABLE IF NOT EXISTS operational_snapshots (
   referral_revenue NUMERIC(15,2) DEFAULT 0,
   -- Branch breakdown
   branch_id UUID REFERENCES branches(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(account_id, snapshot_date, COALESCE(branch_id, '00000000-0000-0000-0000-000000000000'::UUID))
+  created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_operational_snapshots_unique 
+  ON operational_snapshots(account_id, snapshot_date, COALESCE(branch_id, '00000000-0000-0000-0000-000000000000'::UUID));
 
 ALTER TABLE operational_snapshots ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "operational_snapshots_account" ON operational_snapshots
-  FOR ALL USING (account_id IN (SELECT account_id FROM account_members WHERE user_id = auth.uid()));
+  FOR ALL USING (is_account_member(account_id));
 CREATE INDEX IF NOT EXISTS idx_operational_snapshots_date ON operational_snapshots(account_id, snapshot_date DESC);
 
 -- ============================================================
