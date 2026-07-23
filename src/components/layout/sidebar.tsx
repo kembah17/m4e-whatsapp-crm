@@ -40,6 +40,7 @@ import {
   CalendarClock,
   UserPlus,
   Award,
+  Headphones,
   Lightbulb,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
@@ -131,6 +132,7 @@ const navItems: NavItem[] = [
     { href: "/segments", label: "Segments", icon: Target, beta: true },
     { href: "/referrals", label: "Referrals", icon: UserPlus },
     { href: "/loyalty", label: "Loyalty", icon: Award },
+    { href: "/support", label: "Support Desk", icon: Headphones },
 ];
 
 const bottomNavItems: NavItem[] = [

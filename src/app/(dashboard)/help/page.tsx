@@ -20,6 +20,7 @@ import {
   Shield,
   CreditCard,
   Activity,
+  Headphones,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -469,6 +470,7 @@ const HELP_SECTIONS: HelpSection[] = [
     id: "account-health",
     title: "Account Health",
     icon: Activity,
+  Headphones,
     description: "Monitoring and maintaining your WhatsApp Business account health",
     faqs: [
       {

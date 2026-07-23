@@ -701,3 +701,113 @@ export interface BusinessCustomization {
   // Loyalty settings
   loyalty_programme_name: string
 }
+
+
+// ============================================================
+// Support Desk
+// ============================================================
+export type TicketStatus = 'open' | 'in_progress' | 'waiting_customer' | 'waiting_internal' | 'escalated' | 'resolved' | 'closed'
+export type TicketPriority = 'critical' | 'high' | 'normal' | 'low'
+export type TicketSource = 'whatsapp' | 'manual' | 'ai_handoff' | 'sentiment_escalation' | 'email'
+export type TicketMessageType = 'reply' | 'internal_note' | 'status_change' | 'assignment' | 'escalation' | 'sla_warning' | 'resolution'
+
+export interface TicketCategory {
+  id: string
+  account_id: string
+  name: string
+  description?: string | null
+  icon: string
+  color: string
+  auto_assign_to?: string | null
+  sla_policy_id?: string | null
+  is_active: boolean
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export interface SLAPolicy {
+  id: string
+  account_id: string
+  name: string
+  description?: string | null
+  priority: TicketPriority
+  first_response_minutes: number
+  resolution_minutes: number
+  escalation_minutes?: number | null
+  escalate_to?: string | null
+  is_default: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SupportTicket {
+  id: string
+  account_id: string
+  ticket_number: string
+  contact_id?: string | null
+  conversation_id?: string | null
+  category_id?: string | null
+  sla_policy_id?: string | null
+  subject: string
+  description?: string | null
+  status: TicketStatus
+  priority: TicketPriority
+  source: TicketSource
+  assigned_to?: string | null
+  escalated_to?: string | null
+  escalated_at?: string | null
+  escalation_reason?: string | null
+  first_response_at?: string | null
+  resolved_at?: string | null
+  closed_at?: string | null
+  sla_first_response_due?: string | null
+  sla_resolution_due?: string | null
+  sla_first_response_breached: boolean
+  sla_resolution_breached: boolean
+  ai_suggested_category?: string | null
+  ai_suggested_priority?: string | null
+  ai_confidence?: number | null
+  sentiment_score?: number | null
+  tags: string[]
+  metadata: Record<string, unknown>
+  created_by?: string | null
+  created_at: string
+  updated_at: string
+  // Joined fields
+  contact?: { id: string; name: string; phone: string } | null
+  category?: TicketCategory | null
+  assigned_profile?: { id: string; full_name: string; avatar_url?: string } | null
+  sla_policy?: SLAPolicy | null
+  message_count?: number
+}
+
+export interface TicketMessage {
+  id: string
+  account_id: string
+  ticket_id: string
+  sender_id?: string | null
+  sender_type: 'agent' | 'customer' | 'system' | 'ai'
+  message_type: TicketMessageType
+  content: string
+  attachments: Array<{ name: string; url: string; type: string }>
+  is_internal: boolean
+  sent_via_whatsapp: boolean
+  whatsapp_message_id?: string | null
+  created_at: string
+  // Joined
+  sender?: { id: string; full_name: string; avatar_url?: string } | null
+}
+
+export interface TicketSatisfaction {
+  id: string
+  account_id: string
+  ticket_id: string
+  contact_id?: string | null
+  rating?: number | null
+  feedback?: string | null
+  survey_sent_at?: string | null
+  responded_at?: string | null
+  created_at: string
+}

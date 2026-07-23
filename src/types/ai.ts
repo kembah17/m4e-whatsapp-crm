@@ -73,6 +73,7 @@ export interface AIChatbotResult {
   intent?: string
   confidence?: number
   handedOff?: boolean
+  ticketCreated?: boolean
   error?: string
 }
 

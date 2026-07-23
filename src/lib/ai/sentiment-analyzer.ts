@@ -135,7 +135,7 @@ export async function triggerSentimentAnalysis(opts: {
   contactId: string
   contactName?: string
   messageText: string
-}) {
+}): Promise<SentimentResult> {
   const { accountId, messageMetaId, conversationId, contactId, contactName, messageText } = opts
 
   // Find the message row by meta ID
@@ -165,4 +165,6 @@ export async function triggerSentimentAnalysis(opts: {
   if (error) {
     console.error('[sentiment] insert failed:', error)
   }
+
+  return result
 }

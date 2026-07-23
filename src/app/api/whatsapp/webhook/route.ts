@@ -14,6 +14,7 @@ import {
 } from '@/lib/whatsapp/template-webhook'
 import { trackCTWALead } from '@/lib/ctwa/tracker'
 import { triggerSentimentAnalysis } from '@/lib/ai/sentiment-analyzer'
+import { autoCreateTicketFromHandoff, autoCreateTicketFromSentiment } from '@/lib/support/triage'
 import { checkAndRecord as circuitBreakerCheck } from '@/lib/safety/circuit-breaker'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 import { handleQualityRatingUpdate } from '@/lib/whatsapp/ban-avoidance'
@@ -831,6 +832,17 @@ async function processMessage(
         contactName: contactRecord.name || contactRecord.phone,
       })
       aiHandled = aiResult.handled
+
+      // Auto-create support ticket on AI handoff
+      if (aiResult.handedOff) {
+        autoCreateTicketFromHandoff(
+          accountId,
+          contactRecord.id,
+          conversation.id,
+          inboundText,
+          contactRecord.name || undefined,
+        ).catch((err) => console.error('[support-ticket] handoff ticket creation failed:', err))
+      }
     } catch (err) {
       console.error('[ai-chatbot] error:', err)
     }
@@ -845,6 +857,17 @@ async function processMessage(
       contactId: contactRecord.id,
       contactName: contactRecord.name || undefined,
       messageText: inboundText,
+    }).then((result) => {
+      // Auto-create support ticket on negative/urgent sentiment
+      if (result && (result.sentiment === 'negative' || result.sentiment === 'urgent')) {
+        autoCreateTicketFromSentiment(
+          accountId,
+          contactRecord.id,
+          conversation.id,
+          inboundText,
+          result.score ?? -0.5,
+        ).catch((err) => console.error('[support-ticket] sentiment ticket creation failed:', err))
+      }
     }).catch((err) => console.error('[sentiment] failed:', err))
   }
 

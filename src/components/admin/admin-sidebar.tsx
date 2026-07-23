@@ -21,6 +21,7 @@ import {
   Target,
   TrendingUp,
   Brain,
+  Headphones,
   User,
   Users,
   X,
@@ -59,6 +60,7 @@ const navItems: NavItem[] = [
   { href: "/admin/insights", label: "Insights", icon: TrendingUp },
   { href: "/admin/strategy-session", label: "Strategy", icon: Target },
   { href: "/admin/learning", label: "Learning", icon: Brain },
+  { href: "/admin/support", label: "Support", icon: Headphones },
 ]
 
 interface AdminSidebarProps {

@@ -19,6 +19,7 @@ import {
   Award,
   UserPlus,
   Crown,
+  Headphones,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,6 +53,7 @@ export const SETTINGS_SECTIONS = [
   'loyalty-settings',
   'referral-settings',
   'tier-access',
+  'support-settings',
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -88,6 +90,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   'loyalty-settings': { id: 'loyalty-settings', label: 'Loyalty Programme', icon: Award, group: 'workspace' },
   'referral-settings': { id: 'referral-settings', label: 'Referral Programme', icon: UserPlus, group: 'workspace' },
   'tier-access': { id: 'tier-access', label: 'Plan & Features', icon: Crown, group: 'workspace' },
+  'support-settings': { id: 'support-settings', label: 'Support Desk', icon: Headphones, group: 'workspace' },
 };
 
 export const RAIL_GROUPS: { label: string | null; group: SectionMeta['group'] }[] = [
