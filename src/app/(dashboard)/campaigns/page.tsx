@@ -139,9 +139,9 @@ const GALLERY_CATEGORY_COLORS: Record<CampaignCategory, string> = {
 }
 
 const GALLERY_TIER_CONFIG: Record<1 | 2 | 3, { label: string; color: string }> = {
-  1: { label: "Basic", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-  2: { label: "Pro", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
-  3: { label: "Enterprise", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
+  1: { label: "Reactivation", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+  2: { label: "Online Presence", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
+  3: { label: "Growth Engine", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
 }
 
 const GALLERY_STORAGE_KEY = "m4e-campaign-gallery-collapsed"

@@ -325,11 +325,11 @@ These packages represent comprehensive solutions, with the M4E CRM acting as the
 
 | Package Name | Description                                                                                                                                                                                                                                        | Investment (₦) |
 | :----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------- |
-| **Package 1** | **Foundational WhatsApp Growth:** Setup & deployment of M4E CRM, initial data import (up to 2,000 contacts), 3 pre-built campaigns, 1-month dedicated management, basic AI Chatbot setup, 2 team seats.                                         | **₦2,300,000** |
-| **Package 2** | **Accelerated Sales & Engagement:** All of Pkg1 + Advanced pipeline configuration, Debt Book & Installments setup, E-commerce integration, 5 pre-built campaigns, 3-months dedicated management, 5 team seats, advanced AI Chatbot.                 | **₦3,200,000** |
-| **Package 3** | **Market Dominator:** All of Pkg2 + Loyalty & Referral program setup, Inventory management deployment, 10 pre-built campaigns, 6-months dedicated management, AI Insights & Sentiment analysis, 10 team seats, full WA Flows & Automations.          | **₦4,500,000** |
-| **Full Engine** | **Enterprise Transformation:** Custom M4E deployments, unlimited contacts & team seats, 12-months dedicated management, bespoke workflow automations, deep E-commerce & ERP integrations, priority support, strategic AI development. Bespoke Funnel. | **₦8,500,000** |
-| **Unicorn Consultation** | High-level strategic consultation for businesses with complex requirements or seeking transformative growth. CRM access may be part of the tailored solution.                                                                                | **₦3,500,000** |
+| **Package 1** | **Customer Reactivation:** Reactivate dormant customers and build a self-reinforcing marketing system. Includes 6 pre-built reactivation campaigns (Win-Back, Review Collection, Birthday, Referral, VIP Rewards, Post-Purchase), 8-week dedicated management, data import & RFM segmentation, AI Chatbot setup, 2 team seats. | **₦2,000,000** |
+| **Package 2** | **Online Presence:** Build professional website, brand identity, and digital foundation. Includes brand discovery & identity design, website development with SEO, analytics & tracking setup, 3 campaign templates (Ad Lead Nurture, WhatsApp Flow Survey), 8-week dedicated management, 5 team seats. | **₦3,500,000** |
+| **Package 3** | **Growth Engine:** Paid advertising, advanced campaigns, and aggressive growth strategy. Includes 6 e-commerce campaign templates (Abandoned Cart, Order Status, COD Confirmation, Upsell/Cross-Sell, Catalog Browse, Sentiment Recovery), 12-week dedicated management, e-commerce integration, full funnel optimisation, 10 team seats. | **₦5,000,000** |
+| **Complete Programme** | **Complete Transformation:** All three packages combined for comprehensive transformation. All 14 campaign templates, all automation types, all flow types, 16-week dedicated management, weekly reporting, unlimited team seats. | **₦9,000,000** |
+| **Unicorn Programme** | Revenue share model with comprehensive transformation and ongoing partnership. All 14 campaign templates, all automation types, all flow types, 16-week dedicated management, weekly reporting, unlimited team seats. | **₦3,000,000** |
 
 **Note:** For service packages, the M4E CRM access is provided for the duration of the engagement and often includes a grace period afterwards, with an option to convert to a CRM-Only plan. Specific limits (contacts, messages, team seats) are negotiated per package.
 
@@ -461,11 +461,11 @@ Understanding how each service package is delivered using the M4E CRM is critica
 
 ---
 
-### Workflow for Package 1: Foundational WhatsApp Growth (₦2,300,000)
+### Workflow for Package 1: Customer Reactivation (₦2,000,000)
 
-**Goal:** Establish a robust WhatsApp presence, streamline initial customer interactions, and launch foundational campaigns.
+**Goal:** Reactivate dormant customers and build a self-reinforcing marketing system using 6 pre-built reactivation campaigns over 8 weeks.
 
-**Key M4E Features Used:** Dashboard, Inbox, Contacts, QR Codes, Broadcasts, Campaigns, Settings, Help & Guides.
+**Key M4E Features Used:** Dashboard, Inbox, Contacts, Campaigns (Win-Back, Review Collection, Birthday, Referral, VIP Rewards, Post-Purchase), Broadcasts, Automations (Welcome, Satisfaction Gate, Won-Back Detection), Flows (Welcome Menu, Satisfaction Collection), Settings, Help & Guides.
 
 1.  **Discovery & Planning (Week 1):**
     *   **Action:** In-depth meeting with client to understand business, target audience, and initial WhatsApp goals.
@@ -492,11 +492,11 @@ Understanding how each service package is delivered using the M4E CRM is critica
 
 ---
 
-### Workflow for Package 2: Accelerated Sales & Engagement (₦3,200,000)
+### Workflow for Package 2: Online Presence (₦3,500,000)
 
-**Goal:** Enhance sales efficiency, manage credit & installments, and deepen customer engagement through more advanced campaigns.
+**Goal:** Build professional website, brand identity, and digital foundation. Establish online presence with SEO, analytics, and lead nurture campaigns over 8 weeks.
 
-**Key M4E Features Used:** All Pkg1 features + Pipelines, Debt Book, Installments, E-commerce, Campaigns (5 templates), Automations (basic), AI Chatbot (advanced), Contacts (Trust Scores), Support Desk (basic).
+**Key M4E Features Used:** All Pkg1 features + Brand Identity Design, Website Development, SEO & Schema Markup, Analytics & Tracking, Campaigns (Ad Lead Nurture, WhatsApp Flow Survey), Automations (New Lead Welcome, Lead Scoring), Flows (Lead Qualification).
 
 1.  **Review & Expand (Week 1-2):**
     *   **Action:** Review Pkg1 setup (or deploy Pkg1 features if new). Deep dive into client's sales process, credit practices, and e-commerce operations.
@@ -523,11 +523,11 @@ Understanding how each service package is delivered using the M4E CRM is critica
 
 ---
 
-### Workflow for Package 3: Market Dominator (₦4,500,000)
+### Workflow for Package 3: Growth Engine (₦5,000,000)
 
-**Goal:** Achieve market leadership through comprehensive engagement, loyalty, inventory optimization, and data-driven intelligence.
+**Goal:** Drive aggressive growth through paid advertising, advanced e-commerce campaigns, and a full 5-stage funnel system over 12 weeks.
 
-**Key M4E Features Used:** All Pkg2 features + Loyalty, Referrals, Inventory, AI Insights, Sentiment, WA Flows, Automations (full), Campaigns (10 templates), Support Desk (full with SLA/AI Triage).
+**Key M4E Features Used:** All Pkg2 features + E-commerce Integration (Shopify/WooCommerce), Campaigns (Abandoned Cart, Order Status, COD Confirmation, Upsell/Cross-Sell, Catalog Browse, Sentiment Recovery), Funnel Engine, CTWA Ad Leads, Automations (Cart Abandonment, Order Status, COD, Cross-Sell triggers), Flows (Ad Lead Capture, Retargeting, Conversion Funnel).
 
 1.  **Strategic Deep Dive (Week 1-2):**
     *   **Action:** Comprehensive review of all business operations, marketing funnels, and customer retention strategies.
@@ -557,7 +557,7 @@ Understanding how each service package is delivered using the M4E CRM is critica
 
 ---
 
-### Workflow for Full Engine: Enterprise Transformation (₦8,500,000)
+### Workflow for Complete Programme (₦9,000,000)
 
 **Goal:** Complete business transformation through customized M4E deployment, deep integration, and ongoing strategic partnership.
 
@@ -588,7 +588,7 @@ Understanding how each service package is delivered using the M4E CRM is critica
 
 ---
 
-### Workflow for Unicorn Consultation (₦3,500,000)
+### Workflow for Unicorn Programme (₦3,000,000)
 
 **Goal:** Provide high-level strategic direction and a bespoke roadmap for businesses with unique, complex challenges, often laying the groundwork for a future Full Engine deployment.
 
