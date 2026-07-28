@@ -156,3 +156,72 @@ export function timeRangeToHours(range: MonitoringTimeRange): number {
     case '7d': return 168
   }
 }
+
+
+// ============================================================
+// Usage Limits Monitoring Types
+// ============================================================
+
+export interface AccountLimitUsage {
+  account_id: string
+  account_name: string
+  subscription_tier: string
+  subscription_status: string
+  current_tier: string
+  // Contacts
+  max_contacts: number
+  current_contacts: number
+  // Team Members
+  max_team_members: number
+  current_team_members: number
+  // Branches
+  max_branches: number
+  current_branches: number
+  // Pipelines
+  max_pipelines: number
+  current_pipelines: number
+  // Products
+  max_products: number
+  current_products: number
+  // Broadcasts
+  max_broadcasts_per_month: number
+  current_broadcasts_this_month: number
+  // Campaigns
+  max_campaigns: number
+  current_campaigns: number
+  // Automations
+  max_automations: number
+  current_automations: number
+  // WhatsApp Flows
+  max_whatsapp_flows: number
+  current_whatsapp_flows: number
+  // AI Chatbot Messages
+  max_ai_chatbot_msgs_per_month: number
+  current_ai_chatbot_msgs_this_month: number
+  // AI Queries
+  max_ai_queries_per_day: number
+  current_ai_queries_today: number
+  // Invoices
+  max_invoices_per_month: number
+  current_invoices_this_month: number
+}
+
+export interface ApproachingLimit {
+  account_id: string
+  account_name: string
+  tier: string
+  limit_name: string
+  current: number
+  max: number
+  percentage: number
+}
+
+export interface UsageLimitData {
+  accounts: AccountLimitUsage[]
+  approaching_limits: ApproachingLimit[]
+  summary: {
+    total_accounts: number
+    accounts_at_limit: number
+    accounts_approaching_limit: number
+  }
+}

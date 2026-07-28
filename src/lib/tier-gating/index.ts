@@ -10,6 +10,70 @@ function tierLevel(tier: FeatureTier): number {
 }
 
 /**
+ * Authoritative tier defaults for all 12 limits.
+ * Values match the CRM platform page (public-facing promises).
+ * "Unlimited" = 999999 in code/DB.
+ */
+const tierDefaults: Record<FeatureTier, Partial<FeatureAccessConfig>> = {
+  starter: {
+    max_contacts: 500,
+    max_team_members: 2,
+    max_branches: 1,
+    max_pipelines: 1,
+    max_products: 50,
+    max_broadcasts_per_month: 500,
+    max_campaigns: 4,
+    max_automations: 3,
+    max_whatsapp_flows: 0,
+    max_ai_chatbot_msgs_per_month: 0,
+    max_ai_queries_per_day: 10,
+    max_invoices_per_month: 20,
+  },
+  professional: {
+    max_contacts: 2000,
+    max_team_members: 5,
+    max_branches: 3,
+    max_pipelines: 3,
+    max_products: 200,
+    max_broadcasts_per_month: 2000,
+    max_campaigns: 10,
+    max_automations: 10,
+    max_whatsapp_flows: 3,
+    max_ai_chatbot_msgs_per_month: 100,
+    max_ai_queries_per_day: 50,
+    max_invoices_per_month: 100,
+  },
+  business: {
+    max_contacts: 999999,
+    max_team_members: 999999,
+    max_branches: 999999,
+    max_pipelines: 999999,
+    max_products: 999999,
+    max_broadcasts_per_month: 10000,
+    max_campaigns: 14,
+    max_automations: 999999,
+    max_whatsapp_flows: 999999,
+    max_ai_chatbot_msgs_per_month: 999999,
+    max_ai_queries_per_day: 200,
+    max_invoices_per_month: 500,
+  },
+  enterprise: {
+    max_contacts: 999999,
+    max_team_members: 999999,
+    max_branches: 999999,
+    max_pipelines: 999999,
+    max_products: 999999,
+    max_broadcasts_per_month: 999999,
+    max_campaigns: 999999,
+    max_automations: 999999,
+    max_whatsapp_flows: 999999,
+    max_ai_chatbot_msgs_per_month: 999999,
+    max_ai_queries_per_day: 999999,
+    max_invoices_per_month: 999999,
+  },
+};
+
+/**
  * Check if a tier meets or exceeds the required tier.
  */
 export function tierMeetsRequirement(currentTier: FeatureTier, requiredTier: FeatureTier): boolean {
@@ -41,16 +105,23 @@ export async function getOrCreateFeatureAccess(accountId: string): Promise<Featu
   const existing = await getFeatureAccess(accountId);
   if (existing) return existing;
 
-  // Create default starter config
+  // Create default starter config with all 12 limits
   const defaults = {
     account_id: accountId,
     current_tier: 'starter' as FeatureTier,
     feature_overrides: {},
     max_contacts: 500,
-    max_broadcasts_per_month: 10,
-    max_campaigns: 3,
-    max_invoices_per_month: 20,
+    max_team_members: 2,
+    max_branches: 1,
+    max_pipelines: 1,
+    max_products: 50,
+    max_broadcasts_per_month: 500,
+    max_campaigns: 4,
+    max_automations: 3,
+    max_whatsapp_flows: 0,
+    max_ai_chatbot_msgs_per_month: 0,
     max_ai_queries_per_day: 10,
+    max_invoices_per_month: 20,
     upsell_prompts_shown: {},
     upsell_cooldown_days: 7,
     preview_features: [],
@@ -232,50 +303,55 @@ export async function isWithinLimit(
 }
 
 /**
+ * Check if an account has reached a specific limit using the DB function.
+ * Returns { allowed, current, max, percentage, approaching_limit, at_limit }
+ */
+export async function checkAccountLimit(
+  accountId: string,
+  limitName: string
+): Promise<{
+  allowed: boolean;
+  current: number;
+  max: number;
+  percentage: number;
+  approaching_limit: boolean;
+  at_limit: boolean;
+}> {
+  const { data, error } = await supabaseAdmin()
+    .rpc('check_account_limit', {
+      p_account_id: accountId,
+      p_limit_name: limitName,
+    });
+
+  if (error || !data) {
+    console.error('Error checking limit:', error);
+    return { allowed: true, current: 0, max: 999999, percentage: 0, approaching_limit: false, at_limit: false };
+  }
+  return data as {
+    allowed: boolean;
+    current: number;
+    max: number;
+    percentage: number;
+    approaching_limit: boolean;
+    at_limit: boolean;
+  };
+}
+
+/**
  * Update the account tier (admin only).
  */
 export async function updateAccountTier(
   accountId: string,
   newTier: FeatureTier,
   overrides?: Partial<Pick<FeatureAccessConfig,
-    'max_contacts' | 'max_broadcasts_per_month' | 'max_campaigns' |
+    'max_contacts' | 'max_team_members' | 'max_branches' | 'max_pipelines' |
+    'max_products' | 'max_broadcasts_per_month' | 'max_campaigns' |
+    'max_automations' | 'max_whatsapp_flows' | 'max_ai_chatbot_msgs_per_month' |
     'max_invoices_per_month' | 'max_ai_queries_per_day' | 'feature_overrides' |
     'preview_features' | 'preview_expires_at'
   >>
 ): Promise<FeatureAccessConfig | null> {
   const config = await getOrCreateFeatureAccess(accountId);
-
-  // Set tier-appropriate defaults
-  const tierDefaults: Record<FeatureTier, Partial<FeatureAccessConfig>> = {
-    starter: {
-      max_contacts: 500,
-      max_broadcasts_per_month: 10,
-      max_campaigns: 3,
-      max_invoices_per_month: 20,
-      max_ai_queries_per_day: 10,
-    },
-    professional: {
-      max_contacts: 2000,
-      max_broadcasts_per_month: 50,
-      max_campaigns: 10,
-      max_invoices_per_month: 100,
-      max_ai_queries_per_day: 50,
-    },
-    business: {
-      max_contacts: 10000,
-      max_broadcasts_per_month: 200,
-      max_campaigns: 50,
-      max_invoices_per_month: 500,
-      max_ai_queries_per_day: 200,
-    },
-    enterprise: {
-      max_contacts: 999999,
-      max_broadcasts_per_month: 999999,
-      max_campaigns: 999999,
-      max_invoices_per_month: 999999,
-      max_ai_queries_per_day: 999999,
-    },
-  };
 
   const updates = {
     current_tier: newTier,

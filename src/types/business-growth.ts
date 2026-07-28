@@ -552,6 +552,13 @@ export interface FeatureAccessConfig {
   max_campaigns: number
   max_invoices_per_month: number
   max_ai_queries_per_day: number
+  max_team_members: number
+  max_branches: number
+  max_products: number
+  max_pipelines: number
+  max_automations: number
+  max_whatsapp_flows: number
+  max_ai_chatbot_msgs_per_month: number
   upsell_prompts_shown: Record<string, string>
   last_upsell_shown_at?: string | null
   upsell_cooldown_days: number

@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   BarChart3,
   FileText,
+  Gauge,
   RefreshCw,
   Shield,
 } from "lucide-react"
@@ -23,8 +24,9 @@ import { LogViewer } from "@/components/admin/monitoring/log-viewer"
 import { SecurityPanel } from "@/components/admin/monitoring/security-panel"
 import { PerformanceCharts } from "@/components/admin/monitoring/performance-charts"
 import { MonitoringMetricCard } from "@/components/admin/monitoring/metric-card"
+import { UsageLimits } from "@/components/admin/monitoring/usage-limits"
 
-type Tab = "overview" | "alerts" | "logs" | "security" | "performance"
+type Tab = "overview" | "alerts" | "logs" | "security" | "performance" | "usage"
 
 const tabs: { id: Tab; label: string; icon: typeof Activity }[] = [
   { id: "overview", label: "Overview", icon: Activity },
@@ -32,6 +34,7 @@ const tabs: { id: Tab; label: string; icon: typeof Activity }[] = [
   { id: "logs", label: "Logs", icon: FileText },
   { id: "security", label: "Security", icon: Shield },
   { id: "performance", label: "Performance", icon: BarChart3 },
+  { id: "usage", label: "Usage", icon: Gauge },
 ]
 
 const timeRanges: MonitoringTimeRange[] = ["1h", "6h", "24h", "7d"]
@@ -287,6 +290,8 @@ export default function MonitoringPage() {
           loading={loading}
         />
       )}
+
+      {activeTab === "usage" && <UsageLimits />}
     </div>
   )
 }
