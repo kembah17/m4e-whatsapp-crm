@@ -106,6 +106,7 @@ const tiers = [
       'Email support',
     ],
     highlighted: false,
+    cta: 'Start 14-Day Trial',
   },
   {
     name: 'Professional',
@@ -121,6 +122,7 @@ const tiers = [
       'Priority support',
     ],
     highlighted: true,
+    cta: 'Get Started',
   },
   {
     name: 'Business',
@@ -136,6 +138,7 @@ const tiers = [
       'Dedicated account manager',
     ],
     highlighted: false,
+    cta: 'Contact Sales',
   },
 ]
 
@@ -181,7 +184,7 @@ export default function HomePage() {
               href="/signup"
               className="rounded-lg bg-[#C9A84C] px-4 py-2 text-sm font-semibold text-[#1B1F3B] transition-colors hover:bg-[#C9A84C]/90"
             >
-              Start Free Trial
+              Start 14-Day Trial
             </Link>
           </div>
         </div>
@@ -220,7 +223,7 @@ export default function HomePage() {
               href="/signup"
               className="inline-flex items-center gap-2 rounded-xl bg-[#C9A84C] px-8 py-3.5 text-base font-semibold text-[#1B1F3B] shadow-lg shadow-[#C9A84C]/20 transition-all hover:bg-[#C9A84C]/90 hover:shadow-xl hover:shadow-[#C9A84C]/30"
             >
-              Start Free Trial
+              Start 14-Day Trial
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -328,7 +331,7 @@ export default function HomePage() {
               <span className="text-[#C9A84C]">Pricing</span>
             </h2>
             <p className="mt-4 text-lg text-[#1B1F3B]/60">
-              Start free, upgrade when you are ready
+              Start with a 14-day trial. Upgrade as you grow.
             </p>
           </div>
 
@@ -378,7 +381,7 @@ export default function HomePage() {
                       : 'bg-[#1B1F3B] text-white hover:bg-[#1B1F3B]/90'
                   }`}
                 >
-                  Start Free Trial
+                  {tier.cta}
                 </Link>
               </div>
             ))}
@@ -431,7 +434,7 @@ export default function HomePage() {
             href="/signup"
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#C9A84C] px-8 py-3.5 text-base font-semibold text-[#1B1F3B] shadow-lg shadow-[#C9A84C]/20 transition-all hover:bg-[#C9A84C]/90 hover:shadow-xl hover:shadow-[#C9A84C]/30"
           >
-            Get Started Free
+            Start 14-Day Trial
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

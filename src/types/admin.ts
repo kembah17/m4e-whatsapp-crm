@@ -164,7 +164,7 @@ export interface PlatformAlerts {
 // Revenue & Billing Types
 // ============================================================
 
-export type SubscriptionTier = "free" | "starter" | "growth" | "enterprise"
+export type SubscriptionTier = "starter" | "professional" | "business" | "enterprise"
 export type SubscriptionStatus = "active" | "trial" | "suspended" | "cancelled"
 
 export interface RevenueAccount {

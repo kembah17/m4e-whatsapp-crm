@@ -18,7 +18,6 @@ import {
   Rocket,
   Sparkles,
   TrendingUp,
-  Zap,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -26,22 +25,27 @@ const TIER_CONFIG: Record<
   SubscriptionTier,
   { label: string; price: number; color: string; icon: React.ElementType }
 > = {
-  free: { label: "Free", price: 0, color: "text-zinc-400 bg-zinc-500/10", icon: Zap },
   starter: {
     label: "Starter",
-    price: 25000,
+    price: 50000,
     color: "text-blue-400 bg-blue-500/10",
     icon: Rocket,
   },
-  growth: {
-    label: "Growth",
-    price: 75000,
+  professional: {
+    label: "Professional",
+    price: 120000,
     color: "text-amber-500 bg-amber-500/10",
     icon: TrendingUp,
   },
+  business: {
+    label: "Business",
+    price: 250000,
+    color: "text-emerald-400 bg-emerald-500/10",
+    icon: Building2,
+  },
   enterprise: {
     label: "Enterprise",
-    price: 150000,
+    price: 0,
     color: "text-purple-400 bg-purple-500/10",
     icon: Crown,
   },
@@ -54,7 +58,7 @@ const STATUS_COLORS: Record<SubscriptionStatus, string> = {
   cancelled: "bg-zinc-500/10 text-zinc-400",
 }
 
-const TIER_OPTIONS: SubscriptionTier[] = ["free", "starter", "growth", "enterprise"]
+const TIER_OPTIONS: SubscriptionTier[] = ["starter", "professional", "business", "enterprise"]
 const STATUS_OPTIONS: SubscriptionStatus[] = ["active", "trial", "suspended", "cancelled"]
 
 function formatNaira(amount: number): string {

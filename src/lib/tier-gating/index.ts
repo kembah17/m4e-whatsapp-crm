@@ -21,7 +21,7 @@ export function tierMeetsRequirement(currentTier: FeatureTier, requiredTier: Fea
  * Returns null if no config exists (defaults to starter).
  */
 export async function getFeatureAccess(accountId: string): Promise<FeatureAccessConfig | null> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin()
     .from('feature_access_config')
     .select('*')
     .eq('account_id', accountId)
@@ -56,7 +56,7 @@ export async function getOrCreateFeatureAccess(accountId: string): Promise<Featu
     preview_features: [],
   };
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin()
     .from('feature_access_config')
     .insert(defaults)
     .select()
@@ -167,7 +167,7 @@ export async function recordUpsellShown(
     [featureName]: new Date().toISOString(),
   };
 
-  await supabaseAdmin
+  await supabaseAdmin()
     .from('feature_access_config')
     .update({
       upsell_prompts_shown: updatedPrompts,
@@ -190,20 +190,20 @@ export async function getUsageLimits(accountId: string): Promise<{
 
   // Get current counts
   const [contactsRes, broadcastsRes, campaignsRes, invoicesRes] = await Promise.all([
-    supabaseAdmin
+    supabaseAdmin()
       .from('contacts')
       .select('id', { count: 'exact', head: true })
       .eq('account_id', accountId),
-    supabaseAdmin
+    supabaseAdmin()
       .from('broadcasts')
       .select('id', { count: 'exact', head: true })
       .eq('account_id', accountId)
       .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-    supabaseAdmin
+    supabaseAdmin()
       .from('campaigns')
       .select('id', { count: 'exact', head: true })
       .eq('account_id', accountId),
-    supabaseAdmin
+    supabaseAdmin()
       .from('invoices')
       .select('id', { count: 'exact', head: true })
       .eq('account_id', accountId)
@@ -284,7 +284,7 @@ export async function updateAccountTier(
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin()
     .from('feature_access_config')
     .update(updates)
     .eq('id', config.id)
@@ -352,20 +352,20 @@ export const TIER_DISPLAY: Record<FeatureTier, {
 }> = {
   starter: {
     label: 'Starter',
-    color: 'text-zinc-400 bg-zinc-800/50 border-zinc-700',
-    price: 'Free',
+    color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+    price: '₦50,000/mo',
     description: 'Essential CRM features for small businesses',
   },
   professional: {
     label: 'Professional',
-    color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    price: 'NGN 25,000/mo',
+    color: 'text-[#C9A84C] bg-[#C9A84C]/10 border-[#C9A84C]/30',
+    price: '₦120,000/mo',
     description: 'Financial tools and AI-powered features',
   },
   business: {
     label: 'Business',
-    color: 'text-[#C9A84C] bg-[#C9A84C]/10 border-[#C9A84C]/30',
-    price: 'NGN 50,000/mo',
+    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    price: '₦250,000/mo',
     description: 'Growth tools, loyalty, and advanced analytics',
   },
   enterprise: {

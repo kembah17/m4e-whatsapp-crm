@@ -125,7 +125,7 @@ const tiers: PricingTier[] = [
       "Keyword sentiment detection",
       "Basic analytics dashboard",
     ],
-    cta: "Start Free Trial",
+    cta: "Start 14-Day Trial",
   },
   {
     name: "Professional",
@@ -155,7 +155,7 @@ const tiers: PricingTier[] = [
       "Advanced analytics",
       "Email support",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
   },
   {
     name: "Business",
@@ -234,7 +234,7 @@ const comparison: ComparisonRow[] = [
 const faqs = [
   {
     q: "Is there a free trial?",
-    a: "Yes! Every plan comes with a 14-day free trial with full access to all features in your chosen tier. No credit card required to start.",
+    a: "Yes! Every plan comes with a 14-day trial with full access to all features in your chosen tier. No credit card required to start.",
   },
   {
     q: "Do I need a WhatsApp Business API account?",
@@ -307,7 +307,7 @@ function NavBar() {
             href="/signup"
             className="rounded-lg bg-gradient-to-r from-[#d4af37] to-[#b8962e] px-4 py-2 text-sm font-bold text-[#1a1a2e] transition-opacity hover:opacity-90"
           >
-            Start Free Trial
+            Start 14-Day Trial
           </Link>
         </div>
       </div>
@@ -348,7 +348,7 @@ function HeroSection() {
             href="/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b8962e] px-8 py-3.5 text-base font-bold text-[#1a1a2e] shadow-lg shadow-[#d4af37]/20 transition-all hover:shadow-xl hover:shadow-[#d4af37]/30"
           >
-            Start 14-Day Free Trial
+            Start 14-Day Trial
             <ArrowRight className="h-5 w-5" />
           </Link>
           <Link
@@ -409,7 +409,7 @@ function PricingSection() {
             Simple, Transparent Pricing
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/50">
-            Choose the plan that fits your business. All plans include a 14-day free trial.
+            Choose the plan that fits your business. All plans include a 14-day trial.
           </p>
         </div>
 
@@ -575,7 +575,7 @@ function CTASection() {
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-lg text-white/50">
           Join Nigerian businesses already using M4E to turn dormant customers into
-          repeat buyers. Start your free trial today.
+          repeat buyers. Start your 14-day trial today.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -583,7 +583,7 @@ function CTASection() {
             href="/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b8962e] px-8 py-3.5 text-base font-bold text-[#1a1a2e] shadow-lg shadow-[#d4af37]/20 transition-all hover:shadow-xl hover:shadow-[#d4af37]/30"
           >
-            Start 14-Day Free Trial
+            Start 14-Day Trial
             <ArrowRight className="h-5 w-5" />
           </Link>
           <Link

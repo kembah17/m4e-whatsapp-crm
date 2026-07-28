@@ -18,21 +18,21 @@ const TIER_DISPLAY: Record<FeatureTier, {
 }> = {
   starter: {
     label: "Starter",
-    color: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
+    color: "text-blue-400 bg-blue-500/10 border-blue-500/30",
     icon: Star,
-    price: "Free",
+    price: "₦50,000/mo",
   },
   professional: {
     label: "Professional",
-    color: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+    color: "text-[#C9A84C] bg-[#C9A84C]/10 border-[#C9A84C]/30",
     icon: Gem,
-    price: "NGN 25,000/mo",
+    price: "₦120,000/mo",
   },
   business: {
     label: "Business",
-    color: "text-[#C9A84C] bg-[#C9A84C]/10 border-[#C9A84C]/30",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
     icon: Crown,
-    price: "NGN 50,000/mo",
+    price: "₦250,000/mo",
   },
   enterprise: {
     label: "Enterprise",
