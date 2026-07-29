@@ -19,6 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,8 +31,14 @@ import {
   MessageSquare,
   DollarSign,
   Loader2,
+  ListChecks,
+  Activity,
+  Banknote,
 } from "lucide-react";
 import { toast } from "sonner";
+import { DealChecklistPanel } from "./deal-checklist-panel";
+import { DealActivityTimeline } from "./deal-activity-timeline";
+import { OfflinePaymentsPanel } from "@/components/payments/offline-payments-panel";
 
 interface DealFormProps {
   open: boolean;
@@ -73,6 +80,7 @@ export function DealForm({
   const [statusAction, setStatusAction] = useState<DealStatus | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   // Reset the form fields every time the sheet opens or its input
   // props change. This is a legitimate prop-driven sync; the rule is
@@ -81,6 +89,7 @@ export function DealForm({
   useEffect(() => {
     if (!open) return;
     setConfirmDelete(false);
+    setActiveTab("details");
     if (deal) {
       setTitle(deal.title);
       setValue(String(deal.value ?? ""));
@@ -243,6 +252,179 @@ export function DealForm({
     onSaved();
   }
 
+  // ── Details form content (shared between new + edit) ───────
+  const detailsContent = (
+    <div className="space-y-4">
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Title</Label>
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Deal title"
+          className="border-border bg-muted text-foreground"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Contact</Label>
+        <select
+          value={contactId}
+          onChange={(e) => setContactId(e.target.value)}
+          className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+        >
+          <option value="">Select a contact</option>
+          {contacts.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name || c.phone}
+            </option>
+          ))}
+        </select>
+
+        {linkedConversation && (
+          <Link
+            href="/inbox"
+            className="mt-1 inline-flex items-center gap-1.5 self-start rounded-md bg-primary/10 px-2 py-1 text-xs text-primary hover:bg-primary/20"
+          >
+            <MessageSquare className="h-3 w-3" />
+            Link to Conversation
+          </Link>
+        )}
+      </div>
+
+      <div className="grid grid-cols-[1fr_110px] gap-3">
+        <div className="grid gap-2">
+          <Label className="text-muted-foreground">Value</Label>
+          <div className="relative">
+            <DollarSign className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="number"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="0"
+              className="border-border bg-muted pl-7 text-foreground"
+            />
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label className="text-muted-foreground">Currency</Label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Expected Close Date</Label>
+        <Input
+          type="date"
+          value={expectedCloseDate}
+          onChange={(e) => setExpectedCloseDate(e.target.value)}
+          className="border-border bg-muted text-foreground"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Stage</Label>
+        <select
+          value={stageId}
+          onChange={(e) => setStageId(e.target.value)}
+          className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+        >
+          {stages.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Assigned To</Label>
+        <select
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+          className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+        >
+          <option value="">Unassigned</option>
+          {profiles.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.full_name || p.email}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-muted-foreground">Notes</Label>
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add notes..."
+          className="min-h-[100px] border-border bg-muted text-foreground"
+        />
+      </div>
+
+      {deal && (
+        <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Status
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => handleStatusChange("won")}
+              disabled={!!statusAction || deal.status === "won"}
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {statusAction === "won" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="mr-1 h-4 w-4" />
+                  Mark as Won
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleStatusChange("lost")}
+              disabled={!!statusAction || deal.status === "lost"}
+              className="flex-1 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {statusAction === "lost" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <X className="mr-1 h-4 w-4" />
+                  Mark as Lost
+                </>
+              )}
+            </Button>
+          </div>
+          {deal.status && deal.status !== "open" && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleStatusChange("open")}
+              disabled={!!statusAction}
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              Reopen deal
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -256,175 +438,80 @@ export function DealForm({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Title</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Deal title"
-                className="border-border bg-muted text-foreground"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Contact</Label>
-              <select
-                value={contactId}
-                onChange={(e) => setContactId(e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="">Select a contact</option>
-                {contacts.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name || c.phone}
-                  </option>
-                ))}
-              </select>
-
-              {linkedConversation && (
-                <Link
-                  href="/inbox"
-                  className="mt-1 inline-flex items-center gap-1.5 self-start rounded-md bg-primary/10 px-2 py-1 text-xs text-primary hover:bg-primary/20"
+          {deal ? (
+            /* ── Tabbed view for existing deals ─────────────── */
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="flex flex-1 flex-col overflow-hidden"
+            >
+              <TabsList className="mx-4 mt-3 mb-0 grid w-auto grid-cols-4 bg-muted/50">
+                <TabsTrigger
+                  value="details"
+                  className="text-xs data-[state=active]:bg-background"
                 >
-                  <MessageSquare className="h-3 w-3" />
-                  Link to Conversation
-                </Link>
-              )}
-            </div>
-
-            <div className="grid grid-cols-[1fr_110px] gap-3">
-              <div className="grid gap-2">
-                <Label className="text-muted-foreground">Value</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder="0"
-                    className="border-border bg-muted pl-7 text-foreground"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label className="text-muted-foreground">Currency</Label>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+                  Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="checklist"
+                  className="text-xs data-[state=active]:bg-background"
                 >
-                  {CURRENCIES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.code}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                  <ListChecks className="mr-1 h-3 w-3" />
+                  Checklist
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activities"
+                  className="text-xs data-[state=active]:bg-background"
+                >
+                  <Activity className="mr-1 h-3 w-3" />
+                  Activity
+                </TabsTrigger>
+                <TabsTrigger
+                  value="payments"
+                  className="text-xs data-[state=active]:bg-background"
+                >
+                  <Banknote className="mr-1 h-3 w-3" />
+                  Payments
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Expected Close Date</Label>
-              <Input
-                type="date"
-                value={expectedCloseDate}
-                onChange={(e) => setExpectedCloseDate(e.target.value)}
-                className="border-border bg-muted text-foreground"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Stage</Label>
-              <select
-                value={stageId}
-                onChange={(e) => setStageId(e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+              <TabsContent
+                value="details"
+                className="flex-1 overflow-y-auto p-4 mt-0"
               >
-                {stages.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {detailsContent}
+              </TabsContent>
 
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Assigned To</Label>
-              <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+              <TabsContent
+                value="checklist"
+                className="flex-1 overflow-y-auto p-4 mt-0"
               >
-                <option value="">Unassigned</option>
-                {profiles.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.full_name || p.email}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <DealChecklistPanel dealId={deal.id} />
+              </TabsContent>
 
-            <div className="grid gap-2">
-              <Label className="text-muted-foreground">Notes</Label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes..."
-                className="min-h-[100px] border-border bg-muted text-foreground"
-              />
-            </div>
+              <TabsContent
+                value="activities"
+                className="flex-1 overflow-y-auto p-4 mt-0"
+              >
+                <DealActivityTimeline dealId={deal.id} />
+              </TabsContent>
 
-            {deal && (
-              <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Status
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => handleStatusChange("won")}
-                    disabled={!!statusAction || deal.status === "won"}
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {statusAction === "won" ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Check className="mr-1 h-4 w-4" />
-                        Mark as Won
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleStatusChange("lost")}
-                    disabled={!!statusAction || deal.status === "lost"}
-                    className="flex-1 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {statusAction === "lost" ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <X className="mr-1 h-4 w-4" />
-                        Mark as Lost
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {deal.status && deal.status !== "open" && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleStatusChange("open")}
-                    disabled={!!statusAction}
-                    className="w-full text-muted-foreground hover:text-foreground"
-                  >
-                    Reopen deal
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+              <TabsContent
+                value="payments"
+                className="flex-1 overflow-y-auto p-4 mt-0"
+              >
+                <OfflinePaymentsPanel
+                  dealId={deal.id}
+                  contactId={deal.contact_id || undefined}
+                />
+              </TabsContent>
+            </Tabs>
+          ) : (
+            /* ── Simple form for new deals ──────────────────── */
+            <div className="flex-1 overflow-y-auto p-4">
+              {detailsContent}
+            </div>
+          )}
 
           <div className="border-t border-border/50 bg-popover/80 p-4">
             <div className="flex gap-2">

@@ -1,8 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { Deal, PipelineStage } from "@/types";
 import { Calendar, Check, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { ChecklistProgressBar, PaymentStatusBadge } from "./deal-progress-indicators";
+import type { DealChecklistProgress } from "@/types/offline-operations";
 
 interface DealCardProps {
   deal: Deal;
@@ -25,9 +29,56 @@ function initials(name?: string, fallback?: string) {
   return source.charAt(0).toUpperCase();
 }
 
+/** Lightweight hook to fetch checklist + payment summary for a deal card */
+function useDealIndicators(dealId: string, open: boolean) {
+  const [progress, setProgress] = useState<DealChecklistProgress | null>(null);
+  const [payments, setPayments] = useState<{ pendingCount: number; verifiedCount: number } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const supabase = createClient();
+
+    (async () => {
+      // Fetch checklist progress from the view
+      const { data: progData } = await supabase
+        .from("deal_checklist_progress")
+        .select("*")
+        .eq("deal_id", dealId)
+        .maybeSingle();
+
+      if (!cancelled) {
+        setProgress((progData as DealChecklistProgress) ?? null);
+      }
+
+      // Fetch offline payments for this deal
+      const { data: payData } = await supabase
+        .from("offline_payments")
+        .select("status")
+        .eq("deal_id", dealId);
+
+      if (!cancelled && payData) {
+        setPayments({
+          pendingCount: payData.filter(
+            (p: { status: string }) => p.status === "pending"
+          ).length,
+          verifiedCount: payData.filter(
+            (p: { status: string }) => p.status === "verified"
+          ).length,
+        });
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [dealId, open]);
+
+  return { progress, payments };
+}
+
 export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
   const contactLabel = deal.contact?.name || deal.contact?.phone || "No contact";
   const assigneeLabel = deal.assignee?.full_name || null;
+  const { progress, payments } = useDealIndicators(deal.id, !isOverlay);
 
   return (
     <button
@@ -89,6 +140,25 @@ export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
           </span>
         )}
       </div>
+
+      {/* Progress indicators row */}
+      {(progress?.total_items ?? 0) > 0 || (payments?.pendingCount ?? 0) > 0 || (payments?.verifiedCount ?? 0) > 0 ? (
+        <div className="mt-2 flex items-center gap-2">
+          {progress && progress.total_items > 0 && (
+            <ChecklistProgressBar
+              progress={progress}
+              compact
+            />
+          )}
+          {payments && (payments.pendingCount > 0 || payments.verifiedCount > 0) && (
+            <PaymentStatusBadge
+              pendingCount={payments.pendingCount}
+              verifiedCount={payments.verifiedCount}
+              compact
+            />
+          )}
+        </div>
+      ) : null}
 
       {assigneeLabel && (
         <div className="mt-2 flex items-center justify-end">

@@ -133,6 +133,10 @@ export interface Tag {
   user_id: string;
   name: string;
   color: string;
+  stage_type?: "auto_digital" | "manual_digital" | "physical_verification" | "external_dependent" | "time_gated";
+  min_duration_hours?: number;
+  requires_verification?: boolean;
+  description?: string | null;
   created_at: string;
 }
 
@@ -338,6 +342,10 @@ export interface PipelineStage {
   name: string;
   position: number;
   color: string;
+  stage_type?: "auto_digital" | "manual_digital" | "physical_verification" | "external_dependent" | "time_gated";
+  min_duration_hours?: number;
+  requires_verification?: boolean;
+  description?: string | null;
   created_at: string;
 }
 
@@ -818,3 +826,7 @@ export interface AgentEvent {
   completed_at: string | null;
   expires_at: string | null;
 }
+
+// Offline Operations (Migration 073)
+export type { StageType, ChecklistItemType, ActivityType, PaymentMethodType, OfflinePaymentStatus } from "./offline-operations";
+export type { OfflinePayment, StageChecklistTemplate, DealChecklistCompletion, DealActivity, DealChecklistProgress } from "./offline-operations";
