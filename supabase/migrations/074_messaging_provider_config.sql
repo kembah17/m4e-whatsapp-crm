@@ -31,12 +31,12 @@ CREATE POLICY "Account members can view their provider config"
 
 CREATE POLICY "Account admins can manage provider config"
   ON public.messaging_provider_config FOR ALL
-  USING (public.is_account_admin(account_id));
+  USING (public.is_account_member(account_id, 'admin'::account_role_enum));
 
 -- Updated_at trigger
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON public.messaging_provider_config
-  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Comment
 COMMENT ON TABLE public.messaging_provider_config IS
