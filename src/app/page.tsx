@@ -16,13 +16,13 @@ import {
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'M4E Business Growth Engine — WhatsApp CRM for Nigerian Businesses',
+  title: 'M4E Business Growth Engine — Manage Customers, Sales & WhatsApp in One Place',
   description:
-    'The only Nigerian CRM that combines WhatsApp messaging, AI intelligence, and business operations in one platform. Manage customers, track sales, and grow revenue.',
+    'The M4E Business Growth Engine gives Nigerian businesses everything they need to manage customers, track sales, send WhatsApp messages, and grow — all in one place. Built by Marketing4Effect.',
   openGraph: {
-    title: 'M4E Business Growth Engine — WhatsApp CRM for Nigerian Businesses',
+    title: 'M4E Business Growth Engine — Manage Customers, Sales & WhatsApp in One Place',
     description:
-      'The only Nigerian CRM that combines WhatsApp messaging, AI intelligence, and business operations in one platform.',
+      'The M4E Business Growth Engine gives Nigerian businesses everything they need to manage customers, track sales, send WhatsApp messages, and grow — all in one place.',
     type: 'website',
   },
 }
@@ -209,13 +209,17 @@ export default function HomePage() {
           </div>
 
           <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Grow Your Business{' '}
-            <span className="text-[#C9A84C]">with WhatsApp</span>
+            The M4E{' '}
+            <span className="text-[#C9A84C]">Business Growth Engine</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
-            The only Nigerian CRM that combines WhatsApp messaging, AI
-            intelligence, and business operations in one platform
+            Everything you need to manage your customers, track your sales,
+            send WhatsApp messages, and grow your business — all in one place.
+            No more juggling different apps and spreadsheets.
+          </p>
+          <p className="mx-auto mt-3 text-base text-[#C9A84C]">
+            Grow Your Business with WhatsApp
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
