@@ -204,7 +204,7 @@ function CampaignGallery({ templates }: { templates: CampaignTemplate[] }) {
 
   const formatRate = (rate: number | null) => {
     if (rate === null) return "—"
-    return `${Math.round(rate * 100)}%`
+    return `${rate.toFixed(1)}%`
   }
 
   return (
@@ -330,7 +330,7 @@ function CampaignGallery({ templates }: { templates: CampaignTemplate[] }) {
                         {template.how_it_works && (
                           <div className="text-[11px] text-muted-foreground space-y-0.5">
                             <p className="font-semibold text-foreground text-[10px] uppercase tracking-wide">How It Works</p>
-                            {template.how_it_works.split("\n").map((step, i) => (
+                            {template.how_it_works.split(/\\n|\n/).map((step, i) => (
                               <p key={i}>{step}</p>
                             ))}
                           </div>

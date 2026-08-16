@@ -385,7 +385,7 @@ export function Step2Template({
                         How It Works
                       </p>
                       <div className="text-xs text-gray-600 leading-relaxed space-y-0.5">
-                        {template.how_it_works.split("\n").map((step, i) => (
+                        {template.how_it_works.split(/\\n|\n/).map((step, i) => (
                           <p key={i}>{step}</p>
                         ))}
                       </div>
