@@ -470,7 +470,6 @@ const HELP_SECTIONS: HelpSection[] = [
     id: "account-health",
     title: "Account Health",
     icon: Activity,
-  Headphones,
     description: "Monitoring and maintaining your WhatsApp Business account health",
     faqs: [
       {
