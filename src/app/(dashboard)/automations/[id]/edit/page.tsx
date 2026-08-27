@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import {
   AutomationBuilder,
   fromServerSteps,
@@ -70,5 +71,12 @@ export default function EditAutomationPage({
     )
   }
 
-  return <AutomationBuilder initial={initial} />
+  return (
+    <ErrorBoundary
+      fallbackTitle="Automation builder encountered an error"
+      fallbackMessage="There was a problem loading this automation. This could be due to corrupted step data. Please try again or contact support."
+    >
+      <AutomationBuilder initial={initial} />
+    </ErrorBoundary>
+  )
 }
