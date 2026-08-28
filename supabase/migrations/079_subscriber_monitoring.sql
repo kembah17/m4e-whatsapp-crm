@@ -29,8 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_events_created
   ON activity_events (created_at DESC);
 
 -- Partition-friendly: auto-delete events older than 90 days
-CREATE INDEX IF NOT EXISTS idx_activity_events_cleanup
-  ON activity_events (created_at) WHERE created_at < NOW() - INTERVAL '90 days';
+-- Removed: cleanup index with NOW() is not IMMUTABLE, using idx_activity_events_created instead
 
 -- ============================================================
 -- 2. Account Health Scores (computed daily)
@@ -209,29 +208,17 @@ RETURNS JSONB
 LANGUAGE sql STABLE
 AS $$
   SELECT jsonb_build_object(
-    'total_events', COUNT(*),
-    'unique_features', COUNT(DISTINCT feature_used),
-    'unique_pages', COUNT(DISTINCT page_path),
-    'unique_sessions', COUNT(DISTINCT session_id),
-    'event_categories', jsonb_object_agg(
-      COALESCE(event_category, 'unknown'),
-      cat_count
+    'total_events', (SELECT COUNT(*) FROM activity_events WHERE account_id = p_account_id AND created_at > NOW() - (p_days || ' days')::INTERVAL),
+    'unique_features', (SELECT COUNT(DISTINCT feature_used) FROM activity_events WHERE account_id = p_account_id AND created_at > NOW() - (p_days || ' days')::INTERVAL),
+    'unique_pages', (SELECT COUNT(DISTINCT page_path) FROM activity_events WHERE account_id = p_account_id AND created_at > NOW() - (p_days || ' days')::INTERVAL),
+    'unique_sessions', (SELECT COUNT(DISTINCT session_id) FROM activity_events WHERE account_id = p_account_id AND created_at > NOW() - (p_days || ' days')::INTERVAL),
+    'event_categories', COALESCE(
+      (SELECT jsonb_object_agg(COALESCE(event_category, 'unknown'), cat_count)
+       FROM (SELECT event_category, COUNT(*) as cat_count FROM activity_events WHERE account_id = p_account_id AND created_at > NOW() - (p_days || ' days')::INTERVAL GROUP BY event_category) cats),
+      '{}'::jsonb
     ),
     'period_days', p_days
-  )
-  FROM (
-    SELECT event_category, COUNT(*) as cat_count
-    FROM activity_events
-    WHERE account_id = p_account_id
-      AND created_at > NOW() - (p_days || ' days')::INTERVAL
-    GROUP BY event_category
-  ) sub
-  CROSS JOIN (
-    SELECT *
-    FROM activity_events
-    WHERE account_id = p_account_id
-      AND created_at > NOW() - (p_days || ' days')::INTERVAL
-  ) events;
+  );
 $$;
 
 -- ============================================================
