@@ -64,25 +64,25 @@ export function SentimentDashboard() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">\ud83d\udfe2 Positive</p>
+            <p className="text-sm text-muted-foreground">🟢 Positive</p>
             <p className="text-2xl font-bold text-green-500">{dist.positive}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">\ud83d\udfe1 Neutral</p>
+            <p className="text-sm text-muted-foreground">🟡 Neutral</p>
             <p className="text-2xl font-bold text-yellow-500">{dist.neutral}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">\ud83d\udd34 Negative</p>
+            <p className="text-sm text-muted-foreground">🔴 Negative</p>
             <p className="text-2xl font-bold text-red-500">{dist.negative}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">\ud83d\udea8 Urgent</p>
+            <p className="text-sm text-muted-foreground">🚨 Urgent</p>
             <p className="text-2xl font-bold text-red-600">{dist.urgent}</p>
           </CardContent>
         </Card>
