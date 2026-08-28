@@ -35,7 +35,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'monthly',
     amountKobo: 5_000_000, // ₦50,000
     amountNaira: 50_000,
-    planCode: 'm4e_starter_monthly',
+    planCode: 'PLN_7mqau443r72w43s',
     features: [
       'Up to 500 contacts',
       '2 team members',
@@ -51,7 +51,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'monthly',
     amountKobo: 12_000_000, // ₦120,000
     amountNaira: 120_000,
-    planCode: 'm4e_professional_monthly',
+    planCode: 'PLN_nl2ntxoj6ofrtvg',
     features: [
       'Up to 2,000 contacts',
       '5 team members',
@@ -69,7 +69,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'monthly',
     amountKobo: 25_000_000, // ₦250,000
     amountNaira: 250_000,
-    planCode: 'm4e_business_monthly',
+    planCode: 'PLN_qxo2noiylntv80o',
     features: [
       'Unlimited contacts',
       'Unlimited team members',
@@ -88,7 +88,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'annually',
     amountKobo: 50_000_000, // ₦500,000 (save ₦100,000)
     amountNaira: 500_000,
-    planCode: 'm4e_starter_annually',
+    planCode: 'PLN_4u2awqqx1v2f3xz',
     features: [
       'Everything in Starter Monthly',
       'Save ₦100,000/year (2 months free)',
@@ -100,7 +100,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'annually',
     amountKobo: 120_000_000, // ₦1,200,000 (save ₦240,000)
     amountNaira: 1_200_000,
-    planCode: 'm4e_professional_annually',
+    planCode: 'PLN_rujw8hvhsbhgat3',
     features: [
       'Everything in Professional Monthly',
       'Save ₦240,000/year (2 months free)',
@@ -112,7 +112,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     interval: 'annually',
     amountKobo: 250_000_000, // ₦2,500,000 (save ₦500,000)
     amountNaira: 2_500_000,
-    planCode: 'm4e_business_annually',
+    planCode: 'PLN_yifej6vkv53w1dp',
     features: [
       'Everything in Business Monthly',
       'Save ₦500,000/year (2 months free)',
