@@ -38,6 +38,7 @@ import {
   Warehouse,
   BookOpen,
   CalendarClock,
+  CreditCard,
   UserPlus,
   Award,
   Headphones,
@@ -136,6 +137,7 @@ const navGroups: NavGroup[] = [
       { href: "/invoices", label: "Invoices", icon: FileText },
       { href: "/installments", label: "Installments", icon: CalendarClock },
       { href: "/debt-book", label: "Debt Book", icon: BookOpen },
+      { href: "/billing", label: "Billing", icon: CreditCard },
     ],
   },
   {
