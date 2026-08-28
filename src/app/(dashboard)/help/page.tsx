@@ -391,7 +391,7 @@ const HELP_SECTIONS: HelpSection[] = [
       {
         question: "What is Meta Business Verification?",
         answer:
-          "Meta verifies your business identity before allowing WhatsApp API access. M4E handles the entire process. You need: CAC certificate, business email, Facebook Business Page (optional but helpful).",
+          "Meta verifies your business identity before allowing WhatsApp API access. M4E handles the entire process. The standard path requires a CAC certificate and business email. However, if you don’t have CAC registration yet, M4E offers alternative onboarding pathways — see the CAC question below.",
       },
       {
         question: "How long does verification take?",
@@ -401,12 +401,22 @@ const HELP_SECTIONS: HelpSection[] = [
       {
         question: "What if my business is not registered with CAC?",
         answer:
-          "We can explore alternative verification paths. Contact your M4E account manager to discuss options.",
+          "No problem — M4E offers three onboarding pathways: (1) CAC-Ready: If you have your CAC certificate, we proceed with standard Meta Business Verification in 24–72 hours. (2) CAC Assist: If your business operates but lacks CAC registration, M4E helps you obtain registration while onboarding proceeds in parallel. (3) M4E-Provisioned Number: For businesses that need to start immediately, M4E provides a pre-verified WhatsApp Business number you can use right away while your own verification is processed.",
       },
       {
         question: "Can I use my existing WhatsApp number?",
         answer:
           "Yes. Meta\u2019s Coexistence feature allows the WhatsApp Business App and API to work on the same number simultaneously.",
+      },
+      {
+        question: "How long does each onboarding pathway take?",
+        answer:
+          "CAC-Ready pathway: 24\u201372 hours for Meta verification, then full platform access. CAC Assist pathway: You start using the platform immediately with an M4E-provisioned number while CAC registration is processed (typically 2\u20134 weeks). M4E-Provisioned Number: Instant access \u2014 you can start sending campaigns on day one while your own number is being verified.",
+      },
+      {
+        question: "What documents do I need if I don\u2019t have CAC?",
+        answer:
+          "Alternative documents include: business name registration, tax identification number (TIN), utility bills showing business address, bank statements with business name, or trade association membership. M4E will advise on the best combination for your situation.",
       },
     ],
   },

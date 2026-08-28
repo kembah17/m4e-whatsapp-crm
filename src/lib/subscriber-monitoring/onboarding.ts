@@ -23,7 +23,7 @@ export const ONBOARDING_STEPS = [
     step: 3,
     key: 'connect_whatsapp',
     title: 'Connect Your WhatsApp Business',
-    description: 'Link your WhatsApp Business number to start messaging customers',
+    description: 'Connect your WhatsApp Business number. Three pathways available: CAC-ready, CAC assist, or M4E-provisioned number',
     estimatedMinutes: 10,
     action: 'navigate',
     targetPath: '/settings',
