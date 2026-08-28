@@ -113,6 +113,7 @@ const coreItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/my-package", label: "My Package", icon: Package },
 ];
 
 // ── Grouped navigation ────────────────────────────────────

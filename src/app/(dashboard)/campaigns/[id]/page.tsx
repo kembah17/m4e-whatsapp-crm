@@ -64,6 +64,7 @@ import type {
   CampaignSequenceStep,
 } from "@/types/campaigns"
 import { CampaignMonitor } from "@/components/campaigns/campaign-monitor"
+import { EndOfCampaignWorkflow } from "@/components/campaigns/end-of-campaign-workflow"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -991,6 +992,22 @@ export default function CampaignDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* End-of-Campaign Workflow - show for completed campaigns */}
+      {campaign.status === "completed" && (
+        <EndOfCampaignWorkflow
+          campaign={{
+            id: campaign.id,
+            name: campaign.name,
+            status: campaign.status,
+            created_at: campaign.created_at,
+            completed_at: campaign.completed_at,
+            total_audience: campaign.total_audience ?? 0,
+            template_slug: campaign.template_slug,
+          }}
+          onRefresh={fetchCampaign}
+        />
+      )}
 
       {/* Confirmation dialog */}
       <Dialog
