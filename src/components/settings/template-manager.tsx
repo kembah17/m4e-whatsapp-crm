@@ -760,8 +760,8 @@ export function TemplateManager() {
                     ? 'Language is fixed once a template exists on Meta.'
                     : (
                         <>
-                          Must match the exact code on Meta — <code>en_US</code>{' '}
-                          and <code>en</code> are distinct.
+                          Must match the exact code on Meta — "en_US"
+                          and "en" are different codes.
                         </>
                       )}
                 </p>
