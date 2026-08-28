@@ -48,6 +48,10 @@ import {
   DollarSign,
   TrendingUp,
   Cpu,
+  Activity,
+  HeartPulse,
+  Compass,
+  MonitorCheck,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -111,6 +115,7 @@ interface NavGroup {
 
 // ── Core items (always visible, no group header) ──────────
 const coreItems: NavItem[] = [
+  { href: "/getting-started", label: "Getting Started", icon: Compass },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/contacts", label: "Contacts", icon: Users },
@@ -182,6 +187,7 @@ const navGroups: NavGroup[] = [
       { href: "/loyalty", label: "Loyalty", icon: Award },
       { href: "/qr-codes", label: "QR Codes", icon: QrCode },
       { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
+      { href: "/success-metrics", label: "Success Metrics", icon: HeartPulse },
     ],
   },
   {
@@ -191,6 +197,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/data-center", label: "Data Center", icon: Database },
       { href: "/support", label: "Support Desk", icon: Headphones },
+      { href: "/subscribers", label: "Subscribers", icon: MonitorCheck },
     ],
   },
 ];
