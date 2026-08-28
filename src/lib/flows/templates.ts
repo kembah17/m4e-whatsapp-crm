@@ -285,6 +285,357 @@ const LEAD_CAPTURE: FlowTemplate = {
   ],
 };
 
+
+// ============================================================
+// 4. Appointment reminder — healthcare, hospitality, services
+// ============================================================
+const APPOINTMENT_REMINDER: FlowTemplate = {
+  slug: "appointment_reminder",
+  name: "Appointment reminder",
+  description:
+    "Send appointment reminders and let customers confirm, reschedule, or cancel via buttons.",
+  icon: "MessageSquare",
+  trigger_type: "manual",
+  trigger_config: {},
+  entry_node_id: "start",
+  nodes: [
+    {
+      node_key: "start",
+      node_type: "start",
+      config: { next_node_key: "reminder" },
+    },
+    {
+      node_key: "reminder",
+      node_type: "send_buttons",
+      config: {
+        text: "Hi! This is a reminder about your upcoming appointment. Can you confirm your attendance?",
+        footer_text: "Tap a button to respond.",
+        buttons: [
+          {
+            reply_id: "confirm",
+            title: "Confirm",
+            next_node_key: "confirmed",
+          },
+          {
+            reply_id: "reschedule",
+            title: "Reschedule",
+            next_node_key: "reschedule_handoff",
+          },
+          {
+            reply_id: "cancel",
+            title: "Cancel",
+            next_node_key: "cancelled",
+          },
+        ],
+      } as SendButtonsNodeConfig,
+    },
+    {
+      node_key: "confirmed",
+      node_type: "send_message",
+      config: {
+        text: "Great! Your appointment is confirmed. We look forward to seeing you!",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "reschedule_handoff",
+      node_type: "handoff",
+      config: {
+        note: "Customer wants to reschedule their appointment.",
+      } as HandoffNodeConfig,
+    },
+    {
+      node_key: "cancelled",
+      node_type: "send_message",
+      config: {
+        text: "Your appointment has been cancelled. Feel free to book again anytime. Thank you!",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "end",
+      node_type: "end",
+      config: {},
+    },
+  ],
+};
+
+// ============================================================
+// 5. Order status — retail, manufacturing, agriculture
+// ============================================================
+const ORDER_STATUS: FlowTemplate = {
+  slug: "order_status",
+  name: "Order status checker",
+  description:
+    "Let customers check their order status by entering an order number. Routes to support if needed.",
+  icon: "MessageSquare",
+  trigger_type: "keyword",
+  trigger_config: { keywords: ["order", "status", "tracking", "delivery"], match_type: "contains" },
+  entry_node_id: "start",
+  nodes: [
+    {
+      node_key: "start",
+      node_type: "start",
+      config: { next_node_key: "ask_order" },
+    },
+    {
+      node_key: "ask_order",
+      node_type: "collect_input",
+      config: {
+        prompt_text: "Please enter your order number and I will check the status for you.",
+        var_key: "order_number",
+        next_node_key: "status_options",
+      } as CollectInputNodeConfig,
+    },
+    {
+      node_key: "status_options",
+      node_type: "send_buttons",
+      config: {
+        text: "I have noted order #{{vars.order_number}}. What would you like to know?",
+        footer_text: "Select an option below.",
+        buttons: [
+          {
+            reply_id: "delivery",
+            title: "Delivery update",
+            next_node_key: "delivery_handoff",
+          },
+          {
+            reply_id: "issue",
+            title: "Report issue",
+            next_node_key: "issue_handoff",
+          },
+          {
+            reply_id: "done",
+            title: "That is all",
+            next_node_key: "end",
+          },
+        ],
+      } as SendButtonsNodeConfig,
+    },
+    {
+      node_key: "delivery_handoff",
+      node_type: "handoff",
+      config: {
+        note: "Customer asking about delivery for order #{{vars.order_number}}.",
+      } as HandoffNodeConfig,
+    },
+    {
+      node_key: "issue_handoff",
+      node_type: "handoff",
+      config: {
+        note: "Customer reporting issue with order #{{vars.order_number}}.",
+      } as HandoffNodeConfig,
+    },
+    {
+      node_key: "end",
+      node_type: "end",
+      config: {},
+    },
+  ],
+};
+
+// ============================================================
+// 6. Feedback collector — post-purchase satisfaction
+// ============================================================
+const FEEDBACK_COLLECTOR: FlowTemplate = {
+  slug: "feedback_collector",
+  name: "Feedback collector",
+  description:
+    "Collect customer satisfaction feedback after a purchase or service. Routes unhappy customers to support.",
+  icon: "MessageSquare",
+  trigger_type: "manual",
+  trigger_config: {},
+  entry_node_id: "start",
+  nodes: [
+    {
+      node_key: "start",
+      node_type: "start",
+      config: { next_node_key: "ask_rating" },
+    },
+    {
+      node_key: "ask_rating",
+      node_type: "send_buttons",
+      config: {
+        text: "Hi! We would love your feedback on your recent experience. How would you rate it?",
+        footer_text: "Your feedback helps us improve.",
+        buttons: [
+          {
+            reply_id: "great",
+            title: "Great!",
+            next_node_key: "ask_review",
+          },
+          {
+            reply_id: "okay",
+            title: "Okay",
+            next_node_key: "ask_improvement",
+          },
+          {
+            reply_id: "poor",
+            title: "Not good",
+            next_node_key: "unhappy_handoff",
+          },
+        ],
+      } as SendButtonsNodeConfig,
+    },
+    {
+      node_key: "ask_review",
+      node_type: "send_message",
+      config: {
+        text: "Wonderful! We are so glad you had a great experience. Would you mind leaving us a review? It really helps! Thank you!",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "ask_improvement",
+      node_type: "collect_input",
+      config: {
+        prompt_text: "Thanks for the feedback! What could we do better next time?",
+        var_key: "improvement_suggestion",
+        next_node_key: "thanks",
+      } as CollectInputNodeConfig,
+    },
+    {
+      node_key: "thanks",
+      node_type: "send_message",
+      config: {
+        text: "Thank you for sharing! We will use your feedback to improve.",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "unhappy_handoff",
+      node_type: "handoff",
+      config: {
+        note: "Customer rated experience as poor. Needs immediate attention for service recovery.",
+      } as HandoffNodeConfig,
+    },
+    {
+      node_key: "end",
+      node_type: "end",
+      config: {},
+    },
+  ],
+};
+
+// ============================================================
+// 7. Reactivation outreach — dormant customer win-back
+// ============================================================
+const REACTIVATION_OUTREACH: FlowTemplate = {
+  slug: "reactivation_outreach",
+  name: "Reactivation outreach",
+  description:
+    "Re-engage dormant customers with a special offer. Captures interest or removes uninterested contacts.",
+  icon: "UserPlus",
+  trigger_type: "manual",
+  trigger_config: {},
+  entry_node_id: "start",
+  nodes: [
+    {
+      node_key: "start",
+      node_type: "start",
+      config: { next_node_key: "reactivation_msg" },
+    },
+    {
+      node_key: "reactivation_msg",
+      node_type: "send_buttons",
+      config: {
+        text: "Hi! We noticed it has been a while since your last visit. We would love to welcome you back with a special offer!",
+        footer_text: "Are you interested?",
+        buttons: [
+          {
+            reply_id: "interested",
+            title: "Yes, tell me more!",
+            next_node_key: "offer_details",
+          },
+          {
+            reply_id: "not_now",
+            title: "Maybe later",
+            next_node_key: "noted",
+          },
+          {
+            reply_id: "unsubscribe",
+            title: "Stop messages",
+            next_node_key: "unsubscribed",
+          },
+        ],
+      } as SendButtonsNodeConfig,
+    },
+    {
+      node_key: "offer_details",
+      node_type: "handoff",
+      config: {
+        note: "Dormant customer is interested in reactivation offer. Share the current promotion and close the sale.",
+      } as HandoffNodeConfig,
+    },
+    {
+      node_key: "noted",
+      node_type: "send_message",
+      config: {
+        text: "No problem! We will check in again soon. Have a great day!",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "unsubscribed",
+      node_type: "send_message",
+      config: {
+        text: "We have noted your preference. You will not receive further promotional messages. Thank you!",
+        next_node_key: "end",
+      } as SendMessageNodeConfig,
+    },
+    {
+      node_key: "end",
+      node_type: "end",
+      config: {},
+    },
+  ],
+};
+
+// ============================================================
+// 8. Product enquiry — retail, e-commerce, agriculture
+// ============================================================
+const PRODUCT_ENQUIRY: FlowTemplate = {
+  slug: "product_enquiry",
+  name: "Product enquiry",
+  description:
+    "Handle product enquiries by collecting what the customer needs and routing to the right team.",
+  icon: "HelpCircle",
+  trigger_type: "keyword",
+  trigger_config: { keywords: ["buy", "price", "product", "catalog", "catalogue"], match_type: "contains" },
+  entry_node_id: "start",
+  nodes: [
+    {
+      node_key: "start",
+      node_type: "start",
+      config: { next_node_key: "ask_product" },
+    },
+    {
+      node_key: "ask_product",
+      node_type: "collect_input",
+      config: {
+        prompt_text: "Hi! What product or service are you interested in?",
+        var_key: "product_interest",
+        next_node_key: "ask_quantity",
+      } as CollectInputNodeConfig,
+    },
+    {
+      node_key: "ask_quantity",
+      node_type: "collect_input",
+      config: {
+        prompt_text: "How many units do you need, or what quantity are you looking for?",
+        var_key: "quantity",
+        next_node_key: "sales_handoff",
+      } as CollectInputNodeConfig,
+    },
+    {
+      node_key: "sales_handoff",
+      node_type: "handoff",
+      config: {
+        note: "Product enquiry — interested in: {{vars.product_interest}}, quantity: {{vars.quantity}}. Please send pricing and availability.",
+      } as HandoffNodeConfig,
+    },
+  ],
+};
 // ============================================================
 // Registry
 // ============================================================
@@ -293,6 +644,11 @@ const TEMPLATES: Record<string, FlowTemplate> = {
   welcome_menu: WELCOME_MENU,
   faq_bot: FAQ_BOT,
   lead_capture: LEAD_CAPTURE,
+  appointment_reminder: APPOINTMENT_REMINDER,
+  order_status: ORDER_STATUS,
+  feedback_collector: FEEDBACK_COLLECTOR,
+  reactivation_outreach: REACTIVATION_OUTREACH,
+  product_enquiry: PRODUCT_ENQUIRY,
 };
 
 export function getFlowTemplate(slug: string): FlowTemplate | null {

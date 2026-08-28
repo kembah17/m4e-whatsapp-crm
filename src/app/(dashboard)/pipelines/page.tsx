@@ -6,6 +6,7 @@ import type { Pipeline, PipelineStage, Deal } from "@/types";
 import { PipelineBoard } from "@/components/pipelines/pipeline-board";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
 import { DealForm } from "@/components/pipelines/deal-form";
+import { PIPELINE_PRESETS, type PipelinePreset } from '@/lib/pipeline/presets'
 import { PipelineAnalytics } from "@/components/pipelines/pipeline-analytics";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,6 +61,7 @@ export default function PipelinesPage() {
   // Dialog / sheet state
   const [newPipelineOpen, setNewPipelineOpen] = useState(false);
   const [newPipelineName, setNewPipelineName] = useState("");
+  const [selectedPreset, setSelectedPreset] = useState<string>('default_sales');
   const [creating, setCreating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -131,12 +133,14 @@ export default function PipelinesPage() {
       return null;
     }
 
-    const stagesPayload = SPEC_DEFAULT_STAGES.map((s) => ({
+    const preset = PIPELINE_PRESETS.find((p) => p.id === selectedPreset);
+    const presetStages = preset ? preset.stages : PIPELINE_PRESETS[0].stages;
+    const stagesPayload = presetStages.map((s) => ({
       pipeline_id: pipeline.id,
       name: s.name,
       color: s.color,
       position: s.position,
-    }));
+    }));;
     await supabase.from("pipeline_stages").insert(stagesPayload);
 
     return pipeline as Pipeline;
@@ -281,7 +285,9 @@ export default function PipelinesPage() {
       return;
     }
 
-    const stagesPayload = SPEC_DEFAULT_STAGES.map((s) => ({
+    const preset = PIPELINE_PRESETS.find((p) => p.id === selectedPreset);
+    const presetStages = preset ? preset.stages : PIPELINE_PRESETS[0].stages;
+    const stagesPayload = presetStages.map((s) => ({
       pipeline_id: pipeline.id,
       name: s.name,
       color: s.color,
@@ -290,6 +296,7 @@ export default function PipelinesPage() {
     await supabase.from("pipeline_stages").insert(stagesPayload);
 
     setNewPipelineName("");
+    setSelectedPreset('default_sales');
     setNewPipelineOpen(false);
     setSelectedPipelineId(pipeline.id);
     await refreshPipelines();
@@ -428,21 +435,53 @@ export default function PipelinesPage() {
 
       {/* New Pipeline Dialog */}
       <Dialog open={newPipelineOpen} onOpenChange={setNewPipelineOpen}>
-        <DialogContent className="sm:max-w-sm bg-popover border-border">
+        <DialogContent className="sm:max-w-md bg-popover border-border">
           <DialogHeader>
             <DialogTitle className="text-popover-foreground">New Pipeline</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
-            <Label className="text-muted-foreground">Pipeline Name</Label>
-            <Input
-              value={newPipelineName}
-              onChange={(e) => setNewPipelineName(e.target.value)}
-              placeholder="e.g., Enterprise Sales"
-              className="mt-2 bg-muted border-border text-foreground"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreatePipeline();
-              }}
-            />
+          <div className="py-2 space-y-4">
+            <div>
+              <Label className="text-muted-foreground">Pipeline Name</Label>
+              <Input
+                value={newPipelineName}
+                onChange={(e) => setNewPipelineName(e.target.value)}
+                placeholder="e.g., Enterprise Sales"
+                className="mt-2 bg-muted border-border text-foreground"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreatePipeline();
+                }}
+              />
+            </div>
+            <div>
+              <Label className="text-muted-foreground mb-2 block">Pipeline Template</Label>
+              <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                {PIPELINE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(preset.id);
+                      if (!newPipelineName.trim()) setNewPipelineName(preset.name);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg border transition-colors ${
+                      selectedPreset === preset.id
+                        ? 'border-primary bg-primary/10 text-foreground'
+                        : 'border-border bg-muted/50 text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{preset.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{preset.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {preset.stages.length} stages · {preset.category}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Default stages (New Lead → Won) will be created automatically.
             </p>

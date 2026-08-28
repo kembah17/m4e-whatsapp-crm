@@ -27,6 +27,7 @@ export default function SegmentsPage() {
   const [loading, setLoading] = useState(true);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   const fetchSegments = useCallback(async () => {
@@ -45,6 +46,33 @@ export default function SegmentsPage() {
 
   function startCreate() {
     setEditingSegment(null);
+    setShowTemplates(true);
+  }
+
+  function startFromTemplate(template: typeof SEGMENT_TEMPLATES[number]) {
+    setEditingSegment({
+      id: '',
+      name: template.name,
+      description: template.description,
+      rules: {
+        match: 'all',
+        rules: template.rules.map((r) => ({
+          field: r.field,
+          operator: r.operator as SegmentGroup['rules'][number]['operator'],
+          value: String(r.value),
+        })),
+      },
+      contact_count: 0,
+      created_at: '',
+      updated_at: '',
+    } as unknown as Segment);
+    setShowTemplates(false);
+    setShowBuilder(true);
+  }
+
+  function startFromScratch() {
+    setEditingSegment(null);
+    setShowTemplates(false);
     setShowBuilder(true);
   }
 
@@ -98,6 +126,66 @@ export default function SegmentsPage() {
     return count;
   }
 
+
+  if (showTemplates) {
+    return (
+      <div className="container mx-auto max-w-4xl py-6 px-4">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Create Segment</h1>
+          <Button variant="ghost" onClick={() => setShowTemplates(false)}>
+            Cancel
+          </Button>
+        </div>
+        <div className="grid gap-4 mb-8">
+          <button
+            onClick={startFromScratch}
+            className="w-full text-left p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Plus className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <div className="font-medium">Start from Scratch</div>
+                <div className="text-sm text-muted-foreground">Build custom rules manually</div>
+              </div>
+            </div>
+          </button>
+        </div>
+        <h2 className="text-lg font-semibold mb-4">Or start from a template</h2>
+        {(['engagement', 'lifecycle', 'value', 'industry'] as const).map((category) => {
+          const templates = SEGMENT_TEMPLATES.filter((t) => t.category === category);
+          if (templates.length === 0) return null;
+          return (
+            <div key={category} className="mb-6">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                {category}
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => startFromTemplate(template)}
+                    className="text-left p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{template.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{template.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {template.description}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
   if (showBuilder) {
     return (
       <div className="container mx-auto max-w-4xl py-6 px-4">
