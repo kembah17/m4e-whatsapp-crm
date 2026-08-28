@@ -165,7 +165,7 @@ const navGroups: NavGroup[] = [
       { href: "/automations", label: "Automations", icon: Zap },
       { href: "/flows", label: "Workflow Builder", icon: Workflow, beta: true },
       { href: "/whatsapp-flows", label: "WA Forms", icon: FileInput, beta: true },
-      { href: "/ai-playground", label: "AI Playground", icon: Sparkles },
+      { href: "/ai-playground", label: "Ask AI", icon: Sparkles },
       { href: "/insights", label: "AI Insights", icon: Lightbulb },
       { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
     ],

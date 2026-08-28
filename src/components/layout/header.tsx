@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { LogOut, Menu, Settings as SettingsIcon, User } from "lucide-react";
+import { LogOut, Menu, Settings as SettingsIcon, Sparkles, User } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -27,6 +27,7 @@ const pageTitles: Record<string, string> = {
   "/broadcasts": "Broadcasts",
   "/automations": "Automations",
   "/settings": "Settings",
+  "/ai-playground": "Ask AI",
 };
 
 function getPageTitle(pathname: string): string {

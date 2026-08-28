@@ -120,9 +120,9 @@ export function AIPlayground({ accountId }: { accountId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold">AI Playground</h2>
+          <h2 className="text-2xl font-bold">Ask AI</h2>
           <p className="text-muted-foreground text-sm">
-            Test AI responses with different models and knowledge base entries
+            Ask questions about your business data, get AI-powered insights, and test responses
           </p>
         </div>
         <div className="flex gap-2">

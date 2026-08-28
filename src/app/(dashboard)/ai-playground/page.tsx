@@ -38,7 +38,7 @@ export default function AIPlaygroundPage() {
 
   return (
     <div className="p-6 max-w-5xl">
-      <h1 className="text-2xl font-bold mb-6">AI Playground</h1>
+      <h1 className="text-2xl font-bold mb-6">Ask AI</h1>
       <AIPlayground accountId={accountId} />
     </div>
   )

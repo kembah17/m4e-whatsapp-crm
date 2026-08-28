@@ -303,3 +303,102 @@ async function updateContactOutstandingBalance(
     .eq('account_id', accountId)
     .eq('id', contactId)
 }
+
+
+/* ------------------------------------------------------------------ */
+/*  Auto Debt Transfer — Overdue Invoices → Debt Book                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Scans all accounts for invoices that are past due_date and not yet
+ * in the debt book. Creates debt entries automatically.
+ * Returns the number of new debt entries created.
+ */
+export async function autoTransferOverdueInvoices(): Promise<{
+  transferred: number
+  errors: string[]
+}> {
+  const db = supabaseAdmin()
+  const today = new Date().toISOString().split('T')[0]
+  const errors: string[] = []
+  let transferred = 0
+
+  // Step 1: Find all invoices that are overdue (past due_date, not paid/cancelled/draft)
+  // and don't already have a debt entry linked
+  const { data: overdueInvoices, error: fetchError } = await db
+    .from('invoices')
+    .select('id, account_id, contact_id, doc_number, total, amount_paid, balance_due, due_date, currency, customer_name')
+    .not('due_date', 'is', null)
+    .lt('due_date', today)
+    .not('status', 'in', '("paid","cancelled","draft")')
+    .gt('balance_due', 0)
+
+  if (fetchError) {
+    return { transferred: 0, errors: [`Failed to fetch overdue invoices: ${fetchError.message}`] }
+  }
+
+  if (!overdueInvoices || overdueInvoices.length === 0) {
+    return { transferred: 0, errors: [] }
+  }
+
+  // Step 2: Get all existing debt entries that are linked to invoices
+  const invoiceIds = overdueInvoices.map((inv) => inv.id)
+  const { data: existingDebts } = await db
+    .from('debt_entries')
+    .select('invoice_id')
+    .in('invoice_id', invoiceIds)
+
+  const alreadyLinked = new Set((existingDebts ?? []).map((d) => d.invoice_id))
+
+  // Step 3: Create debt entries for invoices not yet in debt book
+  for (const inv of overdueInvoices) {
+    if (alreadyLinked.has(inv.id)) continue
+
+    try {
+      await createDebtEntry(inv.account_id, {
+        contact_id: inv.contact_id,
+        entry_type: 'credit_sale',
+        description: `Overdue invoice ${inv.doc_number}${inv.customer_name ? ` — ${inv.customer_name}` : ''}`,
+        original_amount: inv.balance_due,
+        due_date: inv.due_date,
+        currency: inv.currency || 'NGN',
+        reminder_enabled: true,
+        reminder_frequency_days: 7,
+        max_reminders: 5,
+        invoice_id: inv.id,
+        notes: `Auto-transferred from overdue invoice on ${today}`,
+        tags: ['auto-transferred', 'overdue-invoice'],
+      })
+      transferred++
+    } catch (err) {
+      errors.push(`Invoice ${inv.doc_number} (${inv.id}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  // Step 4: Also mark existing debt entries as overdue if past due
+  // (This was already in markOverdue but we call it for all accounts)
+  const { data: accounts } = await db
+    .from('accounts')
+    .select('id')
+  for (const account of accounts ?? []) {
+    try {
+      await markOverdue(account.id)
+    } catch (err) {
+      errors.push(`markOverdue for account ${account.id}: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  // Step 5: Update invoice statuses to 'overdue' where applicable
+  const { error: updateError } = await db
+    .from('invoices')
+    .update({ status: 'overdue', updated_at: new Date().toISOString() })
+    .not('due_date', 'is', null)
+    .lt('due_date', today)
+    .in('status', ['sent', 'viewed', 'accepted', 'partial'])
+
+  if (updateError) {
+    errors.push(`Failed to update invoice statuses: ${updateError.message}`)
+  }
+
+  return { transferred, errors }
+}
