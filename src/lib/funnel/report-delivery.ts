@@ -168,10 +168,10 @@ async function deliverViaEmail(
     .single()
 
   const { data: members } = await supabase
-    .from('account_members')
-    .select('user_id, role')
+    .from('profiles')
+    .select('user_id, account_role')
     .eq('account_id', accountId)
-    .eq('role', 'owner')
+    .eq('account_role', 'owner')
     .limit(1)
 
   if (!members?.[0]?.user_id) return

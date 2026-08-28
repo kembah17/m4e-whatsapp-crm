@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTotalUnread } from "@/hooks/use-total-unread";
@@ -42,13 +42,16 @@ import {
   Award,
   Headphones,
   Lightbulb,
+  ChevronDown,
+  Database,
+  DollarSign,
+  TrendingUp,
+  Cpu,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
 // Per-role chip metadata used in the sidebar's account strip + the
-// Members tab roster. Keeping this near both consumers in a single
-// place avoids drift between the two surfaces — when a designer
-// wants to recolour "agent" rows, this is the one diff.
+// Members tab roster.
 const ROLE_CHIP: Record<
   AccountRole,
   { icon: typeof Crown; label: string; className: string }
@@ -56,28 +59,24 @@ const ROLE_CHIP: Record<
   owner: {
     icon: Crown,
     label: "Owner",
-    // Amber: scarce, immutable, "the boss" — gets visual emphasis.
     className:
       "border-amber-500/40 bg-amber-500/10 text-amber-300",
   },
   admin: {
     icon: Shield,
     label: "Admin",
-    // Primary-tinted: significant but not as scarce as owner.
     className:
       "border-primary/40 bg-primary/10 text-primary",
   },
   agent: {
     icon: UserCog,
     label: "Agent",
-    // Neutral slate: the operational default.
     className:
       "border-border bg-muted text-foreground",
   },
   viewer: {
     icon: User,
     label: "Viewer",
-    // Muted slate: read-only role; visually quieter than agent.
     className:
       "border-border bg-card text-muted-foreground",
   },
@@ -99,40 +98,98 @@ interface NavItem {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  /**
-   * When true, the nav row renders a small "Beta" chip after the label.
-   * Purely informational — doesn't affect routing or access.
-   */
   beta?: boolean;
 }
 
-const navItems: NavItem[] = [
+interface NavGroup {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  items: NavItem[];
+}
+
+// ── Core items (always visible, no group header) ──────────
+const coreItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/contacts", label: "Contacts", icon: Users },
-  { href: "/pipelines", label: "Pipelines", icon: GitBranch },
-  { href: "/debt-book", label: "Debt Book", icon: BookOpen },
-  { href: "/installments", label: "Installments", icon: CalendarClock },
-  { href: "/invoices", label: "Invoices", icon: FileText },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/inventory", label: "Inventory", icon: Warehouse },
-  { href: "/broadcasts", label: "Broadcasts", icon: Radio },
-  { href: "/campaigns", label: "Campaigns", icon: Rocket },
-  { href: "/funnel", label: "Funnel", icon: Filter },
-  { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },
-  { href: "/automations", label: "Automations", icon: Zap },
-  { href: "/flows", label: "Workflow Builder", icon: Workflow, beta: true },
-  { href: "/ai-playground", label: "AI Playground", icon: Sparkles },
-  { href: "/insights", label: "AI Insights", icon: Lightbulb },
-  { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
-    { href: "/qr-codes", label: "QR Codes", icon: QrCode },
-    { href: "/whatsapp-flows", label: "WA Forms", icon: FileInput, beta: true },
-    { href: "/ad-leads", label: "Ad Leads", icon: Megaphone, beta: true },
-    { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
-    { href: "/segments", label: "Segments", icon: Target, beta: true },
-    { href: "/referrals", label: "Referrals", icon: UserPlus },
-    { href: "/loyalty", label: "Loyalty", icon: Award },
-    { href: "/support", label: "Support Desk", icon: Headphones },
+];
+
+// ── Grouped navigation ────────────────────────────────────
+const navGroups: NavGroup[] = [
+  {
+    id: "sales",
+    label: "Sales & Pipeline",
+    icon: TrendingUp,
+    items: [
+      { href: "/pipelines", label: "Pipelines", icon: GitBranch },
+      { href: "/funnel", label: "Funnel", icon: Filter },
+      { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },
+    ],
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    icon: DollarSign,
+    items: [
+      { href: "/invoices", label: "Invoices", icon: FileText },
+      { href: "/installments", label: "Installments", icon: CalendarClock },
+      { href: "/debt-book", label: "Debt Book", icon: BookOpen },
+    ],
+  },
+  {
+    id: "products",
+    label: "Products & Inventory",
+    icon: Package,
+    items: [
+      { href: "/products", label: "Products", icon: Package },
+      { href: "/inventory", label: "Inventory", icon: Warehouse },
+    ],
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    icon: Megaphone,
+    items: [
+      { href: "/broadcasts", label: "Broadcasts", icon: Radio },
+      { href: "/campaigns", label: "Campaigns", icon: Rocket },
+      { href: "/ad-leads", label: "Ad Leads", icon: Megaphone, beta: true },
+      { href: "/segments", label: "Segments", icon: Target, beta: true },
+    ],
+  },
+  {
+    id: "automation",
+    label: "Automation & AI",
+    icon: Cpu,
+    items: [
+      { href: "/automations", label: "Automations", icon: Zap },
+      { href: "/flows", label: "Workflow Builder", icon: Workflow, beta: true },
+      { href: "/whatsapp-flows", label: "WA Forms", icon: FileInput, beta: true },
+      { href: "/ai-playground", label: "AI Playground", icon: Sparkles },
+      { href: "/insights", label: "AI Insights", icon: Lightbulb },
+      { href: "/ai-chatbot", label: "AI Chatbot", icon: Bot, beta: true },
+    ],
+  },
+  {
+    id: "growth",
+    label: "Growth & Retention",
+    icon: Award,
+    items: [
+      { href: "/referrals", label: "Referrals", icon: UserPlus },
+      { href: "/loyalty", label: "Loyalty", icon: Award },
+      { href: "/qr-codes", label: "QR Codes", icon: QrCode },
+      { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
+    ],
+  },
+  {
+    id: "data",
+    label: "Data & Support",
+    icon: Database,
+    items: [
+      { href: "/data-center", label: "Data Center", icon: Database },
+      { href: "/support", label: "Support Desk", icon: Headphones },
+    ],
+  },
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -140,8 +197,86 @@ const bottomNavItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+// ── Collapsible group component ───────────────────────────
+function NavGroupSection({
+  group,
+  pathname,
+  expanded,
+  onToggle,
+}: {
+  group: NavGroup;
+  pathname: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const hasActiveChild = group.items.some(
+    (item) =>
+      pathname === item.href ||
+      (item.href !== "/dashboard" && pathname.startsWith(item.href)),
+  );
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
+          hasActiveChild
+            ? "text-primary"
+            : "text-muted-foreground/70 hover:text-muted-foreground",
+        )}
+      >
+        <group.icon className="h-3.5 w-3.5" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 transition-transform duration-200",
+            expanded ? "rotate-0" : "-rotate-90",
+          )}
+        />
+      </button>
+      <ul
+        className={cn(
+          "flex flex-col gap-0.5 overflow-hidden transition-all duration-200",
+          expanded ? "mt-0.5 max-h-96 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        {group.items.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 pl-8 text-sm font-medium transition-colors lg:py-1.5",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="flex-1">{item.label}</span>
+                {item.beta && (
+                  <span
+                    aria-label="Beta feature"
+                    className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
+                  >
+                    Beta
+                  </span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </li>
+  );
+}
+
 interface SidebarProps {
-  /** Controlled on mobile by the Header's hamburger button. Ignored on lg+. */
   open?: boolean;
   onClose?: () => void;
 }
@@ -150,29 +285,53 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
-  // Only surface the account-name strip when it actually carries
-  // information. A solo user's personal account is named after them
-  // (the 017 signup trigger seeds it from `full_name`), so showing it
-  // here would just duplicate the user name in the footer below. Once
-  // the account is renamed or the user joins a shared account, the
-  // name diverges and the strip becomes meaningful — that's the signal
-  // we gate on. Wait for the profile fetch to settle first, otherwise
-  // the strip flashes in once the row resolves (a layout jump).
+
+  // Track which groups are expanded. Auto-expand the group containing
+  // the active page so users always see where they are.
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const group of navGroups) {
+      const hasActive = group.items.some(
+        (item) => pathname === item.href || pathname.startsWith(item.href),
+      );
+      initial[group.id] = hasActive;
+    }
+    return initial;
+  });
+
+  // When route changes, auto-expand the group containing the new page
+  useEffect(() => {
+    setExpandedGroups((prev) => {
+      const next = { ...prev };
+      for (const group of navGroups) {
+        if (
+          group.items.some(
+            (item) => pathname === item.href || pathname.startsWith(item.href),
+          )
+        ) {
+          next[group.id] = true;
+        }
+      }
+      return next;
+    });
+  }, [pathname]);
+
+  const toggleGroup = (id: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const showAccountStrip =
     !profileLoading &&
     !!account?.name &&
     account.name !== profile?.full_name;
 
-  // Close the drawer when route changes — users opened it to navigate,
-  // so once they pick a destination the drawer should get out of the way.
+  // Close the drawer when route changes
   useEffect(() => {
     onClose?.();
-    // Only pathname drives this — onClose identity doesn't need to re-run it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Lock body scroll and allow Escape to close while the drawer is open on
-  // mobile. No-ops on desktop because the sidebar isn't positioned there.
+  // Lock body scroll and allow Escape to close while the drawer is open
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -189,9 +348,6 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Backdrop — only exists on mobile and only when open. Clicking
-          it closes the drawer. Hidden from lg+ since the sidebar is
-          part of the main flex row there. */}
       <button
         type="button"
         aria-label="Close menu"
@@ -206,28 +362,25 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          // Mobile: fixed drawer that slides in from the left.
           "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-border bg-card",
           "transition-transform duration-200 ease-out will-change-transform",
           open ? "translate-x-0" : "-translate-x-full",
-          // Desktop: static, always visible — reset all the mobile framing.
           "lg:static lg:z-0 lg:w-60 lg:translate-x-0 lg:transition-none",
         )}
         aria-label="Primary"
       >
-        {/* Logo row. On mobile we put a close button here; on desktop the
-            close button is hidden since the sidebar is always-visible. */}
+        {/* Logo row */}
         <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <MessageSquare className="h-4 w-4" />
             </div>
-<div className="flex flex-col">
+            <div className="flex flex-col">
               <span className="text-sm font-semibold text-foreground leading-tight">
-                Customer Reactivation Manager
+                Business Growth Engine
               </span>
               <span className="text-[10px] text-muted-foreground leading-tight">
-                Your reclamation engine
+                Your growth partner
               </span>
             </div>
           </Link>
@@ -242,9 +395,10 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
 
         {/* Main navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          {/* Core items — always visible */}
+          <ul className="flex flex-col gap-0.5">
+            {coreItems.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -257,7 +411,6 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      // Taller on mobile so fingers can hit the row reliably (≥44px).
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
                       isActive
                         ? "bg-primary/10 text-primary"
@@ -266,14 +419,6 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                   >
                     <item.icon className="h-4 w-4" />
                     <span className="flex-1">{item.label}</span>
-                    {item.beta && (
-                      <span
-                        aria-label="Beta feature"
-                        className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
-                      >
-                        Beta
-                      </span>
-                    )}
                     {showUnreadDot && (
                       <span
                         aria-label={`${totalUnread} unread conversation${totalUnread === 1 ? "" : "s"}`}
@@ -289,9 +434,22 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             })}
           </ul>
 
-          <div className="my-4 border-t border-border" />
+          {/* Grouped sections */}
+          <ul className="mt-3 flex flex-col gap-2">
+            {navGroups.map((group) => (
+              <NavGroupSection
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                expanded={expandedGroups[group.id] ?? false}
+                onToggle={() => toggleGroup(group.id)}
+              />
+            ))}
+          </ul>
 
-          <ul className="flex flex-col gap-1">
+          <div className="my-3 border-t border-border" />
+
+          <ul className="flex flex-col gap-0.5">
             {bottomNavItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
               return (
@@ -313,10 +471,10 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             })}
           </ul>
 
-          {/* Super Admin panel link — only visible to platform admins */}
+          {/* Super Admin panel link */}
           {profile?.is_super_admin && (
             <>
-              <div className="my-4 border-t border-amber-500/20" />
+              <div className="my-3 border-t border-amber-500/20" />
               <Link
                 href="/admin/dashboard"
                 className={cn(
@@ -340,26 +498,13 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
         {/* User section */}
         <div className="shrink-0 border-t border-border p-3">
-          {/* Account name display — surfaced only when the account
-              name differs from the user's own name (see
-              `showAccountStrip`). For a default solo account the two
-              match, so we hide it to avoid duplicating the user name
-              below; for renamed or shared accounts it tells the user
-              which account they're acting in. */}
           {showAccountStrip && account?.name ? (
             <div className="mb-2 flex items-center gap-2 px-3 text-xs text-muted-foreground">
               <UsersRound className="size-3.5 shrink-0" />
-              {/* `title=` exposes the full name on hover when it
-                  gets truncated (long account names + narrow
-                  sidebars). Cheap a11y win. */}
               <span className="truncate" title={account.name}>
                 {account.name}
               </span>
               {accountRole ? (
-                // Always render the chip — owners used to be
-                // invisible here, which made them indistinguishable
-                // from admins at a glance. Now everyone sees their
-                // role (with a colour cue) regardless of tier.
                 (() => {
                   const meta = ROLE_CHIP[accountRole];
                   const Icon = meta.icon;
