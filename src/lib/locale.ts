@@ -1,5 +1,5 @@
 /**
- * Nigerian locale utilities for Customer Reactivation Manager.
+ * Nigerian locale utilities for Business Growth Engine.
  * Provides currency formatting, date formatting, and timezone defaults.
  */
 

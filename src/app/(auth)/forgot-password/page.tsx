@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-white font-heading">Customer Reactivation Manager</CardTitle>
+          <CardTitle className="text-xl text-white font-heading">Business Growth Engine</CardTitle>
           <CardDescription className="text-slate-400">
             Your Dormant Customer Reclamation Engine!
           </CardDescription>

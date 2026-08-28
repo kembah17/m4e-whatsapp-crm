@@ -135,7 +135,7 @@ function SignupPageInner() {
             />
           </div>
           <CardTitle className="text-xl text-white font-heading">
-            {inviteToken ? "Create account & join" : "Customer Reactivation Manager"}
+            {inviteToken ? "Create account & join" : "Business Growth Engine"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken

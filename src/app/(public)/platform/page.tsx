@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "M4E Customer Reactivation Manager — CRM Platform",
+  title: "M4E Business Growth Engine — CRM Platform",
   description:
     "WhatsApp-first CRM built for Nigerian businesses. Reactivate dormant customers, automate campaigns, and grow revenue with AI-powered tools. Plans from ₦50,000/mo.",
   robots: { index: true, follow: true },
@@ -287,7 +287,7 @@ function NavBar() {
             M4E
           </div>
           <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-white">
-            Customer Reactivation Manager
+            Business Growth Engine
           </span>
         </Link>
         <div className="flex items-center gap-3">

@@ -58,7 +58,7 @@ const HELP_SECTIONS: HelpSection[] = [
     description: "Quick start guide to set up your account and start reactivating customers.",
     faqs: [
       {
-        question: "How do I get started with the Customer Reactivation Manager?",
+        question: "How do I get started with the Business Growth Engine?",
         answer:
           "Start by connecting your WhatsApp Business account in Settings \u2192 WhatsApp. Then import your customer contacts via the Contacts page. Once connected, you can create your first campaign from the Campaigns page using one of our pre-built templates.",
       },

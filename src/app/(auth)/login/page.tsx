@@ -113,7 +113,7 @@ function LoginPageInner() {
             />
           </div>
           <CardTitle className="text-xl text-white font-heading">
-            {inviteToken ? "Sign in to accept" : "Customer Reactivation Manager"}
+            {inviteToken ? "Sign in to accept" : "Business Growth Engine"}
           </CardTitle>
           <CardDescription className="text-slate-400">
             {inviteToken

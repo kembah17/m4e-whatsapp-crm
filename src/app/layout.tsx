@@ -27,8 +27,8 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Customer Reactivation Manager",
-    template: "%s — Customer Reactivation Manager",
+    default: "Business Growth Engine",
+    template: "%s — Business Growth Engine",
   },
   description: "Your dormant customer reclamation engine! Multi-channel CRM powered by Marketing4Effect.",
   robots: {

@@ -170,7 +170,7 @@ export function InviteMemberDialog({
     // for users in multi-team contexts where "our CRM account"
     // wouldn't be enough to disambiguate.
     const accountName = result?.accountName ?? 'our CRM account';
-    const message = `Join ${accountName} on Customer Reactivation Manager using this link (valid for ${result?.expiresInDays} days): ${url}`;
+    const message = `Join ${accountName} on Business Growth Engine using this link (valid for ${result?.expiresInDays} days): ${url}`;
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
 
