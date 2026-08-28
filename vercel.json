@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/subscriber-health",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/debt-transfer",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/archival",
+      "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron/monitoring",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/funnel-reports",
+      "schedule": "0 7 * * 1"
+    }
+  ]
+}
