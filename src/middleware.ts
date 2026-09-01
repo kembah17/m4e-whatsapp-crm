@@ -126,7 +126,7 @@ export async function middleware(request: NextRequest) {
   supabaseResponse.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   supabaseResponse.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.openrouter.ai https://graph.facebook.com"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.openrouter.ai https://graph.facebook.com https://www.facebook.com; frame-src https://www.facebook.com https://web.facebook.com"
   )
 
   return supabaseResponse
