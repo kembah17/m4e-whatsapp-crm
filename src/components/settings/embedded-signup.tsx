@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   CheckCircle2,
   Loader2,
   MessageSquare,
@@ -51,8 +52,19 @@ interface FBLoginResponse {
   status?: string;
 }
 
+/**
+ * Facebook SDK login options.
+ *
+ * Two valid approaches per Meta documentation:
+ * 1. config_id - Pre-configured Embedded Signup Configuration (preferred for production)
+ * 2. scope - Standard OAuth permission request (valid alternative)
+ *
+ * Both are production-grade. config_id additionally controls the signup UI
+ * (which fields to show, pre-selected options, etc.).
+ */
 interface FBLoginOptions {
   config_id?: string;
+  scope?: string;
   response_type?: string;
   override_default_response_type?: boolean;
   extras?: {
@@ -97,6 +109,13 @@ interface EmbeddedSignupStatus {
   };
 }
 
+interface ConfigStatus {
+  ready: boolean;
+  has_app_id: boolean;
+  has_app_secret: boolean;
+  has_config_id: boolean;
+}
+
 // ============================================================
 // Steps configuration
 // ============================================================
@@ -110,6 +129,16 @@ const STEPS: { key: SignupStep; label: string; icon: typeof Wifi }[] = [
 
 const STEP_ORDER: SignupStep[] = ["connecting", "verifying", "registering", "connected"];
 
+/**
+ * Required OAuth permissions for WhatsApp Business API.
+ * These are the approved permissions from Meta App Review.
+ */
+const REQUIRED_PERMISSIONS = [
+  "business_management",
+  "whatsapp_business_management",
+  "whatsapp_business_messaging",
+].join(",");
+
 // ============================================================
 // Component
 // ============================================================
@@ -119,15 +148,24 @@ export function EmbeddedSignup() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [connection, setConnection] = useState<ConnectionDetails | null>(null);
   const [existingConnection, setExistingConnection] = useState<EmbeddedSignupStatus | null>(null);
+  const [configStatus, setConfigStatus] = useState<ConfigStatus | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const sdkLoadedRef = useRef(false);
   const sdkLoadingRef = useRef(false);
 
   // ----------------------------------------------------------
-  // Check existing connection status on mount
+  // Check server configuration + existing connection on mount
   // ----------------------------------------------------------
   const fetchStatus = useCallback(async () => {
     try {
+      // Pre-flight: check if server is properly configured
+      const configRes = await fetch("/api/whatsapp/embedded-signup/start");
+      if (configRes.ok) {
+        const configData = (await configRes.json()) as ConfigStatus;
+        setConfigStatus(configData);
+      }
+
+      // Check existing connection
       const res = await fetch("/api/whatsapp/embedded-signup/status");
       if (res.ok) {
         const data = (await res.json()) as EmbeddedSignupStatus;
@@ -146,7 +184,7 @@ export function EmbeddedSignup() {
         }
       }
     } catch {
-      // Silently fail — user can still initiate signup
+      // Silently fail - user can still initiate signup
     } finally {
       setLoadingStatus(false);
     }
@@ -161,13 +199,11 @@ export function EmbeddedSignup() {
   // ----------------------------------------------------------
   const loadFacebookSDK = useCallback((appId: string): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // Already loaded
       if (window.FB && sdkLoadedRef.current) {
         resolve();
         return;
       }
 
-      // Already loading
       if (sdkLoadingRef.current) {
         const check = setInterval(() => {
           if (window.FB) {
@@ -195,7 +231,6 @@ export function EmbeddedSignup() {
         resolve();
       };
 
-      // Inject script tag
       const script = document.createElement("script");
       script.src = "https://connect.facebook.net/en_US/sdk.js";
       script.async = true;
@@ -203,15 +238,14 @@ export function EmbeddedSignup() {
       script.crossOrigin = "anonymous";
       script.onerror = () => {
         sdkLoadingRef.current = false;
-        reject(new Error("Failed to load Facebook SDK"));
+        reject(new Error("Failed to load Facebook SDK. Check your internet connection or browser ad-blocker."));
       };
       document.body.appendChild(script);
 
-      // Timeout fallback
       setTimeout(() => {
         if (!sdkLoadedRef.current) {
           sdkLoadingRef.current = false;
-          reject(new Error("Facebook SDK load timeout"));
+          reject(new Error("Facebook SDK load timeout. Check your internet connection or browser ad-blocker."));
         }
       }, 15000);
     });
@@ -260,16 +294,21 @@ export function EmbeddedSignup() {
             },
           };
 
-          // Use config_id if available (Embedded Signup configuration)
           if (config_id) {
+            // Method A: Use pre-configured Embedded Signup Configuration
+            // This controls the signup UI and pre-selects options
             loginOptions.config_id = config_id;
+          } else {
+            // Method B: Standard OAuth scope-based permission request
+            // Both methods are documented and production-valid per Meta docs
+            loginOptions.scope = REQUIRED_PERMISSIONS;
           }
 
           window.FB.login((response: FBLoginResponse) => {
             resolve(response);
           }, loginOptions);
 
-          // Timeout for popup — user might close it
+          // Timeout for popup - user might close it
           setTimeout(() => {
             reject(new Error("Signup popup timed out. Please try again."));
           }, 300000); // 5 minutes
@@ -286,12 +325,8 @@ export function EmbeddedSignup() {
       const code = fbResponse.authResponse.code;
 
       // Extract WABA ID and Phone Number ID from the session info
-      // In Embedded Signup v2, these come from the response
-      // They may be in authResponse or need to be extracted from the session
       const authResponse = fbResponse.authResponse as Record<string, unknown>;
 
-      // Session info v2 provides these in the response
-      // Try multiple possible locations where Meta puts them
       let wabaId: string | undefined;
       let phoneNumberId: string | undefined;
 
@@ -317,7 +352,8 @@ export function EmbeddedSignup() {
       if (!wabaId || !phoneNumberId) {
         throw new Error(
           "Could not extract WhatsApp Business Account ID or Phone Number ID from the signup response. " +
-          "Please try again or use Manual Setup.",
+          "This can happen if the Meta app is still in Development mode. " +
+          "Please ensure the app has been approved by Meta, or try Manual Setup.",
         );
       }
 
@@ -361,7 +397,7 @@ export function EmbeddedSignup() {
         );
       } else {
         toast.success(
-          "Connected! Credentials saved. Registration may need a PIN — see Manual Setup.",
+          "Connected! Credentials saved. Registration may need a PIN - see Manual Setup.",
           { duration: 8000 },
         );
       }
@@ -387,6 +423,8 @@ export function EmbeddedSignup() {
   // Render helpers
   // ----------------------------------------------------------
   const currentStepIndex = STEP_ORDER.indexOf(step);
+  const isConfigReady = configStatus?.ready ?? false;
+  const isMissingSecret = configStatus && !configStatus.has_app_secret;
 
   if (loadingStatus) {
     return (
@@ -398,11 +436,59 @@ export function EmbeddedSignup() {
 
   return (
     <div className="space-y-6">
+      {/* Configuration Warning */}
+      {configStatus && !isConfigReady && (
+        <Alert className="bg-amber-950/30 border-amber-700/50">
+          <AlertTriangle className="size-4 text-amber-400" />
+          <AlertTitle className="text-amber-200">
+            Server Configuration Incomplete
+          </AlertTitle>
+          <AlertDescription className="text-amber-100/80 text-sm space-y-2">
+            {!configStatus.has_app_id && (
+              <p className="flex items-start gap-2">
+                <XCircle className="size-4 shrink-0 mt-0.5 text-red-400" />
+                <span><strong>META_APP_ID</strong> is not set. Add it to your Vercel environment variables.</span>
+              </p>
+            )}
+            {isMissingSecret && (
+              <p className="flex items-start gap-2">
+                <XCircle className="size-4 shrink-0 mt-0.5 text-red-400" />
+                <span>
+                  <strong>META_APP_SECRET</strong> is not set. Get it from{" "}
+                  <span className="font-mono text-amber-300">Meta App Dashboard &rarr; Settings &rarr; Basic &rarr; App Secret</span>,{" "}
+                  then add it as a Vercel environment variable and redeploy.
+                </span>
+              </p>
+            )}
+            {!configStatus.has_config_id && configStatus.has_app_id && configStatus.has_app_secret && (
+              <p className="flex items-start gap-2">
+                <CheckCircle2 className="size-4 shrink-0 mt-0.5 text-blue-400" />
+                <span><strong>META_EMBEDDED_SIGNUP_CONFIG_ID</strong> is not set (optional). The system will use standard OAuth permissions instead. This is fine for production.</span>
+              </p>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Config OK info when ready but no config_id */}
+      {configStatus && isConfigReady && !configStatus.has_config_id && (
+        <Alert className="bg-blue-950/30 border-blue-700/50">
+          <Shield className="size-4 text-blue-400" />
+          <AlertTitle className="text-blue-200">
+            Using Standard OAuth Mode
+          </AlertTitle>
+          <AlertDescription className="text-blue-100/80 text-sm">
+            No Embedded Signup Configuration ID is set. The system will request permissions
+            via standard OAuth scope. This is a fully supported production method per Meta documentation.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Banner */}
       <Alert className="bg-emerald-950/30 border-emerald-700/50">
         <MessageSquare className="size-4 text-emerald-400" />
         <AlertTitle className="text-emerald-200">
-          🚀 Quick Setup — Connect in 60 seconds
+          Quick Setup &mdash; Connect in 60 seconds
         </AlertTitle>
         <AlertDescription className="text-emerald-100/80 text-sm">
           Our guided setup handles everything automatically. Just sign in with
@@ -417,7 +503,6 @@ export function EmbeddedSignup() {
             const Icon = s.icon;
             const isActive = s.key === step;
             const isComplete = currentStepIndex > i;
-            const isPending = currentStepIndex < i;
 
             return (
               <div key={s.key} className="flex flex-1 items-center gap-2">
@@ -442,7 +527,7 @@ export function EmbeddedSignup() {
                 {i < STEPS.length - 1 && (
                   <div
                     className={`hidden h-px flex-1 sm:block ${
-                      isComplete || (isActive && !isPending)
+                      isComplete
                         ? "bg-emerald-700/50"
                         : "bg-border"
                     }`}
@@ -454,7 +539,7 @@ export function EmbeddedSignup() {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - Idle State */}
       {step === "idle" && (
         <Card>
           <CardHeader>
@@ -495,16 +580,17 @@ export function EmbeddedSignup() {
 
             <Button
               onClick={handleStartSignup}
+              disabled={!isConfigReady}
               size="lg"
-              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-semibold text-base h-12"
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-semibold text-base h-12 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <MessageSquare className="size-5" />
-              Connect with WhatsApp
+              {!isConfigReady ? "Configuration Required (see above)" : "Connect with WhatsApp"}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
-              You’ll need a Meta Business account. If you don’t have one,
-              Meta will guide you through creating it.
+              You need a Meta Business account with admin access.
+              If you don&apos;t have one, Meta will guide you through creating it.
             </p>
           </CardContent>
         </Card>
@@ -559,8 +645,8 @@ export function EmbeddedSignup() {
                     }`}
                   >
                     {connection.registered
-                      ? "✅ Registered for events"
-                      : "⚠️ Pending — add PIN in Manual Setup"}
+                      ? "Registered for events"
+                      : "Pending - add PIN in Manual Setup"}
                   </p>
                 </div>
               </div>
@@ -611,9 +697,33 @@ export function EmbeddedSignup() {
               </AlertDescription>
             </Alert>
 
+            {/* Contextual troubleshooting */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+              <h4 className="text-sm font-medium text-foreground">Troubleshooting</h4>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                {errorMessage.includes("SDK") && (
+                  <li>&bull; Check if an ad-blocker is blocking Facebook scripts</li>
+                )}
+                {errorMessage.includes("permission") && (
+                  <>
+                    <li>&bull; Ensure you have Admin access to the Meta Business account</li>
+                    <li>&bull; If the app is in Development mode, only app Admins/Developers/Testers can use it</li>
+                  </>
+                )}
+                {errorMessage.includes("APP_SECRET") && (
+                  <li>&bull; The server administrator needs to add META_APP_SECRET to the environment variables</li>
+                )}
+                {errorMessage.includes("session") && (
+                  <li>&bull; Your session may have expired. Click &ldquo;Try Again&rdquo; to start a fresh session</li>
+                )}
+                <li>&bull; If this keeps happening, try the <strong>Manual Setup</strong> tab to enter your credentials directly</li>
+              </ul>
+            </div>
+
             <div className="flex gap-3">
               <Button
                 onClick={handleStartSignup}
+                disabled={!isConfigReady}
                 className="bg-[#25D366] hover:bg-[#128C7E] text-white"
               >
                 <RefreshCw className="size-4" />
@@ -627,11 +737,6 @@ export function EmbeddedSignup() {
                 Cancel
               </Button>
             </div>
-
-            <p className="text-xs text-muted-foreground">
-              If this keeps happening, try the Manual Setup tab to enter your
-              credentials directly.
-            </p>
           </CardContent>
         </Card>
       )}

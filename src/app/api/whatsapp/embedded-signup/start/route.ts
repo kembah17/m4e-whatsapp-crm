@@ -16,6 +16,47 @@ async function resolveAccountId(
 }
 
 /**
+ * GET /api/whatsapp/embedded-signup/start
+ *
+ * Pre-flight check: returns configuration status so the UI can
+ * show actionable guidance before the user clicks Connect.
+ */
+export async function GET(request: Request) {
+  try {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = checkRateLimit(`auth:${clientIp}`, RATE_LIMITS.auth);
+    if (!rl.success) return rateLimitResponse(rl);
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const appId = process.env.META_APP_ID
+    const appSecret = process.env.META_APP_SECRET
+    const configId = process.env.META_EMBEDDED_SIGNUP_CONFIG_ID
+
+    return NextResponse.json({
+      ready: Boolean(appId && appSecret),
+      has_app_id: Boolean(appId),
+      has_app_secret: Boolean(appSecret),
+      has_config_id: Boolean(configId),
+      // Don't expose actual values — just readiness flags
+    })
+  } catch (err) {
+    console.error('Embedded signup preflight error:', err)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
+  }
+}
+
+/**
  * POST /api/whatsapp/embedded-signup/start
  *
  * Creates a new embedded_signup_session with a random state_token.
@@ -46,11 +87,19 @@ export async function POST(request: Request) {
     }
 
     const appId = process.env.META_APP_ID
+    const appSecret = process.env.META_APP_SECRET
     const configId = process.env.META_EMBEDDED_SIGNUP_CONFIG_ID
 
     if (!appId) {
       return NextResponse.json(
-        { error: 'META_APP_ID is not configured on the server' },
+        { error: 'META_APP_ID is not configured on the server. Contact your administrator.' },
+        { status: 500 },
+      )
+    }
+
+    if (!appSecret) {
+      return NextResponse.json(
+        { error: 'META_APP_SECRET is not configured on the server. The App Secret is required to exchange the authorization code for an access token. Get it from Meta App Dashboard → Settings → Basic → App Secret, then add it as a Vercel environment variable.' },
         { status: 500 },
       )
     }
