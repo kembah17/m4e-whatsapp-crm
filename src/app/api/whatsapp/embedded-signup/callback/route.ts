@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
       state_token?: string
     }
 
+    // redirect_uri from the frontend (window.location.origin) — required for Meta OAuth token exchange
+    const redirectUri = (body.redirect_uri as string) || new URL(request.url).origin
+
     // waba_id and phone_number_id are optional — will be auto-discovered if missing
     const frontendWabaId = body.waba_id as string | undefined
     const frontendPhoneNumberId = body.phone_number_id as string | undefined
@@ -167,6 +170,7 @@ export async function POST(request: NextRequest) {
           phoneNumberId: frontendPhoneNumberId!,
           appId,
           appSecret,
+          redirectUri,
         })
       } catch (err) {
         const errorMessage =
@@ -207,7 +211,7 @@ export async function POST(request: NextRequest) {
     let accessToken: string
     let tokenExpiresAt: string | null = null
     try {
-      const tokenResult = await exchangeCodeForToken({ code, appId, appSecret })
+      const tokenResult = await exchangeCodeForToken({ code, appId, appSecret, redirectUri })
       accessToken = tokenResult.accessToken
       if (tokenResult.expiresIn && tokenResult.expiresIn > 0) {
         tokenExpiresAt = new Date(

@@ -98,6 +98,8 @@ export interface ExchangeCodeArgs {
   code: string
   appId: string
   appSecret: string
+  /** The origin URL of the page where FB.login() was called. Required for JS SDK OAuth code exchange. */
+  redirectUri: string
 }
 
 /**
@@ -107,11 +109,12 @@ export interface ExchangeCodeArgs {
 export async function exchangeCodeForToken(
   args: ExchangeCodeArgs,
 ): Promise<TokenExchangeResult> {
-  const { code, appId, appSecret } = args
+  const { code, appId, appSecret, redirectUri } = args
   const url = `${META_API_BASE}/oauth/access_token`
   const params = new URLSearchParams({
     client_id: appId,
     client_secret: appSecret,
+    redirect_uri: redirectUri,
     code,
   })
 
@@ -463,6 +466,8 @@ export interface CompleteEmbeddedSignupArgs {
   phoneNumberId: string
   appId: string
   appSecret: string
+  /** The origin URL of the page where FB.login() was called. Required for JS SDK OAuth code exchange. */
+  redirectUri: string
   /** Optional 6-digit PIN for phone registration. */
   pin?: string
 }
@@ -481,10 +486,10 @@ export interface CompleteEmbeddedSignupArgs {
 export async function completeEmbeddedSignup(
   args: CompleteEmbeddedSignupArgs,
 ): Promise<EmbeddedSignupResult> {
-  const { code, wabaId, phoneNumberId, appId, appSecret, pin } = args
+  const { code, wabaId, phoneNumberId, appId, appSecret, redirectUri, pin } = args
 
   // Step 1: Exchange code for token
-  const tokenResult = await exchangeCodeForToken({ code, appId, appSecret })
+  const tokenResult = await exchangeCodeForToken({ code, appId, appSecret, redirectUri })
   const { accessToken } = tokenResult
 
   // Calculate token expiry

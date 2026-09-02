@@ -369,6 +369,8 @@ export function EmbeddedSignup() {
           body: JSON.stringify({
             code,
             state_token,
+            // Origin URL required for Meta OAuth token exchange (redirect_uri must match)
+            redirect_uri: window.location.origin,
             // Only include WABA/phone if available from popup response
             // Server will auto-discover them if missing (scope-based OAuth)
             ...(wabaId && { waba_id: wabaId }),
