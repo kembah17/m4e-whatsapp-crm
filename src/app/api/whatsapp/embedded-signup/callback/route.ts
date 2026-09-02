@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { completeEmbeddedSignup } from '@/lib/whatsapp/embedded-signup'
+import {
+  completeEmbeddedSignup,
+  autoDiscoverWabaAndPhone,
+  exchangeCodeForToken,
+  getBusinessInfo,
+  getPhoneNumbers,
+  registerPhoneForCloudAPI,
+  subscribeAppToWaba,
+} from '@/lib/whatsapp/embedded-signup'
+import { encrypt } from '@/lib/whatsapp/encryption'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
@@ -33,10 +42,13 @@ function supabaseAdmin() {
 /**
  * POST /api/whatsapp/embedded-signup/callback
  *
- * Receives the authorization code and WABA/phone details from the
- * frontend after the Facebook SDK popup completes. Validates the
- * state_token, then orchestrates the full token exchange, phone
- * registration, and config persistence.
+ * Receives the authorization code and optionally WABA/phone details from the
+ * frontend after the Facebook SDK popup completes.
+ *
+ * Two paths:
+ *   Path A: waba_id + phone_number_id provided (config_id mode) → use completeEmbeddedSignup()
+ *   Path B: waba_id/phone_number_id missing (scope-based OAuth) → exchange code once,
+ *           auto-discover WABA/phone, then run remaining steps with the token
  */
 export async function POST(request: NextRequest) {
   try {
@@ -62,23 +74,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { code, state_token, waba_id, phone_number_id } = body as {
+    const { code, state_token } = body as {
       code?: string
       state_token?: string
-      waba_id?: string
-      phone_number_id?: string
     }
+
+    // waba_id and phone_number_id are optional — will be auto-discovered if missing
+    const frontendWabaId = body.waba_id as string | undefined
+    const frontendPhoneNumberId = body.phone_number_id as string | undefined
+    const needsAutoDiscovery = !frontendWabaId || !frontendPhoneNumberId
 
     if (!code || !state_token) {
       return NextResponse.json(
         { error: 'Missing required fields: code, state_token' },
-        { status: 400 },
-      )
-    }
-
-    if (!waba_id || !phone_number_id) {
-      return NextResponse.json(
-        { error: 'Missing required fields: waba_id, phone_number_id' },
         { status: 400 },
       )
     }
@@ -123,11 +131,145 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for phone_number_id conflict with another account
+    // ================================================================
+    // PATH A: Frontend provided waba_id + phone_number_id
+    //         Use completeEmbeddedSignup() which handles everything
+    // ================================================================
+    if (!needsAutoDiscovery) {
+      // Check for phone_number_id conflict with another account
+      const { data: conflict } = await supabaseAdmin()
+        .from('whatsapp_config')
+        .select('account_id')
+        .eq('phone_number_id', frontendPhoneNumberId)
+        .neq('account_id', accountId)
+        .maybeSingle()
+
+      if (conflict) {
+        await supabase
+          .from('embedded_signup_sessions')
+          .update({
+            status: 'failed',
+            error_message: 'Phone number already claimed by another account',
+          })
+          .eq('id', session.id)
+
+        return NextResponse.json(
+          { error: 'This phone number is already connected to another account' },
+          { status: 409 },
+        )
+      }
+
+      let result
+      try {
+        result = await completeEmbeddedSignup({
+          code,
+          wabaId: frontendWabaId!,
+          phoneNumberId: frontendPhoneNumberId!,
+          appId,
+          appSecret,
+        })
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Embedded signup failed'
+
+        await supabase
+          .from('embedded_signup_sessions')
+          .update({
+            status: 'failed',
+            error_message: errorMessage,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', session.id)
+
+        return NextResponse.json({ error: errorMessage }, { status: 502 })
+      }
+
+      // Persist and respond (shared helper below)
+      return await persistAndRespond({
+        supabase,
+        accountId,
+        session,
+        wabaId: frontendWabaId!,
+        result,
+        autoDiscovered: false,
+      })
+    }
+
+    // ================================================================
+    // PATH B: Auto-discovery needed (scope-based OAuth, no config_id)
+    //         Exchange code ONCE, discover WABA/phone, then run steps
+    // ================================================================
+    console.log(
+      '[Embedded Signup] WABA/Phone not in popup response — starting auto-discovery...',
+    )
+
+    // Step 1: Exchange code for token (SINGLE exchange — codes are single-use)
+    let accessToken: string
+    let tokenExpiresAt: string | null = null
+    try {
+      const tokenResult = await exchangeCodeForToken({ code, appId, appSecret })
+      accessToken = tokenResult.accessToken
+      if (tokenResult.expiresIn && tokenResult.expiresIn > 0) {
+        tokenExpiresAt = new Date(
+          Date.now() + tokenResult.expiresIn * 1000,
+        ).toISOString()
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Token exchange failed'
+      console.error('[Embedded Signup] Token exchange failed:', msg)
+      await supabase
+        .from('embedded_signup_sessions')
+        .update({
+          status: 'failed',
+          error_message: msg,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', session.id)
+      return NextResponse.json({ error: msg }, { status: 502 })
+    }
+
+    // Step 2: Auto-discover WABA and phone number
+    let wabaId: string
+    let phoneNumberId: string
+    try {
+      const discovered = await autoDiscoverWabaAndPhone({ accessToken })
+      wabaId = discovered.wabaId
+      phoneNumberId = discovered.phoneNumberId
+      console.log(
+        `[Embedded Signup] Auto-discovered WABA: ${wabaId}, Phone: ${phoneNumberId}`,
+      )
+    } catch (discoveryErr) {
+      const discoveryMessage =
+        discoveryErr instanceof Error
+          ? discoveryErr.message
+          : 'Failed to discover WhatsApp Business Account'
+
+      console.error('[Embedded Signup] Auto-discovery failed:', discoveryMessage)
+      await supabase
+        .from('embedded_signup_sessions')
+        .update({
+          status: 'failed',
+          error_message: `Auto-discovery failed: ${discoveryMessage}`,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', session.id)
+
+      return NextResponse.json(
+        {
+          error: discoveryMessage,
+          hint: 'The system could not automatically find your WhatsApp Business Account. '
+            + 'Ensure your Meta Business account has a WABA with at least one phone number, '
+            + 'or use Manual Setup to enter your credentials directly.',
+        },
+        { status: 422 },
+      )
+    }
+
+    // Check for phone_number_id conflict
     const { data: conflict } = await supabaseAdmin()
       .from('whatsapp_config')
       .select('account_id')
-      .eq('phone_number_id', phone_number_id)
+      .eq('phone_number_id', phoneNumberId)
       .neq('account_id', accountId)
       .maybeSingle()
 
@@ -146,113 +288,47 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Run the full embedded signup orchestration
-    let result
-    try {
-      result = await completeEmbeddedSignup({
-        code,
-        wabaId: waba_id,
-        phoneNumberId: phone_number_id,
-        appId,
-        appSecret,
-      })
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Embedded signup failed'
+    // Step 3: Get business info
+    const businessInfo = await getBusinessInfo({ accessToken, wabaId })
 
-      await supabase
-        .from('embedded_signup_sessions')
-        .update({
-          status: 'failed',
-          error_message: errorMessage,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', session.id)
-
-      return NextResponse.json(
-        { error: errorMessage },
-        { status: 502 },
-      )
+    // Step 4: Get phone info
+    const phones = await getPhoneNumbers({ accessToken, wabaId })
+    const phoneInfo = phones.find((p) => p.id === phoneNumberId) ?? phones[0]
+    if (!phoneInfo) {
+      throw new Error('Phone number not found after discovery')
     }
 
-    // Persist config to whatsapp_config (upsert)
-    const now = new Date().toISOString()
-    const configPayload = {
-      account_id: accountId,
-      phone_number_id: result.phoneInfo.id,
-      waba_id: waba_id,
-      access_token: result.encryptedAccessToken,
-      setup_method: 'embedded_signup' as const,
-      meta_business_id: result.businessInfo.id,
-      business_name: result.businessInfo.name,
-      display_phone_number: result.phoneInfo.displayPhoneNumber,
-      quality_rating: result.phoneInfo.qualityRating ?? null,
-      messaging_limit: result.phoneInfo.messagingLimitTier ?? null,
-      embedded_signup_completed_at: now,
-      token_expires_at: result.tokenExpiresAt,
-      phone_verified: true,
-      is_registered: result.registered,
-      registered_at: result.registered ? now : null,
-      last_registration_error: result.registrationError ?? null,
-      updated_at: now,
+    // Step 5: Register phone for Cloud API
+    const registration = await registerPhoneForCloudAPI({
+      accessToken,
+      phoneNumberId: phoneInfo.id,
+    })
+
+    // Step 6: Subscribe app to WABA
+    const subscription = await subscribeAppToWaba({ accessToken, wabaId })
+
+    // Step 7: Encrypt token
+    const encryptedAccessToken = encrypt(accessToken)
+
+    // Build result object matching EmbeddedSignupResult shape
+    const result = {
+      success: true as const,
+      encryptedAccessToken,
+      tokenExpiresAt,
+      businessInfo,
+      phoneInfo,
+      registered: registration.success,
+      registrationError: registration.error,
+      subscribedApps: subscription.success,
     }
 
-    // Check if config already exists for this account
-    const { data: existingConfig } = await supabase
-      .from('whatsapp_config')
-      .select('id')
-      .eq('account_id', accountId)
-      .maybeSingle()
-
-    if (existingConfig) {
-      const { error: updateError } = await supabase
-        .from('whatsapp_config')
-        .update(configPayload)
-        .eq('account_id', accountId)
-
-      if (updateError) {
-        console.error('Failed to update whatsapp_config:', updateError)
-        return NextResponse.json(
-          { error: 'Config saved to Meta but failed to persist locally' },
-          { status: 500 },
-        )
-      }
-    } else {
-      const { error: insertError } = await supabase
-        .from('whatsapp_config')
-        .insert(configPayload)
-
-      if (insertError) {
-        console.error('Failed to insert whatsapp_config:', insertError)
-        return NextResponse.json(
-          { error: 'Config saved to Meta but failed to persist locally' },
-          { status: 500 },
-        )
-      }
-    }
-
-    // Update session as completed
-    await supabase
-      .from('embedded_signup_sessions')
-      .update({
-        status: 'completed',
-        meta_code: code,
-        waba_id: waba_id,
-        phone_number_id: result.phoneInfo.id,
-        meta_business_id: result.businessInfo.id,
-        completed_at: now,
-      })
-      .eq('id', session.id)
-
-    return NextResponse.json({
-      success: true,
-      business_name: result.businessInfo.name,
-      phone_number: result.phoneInfo.displayPhoneNumber,
-      phone_number_id: result.phoneInfo.id,
-      verified_name: result.phoneInfo.verifiedName,
-      registered: result.registered,
-      registration_error: result.registrationError,
-      subscribed_apps: result.subscribedApps,
+    return await persistAndRespond({
+      supabase,
+      accountId,
+      session,
+      wabaId,
+      result,
+      autoDiscovered: true,
     })
   } catch (err) {
     console.error('Embedded signup callback error:', err)
@@ -261,4 +337,112 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+}
+
+// ================================================================
+// Shared helper: persist config to DB and return success response
+// ================================================================
+async function persistAndRespond({
+  supabase,
+  accountId,
+  session,
+  wabaId,
+  result,
+  autoDiscovered,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  accountId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session: any
+  wabaId: string
+  result: {
+    encryptedAccessToken: string
+    tokenExpiresAt: string | null
+    businessInfo: { id: string; name: string }
+    phoneInfo: { id: string; displayPhoneNumber: string; verifiedName?: string; qualityRating?: string; messagingLimitTier?: string }
+    registered: boolean
+    registrationError?: string
+    subscribedApps: boolean
+  }
+  autoDiscovered: boolean
+}) {
+  const now = new Date().toISOString()
+  const configPayload = {
+    account_id: accountId,
+    phone_number_id: result.phoneInfo.id,
+    waba_id: wabaId,
+    access_token: result.encryptedAccessToken,
+    setup_method: 'embedded_signup' as const,
+    meta_business_id: result.businessInfo.id,
+    business_name: result.businessInfo.name,
+    display_phone_number: result.phoneInfo.displayPhoneNumber,
+    quality_rating: result.phoneInfo.qualityRating ?? null,
+    messaging_limit: result.phoneInfo.messagingLimitTier ?? null,
+    embedded_signup_completed_at: now,
+    token_expires_at: result.tokenExpiresAt,
+    phone_verified: true,
+    is_registered: result.registered,
+    registered_at: result.registered ? now : null,
+    last_registration_error: result.registrationError ?? null,
+    updated_at: now,
+  }
+
+  // Upsert config
+  const { data: existingConfig } = await supabase
+    .from('whatsapp_config')
+    .select('id')
+    .eq('account_id', accountId)
+    .maybeSingle()
+
+  if (existingConfig) {
+    const { error: updateError } = await supabase
+      .from('whatsapp_config')
+      .update(configPayload)
+      .eq('account_id', accountId)
+
+    if (updateError) {
+      console.error('Failed to update whatsapp_config:', updateError)
+      return NextResponse.json(
+        { error: 'Config saved to Meta but failed to persist locally' },
+        { status: 500 },
+      )
+    }
+  } else {
+    const { error: insertError } = await supabase
+      .from('whatsapp_config')
+      .insert(configPayload)
+
+    if (insertError) {
+      console.error('Failed to insert whatsapp_config:', insertError)
+      return NextResponse.json(
+        { error: 'Config saved to Meta but failed to persist locally' },
+        { status: 500 },
+      )
+    }
+  }
+
+  // Update session as completed
+  await supabase
+    .from('embedded_signup_sessions')
+    .update({
+      status: 'completed',
+      meta_code: '[redacted]',
+      waba_id: wabaId,
+      phone_number_id: result.phoneInfo.id,
+      meta_business_id: result.businessInfo.id,
+      completed_at: now,
+    })
+    .eq('id', session.id)
+
+  return NextResponse.json({
+    success: true,
+    business_name: result.businessInfo.name,
+    phone_number: result.phoneInfo.displayPhoneNumber,
+    phone_number_id: result.phoneInfo.id,
+    verified_name: result.phoneInfo.verifiedName,
+    registered: result.registered,
+    registration_error: result.registrationError,
+    subscribed_apps: result.subscribedApps,
+    auto_discovered: autoDiscovered,
+  })
 }

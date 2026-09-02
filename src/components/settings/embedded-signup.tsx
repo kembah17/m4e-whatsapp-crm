@@ -368,8 +368,10 @@ export function EmbeddedSignup() {
           body: JSON.stringify({
             code,
             state_token,
-            waba_id: wabaId,
-            phone_number_id: phoneNumberId,
+            // Only include WABA/phone if available from popup response
+            // Server will auto-discover them if missing (scope-based OAuth)
+            ...(wabaId && { waba_id: wabaId }),
+            ...(phoneNumberId && { phone_number_id: phoneNumberId }),
           }),
         },
       );
@@ -716,6 +718,12 @@ export function EmbeddedSignup() {
                 {errorMessage.includes("session") && (
                   <li>&bull; Your session may have expired. Click &ldquo;Try Again&rdquo; to start a fresh session</li>
                 )}
+                {errorMessage.includes("discover") && (
+                  <>
+                    <li>&bull; Ensure your Meta Business account has a WhatsApp Business Account (WABA) with at least one phone number</li>
+                    <li>&bull; You can create a WABA at <strong>business.facebook.com</strong> &rarr; WhatsApp Accounts</li>
+                  </>
+                )}
                 <li>&bull; If this keeps happening, try the <strong>Manual Setup</strong> tab to enter your credentials directly</li>
               </ul>
             </div>
@@ -750,14 +758,14 @@ export function EmbeddedSignup() {
               <p className="text-foreground font-medium">
                 {step === "connecting" && "Starting secure connection..."}
                 {step === "verifying" && "Complete the signup in the Meta popup..."}
-                {step === "registering" && "Registering your phone number..."}
+                {step === "registering" && "Setting up your WhatsApp connection..."}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 {step === "connecting" && "Preparing your signup session"}
                 {step === "verifying" &&
                   "Sign in and select your WhatsApp Business Account"}
                 {step === "registering" &&
-                  "Exchanging tokens and configuring webhooks"}
+                  "Discovering your business account, exchanging tokens, and configuring webhooks"}
               </p>
             </div>
           </CardContent>

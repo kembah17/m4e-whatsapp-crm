@@ -309,6 +309,151 @@ export async function subscribeAppToWaba(
 }
 
 // ============================================================
+// 5b. Discover WABA and Phone Numbers (for scope-based OAuth)
+// ============================================================
+
+export interface DiscoveredBusiness {
+  id: string
+  name: string
+}
+
+export interface DiscoveredWaba {
+  id: string
+  name: string
+  currency?: string
+}
+
+/**
+ * Discover the user's businesses via the Graph API.
+ * Used when the frontend doesn't provide waba_id/phone_number_id
+ * (scope-based OAuth without config_id).
+ */
+export async function discoverBusinesses(
+  args: { accessToken: string },
+): Promise<DiscoveredBusiness[]> {
+  const { accessToken } = args
+  const url = `${META_API_BASE}/me/businesses?fields=id,name`
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+
+  if (!response.ok) {
+    await throwEmbeddedSignupError(
+      response,
+      `Failed to discover businesses: ${response.status}`,
+    )
+  }
+
+  const data = await response.json()
+  return (data.data ?? []).map((b: { id: string; name: string }) => ({
+    id: String(b.id),
+    name: String(b.name ?? 'Unknown'),
+  }))
+}
+
+/**
+ * Discover WABAs owned by a business.
+ */
+export async function discoverWabas(
+  args: { accessToken: string; businessId: string },
+): Promise<DiscoveredWaba[]> {
+  const { accessToken, businessId } = args
+  const url = `${META_API_BASE}/${businessId}/owned_whatsapp_business_accounts?fields=id,name,currency`
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+
+  if (!response.ok) {
+    await throwEmbeddedSignupError(
+      response,
+      `Failed to discover WABAs: ${response.status}`,
+    )
+  }
+
+  const data = await response.json()
+  return (data.data ?? []).map((w: { id: string; name: string; currency?: string }) => ({
+    id: String(w.id),
+    name: String(w.name ?? 'Unknown'),
+    currency: w.currency ? String(w.currency) : undefined,
+  }))
+}
+
+/**
+ * Auto-discover WABA and phone number when not provided by the frontend.
+ * This handles the scope-based OAuth flow where Meta doesn't return
+ * WABA/phone selection in the popup response.
+ *
+ * Returns { wabaId, phoneNumberId } or throws if discovery fails.
+ */
+export async function autoDiscoverWabaAndPhone(
+  args: { accessToken: string },
+): Promise<{ wabaId: string; phoneNumberId: string }> {
+  const { accessToken } = args
+
+  // Step 1: Find businesses
+  const businesses = await discoverBusinesses({ accessToken })
+  if (businesses.length === 0) {
+    throw new Error(
+      'No Meta Business accounts found. Ensure your Meta account has a Business portfolio ' +
+      'with a WhatsApp Business Account attached.',
+    )
+  }
+
+  // Step 2: Find WABAs across all businesses
+  let allWabas: Array<DiscoveredWaba & { businessId: string }> = []
+  for (const biz of businesses) {
+    try {
+      const wabas = await discoverWabas({ accessToken, businessId: biz.id })
+      allWabas = allWabas.concat(wabas.map(w => ({ ...w, businessId: biz.id })))
+    } catch {
+      // Business might not have WABAs — continue to next
+      continue
+    }
+  }
+
+  if (allWabas.length === 0) {
+    throw new Error(
+      `Found ${businesses.length} business(es) but no WhatsApp Business Accounts. ` +
+      'Create a WABA in your Meta Business Suite first, or use Manual Setup.',
+    )
+  }
+
+  // Step 3: Find phone numbers across all WABAs
+  let allPhones: Array<PhoneNumberInfo & { wabaId: string }> = []
+  for (const waba of allWabas) {
+    try {
+      const phones = await getPhoneNumbers({ accessToken, wabaId: waba.id })
+      allPhones = allPhones.concat(phones.map(p => ({ ...p, wabaId: waba.id })))
+    } catch {
+      continue
+    }
+  }
+
+  if (allPhones.length === 0) {
+    throw new Error(
+      `Found ${allWabas.length} WABA(s) but no phone numbers. ` +
+      'Add a phone number to your WhatsApp Business Account first, or use Manual Setup.',
+    )
+  }
+
+  // Auto-select: if exactly one phone, use it. If multiple, use the first.
+  // Future enhancement: return options to frontend for user selection.
+  const selectedPhone = allPhones[0]
+  console.log(
+    `[Embedded Signup] Auto-discovered WABA ${selectedPhone.wabaId} ` +
+    `phone ${selectedPhone.id} (${selectedPhone.displayPhoneNumber}) ` +
+    `from ${allPhones.length} phone(s) across ${allWabas.length} WABA(s)`,
+  )
+
+  return {
+    wabaId: selectedPhone.wabaId,
+    phoneNumberId: selectedPhone.id,
+  }
+}
+
+// ============================================================
 // 6. Complete Embedded Signup — full orchestration
 // ============================================================
 
