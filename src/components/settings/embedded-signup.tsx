@@ -350,10 +350,11 @@ export function EmbeddedSignup() {
       }
 
       if (!wabaId || !phoneNumberId) {
-        throw new Error(
-          "Could not extract WhatsApp Business Account ID or Phone Number ID from the signup response. " +
-          "This can happen if the Meta app is still in Development mode. " +
-          "Please ensure the app has been approved by Meta, or try Manual Setup.",
+        // In scope-based OAuth (no config_id), Meta doesn't return WABA/phone IDs
+        // The server will auto-discover them from the access token
+        console.log(
+          "WABA ID or Phone Number ID not in popup response — server will auto-discover.",
+          { wabaId, phoneNumberId }
         );
       }
 
