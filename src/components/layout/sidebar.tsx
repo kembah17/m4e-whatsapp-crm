@@ -104,6 +104,8 @@ interface NavItem {
   label: string;
   icon: typeof LayoutDashboard;
   beta?: boolean;
+  /** When true, only visible to super-admin users (M4E staff). */
+  superAdminOnly?: boolean;
 }
 
 interface NavGroup {
@@ -115,11 +117,11 @@ interface NavGroup {
 
 // ── Core items (always visible, no group header) ──────────
 const coreItems: NavItem[] = [
-  { href: "/getting-started", label: "Getting Started", icon: Compass },
+  { href: "/getting-started", label: "Getting Started", icon: Compass, superAdminOnly: true },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/inbox", label: "Inbox", icon: MessageSquare },
   { href: "/contacts", label: "Contacts", icon: Users },
-  { href: "/my-package", label: "Package Manager", icon: Package },
+  { href: "/my-package", label: "Package Manager", icon: Package, superAdminOnly: true },
 ];
 
 // ── Grouped navigation ────────────────────────────────────
@@ -187,7 +189,7 @@ const navGroups: NavGroup[] = [
       { href: "/loyalty", label: "Loyalty", icon: Award },
       { href: "/qr-codes", label: "QR Codes", icon: QrCode },
       { href: "/sentiment", label: "Sentiment", icon: Brain, beta: true },
-      { href: "/success-metrics", label: "Success Metrics", icon: HeartPulse },
+      { href: "/success-metrics", label: "Success Metrics", icon: HeartPulse, superAdminOnly: true },
     ],
   },
   {
@@ -197,7 +199,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/data-center", label: "Data Center", icon: Database },
       { href: "/support", label: "Support Desk", icon: Headphones },
-      { href: "/subscribers", label: "Subscribers", icon: MonitorCheck },
+      { href: "/subscribers", label: "Subscribers", icon: MonitorCheck, superAdminOnly: true },
     ],
   },
 ];
@@ -295,6 +297,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
+  const isSuperAdmin = profile?.is_super_admin ?? false;
 
   // Track which groups are expanded. Auto-expand the group containing
   // the active page so users always see where they are.
@@ -408,7 +411,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto px-3 py-3">
           {/* Core items — always visible */}
           <ul className="flex flex-col gap-0.5">
-            {coreItems.map((item) => {
+            {coreItems.filter((item) => !item.superAdminOnly || isSuperAdmin).map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -446,15 +449,21 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
           {/* Grouped sections */}
           <ul className="mt-3 flex flex-col gap-2">
-            {navGroups.map((group) => (
-              <NavGroupSection
-                key={group.id}
-                group={group}
-                pathname={pathname}
-                expanded={expandedGroups[group.id] ?? false}
-                onToggle={() => toggleGroup(group.id)}
-              />
-            ))}
+            {navGroups.map((group) => {
+              const visibleItems = group.items.filter(
+                (item) => !item.superAdminOnly || isSuperAdmin
+              );
+              if (visibleItems.length === 0) return null;
+              return (
+                <NavGroupSection
+                  key={group.id}
+                  group={{ ...group, items: visibleItems }}
+                  pathname={pathname}
+                  expanded={expandedGroups[group.id] ?? false}
+                  onToggle={() => toggleGroup(group.id)}
+                />
+              );
+            })}
           </ul>
 
           <div className="my-3 border-t border-border" />

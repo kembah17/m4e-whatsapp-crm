@@ -106,7 +106,7 @@ export default function SupportPage() {
       const res = await fetch(`/api/support?${params.toString()}`)
       if (!res.ok) throw new Error('Failed to load tickets')
       const data = await res.json()
-      const ticketList = Array.isArray(data) ? data : data.tickets ?? []
+      const ticketList = Array.isArray(data) ? data : (data.data ?? data.tickets ?? [])
       setTickets(ticketList)
       // Track if account has ever had tickets (only on unfiltered load)
       if (!filters.status && !filters.priority && !filters.category_id && !filters.search) {
