@@ -354,9 +354,11 @@ async function persistAndRespond({
     embedded_signup_completed_at: now,
     token_expires_at: result.tokenExpiresAt,
     phone_verified: true,
-    is_registered: result.registered,
     registered_at: result.registered ? now : null,
+    subscribed_apps_at: result.subscribedApps ? now : null,
     last_registration_error: result.registrationError ?? null,
+    status: 'connected' as const,
+    connected_at: now,
     updated_at: now,
   }
 
