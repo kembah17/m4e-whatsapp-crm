@@ -1,8 +1,8 @@
 {
   "name": "customer-reactivation-manager",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
-  "description": "Customer Reactivation Manager — Your dormant customer reclamation engine! Multi-channel CRM powered by Marketing4Effect.",
+  "description": "Customer Reactivation Manager \u2014 Your dormant customer reclamation engine! Multi-channel CRM powered by Marketing4Effect.",
   "license": "MIT",
   "author": "Arnas Donauskas",
   "homepage": "https://github.com/kembah17/m4e-whatsapp-crm",
