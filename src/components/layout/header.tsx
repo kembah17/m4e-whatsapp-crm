@@ -47,6 +47,7 @@ interface HeaderProps {
 export function Header({ onOpenSidebar }: HeaderProps) {
   const pathname = usePathname();
   const { profile, signOut } = useAuth();
+  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false);
   const title = getPageTitle(pathname);
 
   const initial =
@@ -133,7 +134,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-border" />
           <DropdownMenuItem
-            onClick={signOut}
+            onClick={() => setShowSignOutDialog(true)}
             className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
           >
             <LogOut className="size-4" />
@@ -142,6 +143,13 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <SignOutDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={signOut}
+        userName={profile?.full_name || profile?.email || undefined}
+      />
     </header>
   );
 }

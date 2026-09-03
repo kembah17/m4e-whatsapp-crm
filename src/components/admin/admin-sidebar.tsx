@@ -71,6 +71,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ open = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
   const { profile, signOut } = useAdminAuth()
+  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false)
 
   // Close drawer on route change (mobile)
   useEffect(() => {
@@ -235,7 +236,7 @@ export function AdminSidebar({ open = false, onClose }: AdminSidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem
-                onClick={signOut}
+                onClick={() => setShowSignOutDialog(true)}
                 className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
               >
                 <LogOut className="size-4" />
@@ -245,6 +246,13 @@ export function AdminSidebar({ open = false, onClose }: AdminSidebarProps) {
           </DropdownMenu>
         </div>
       </aside>
+
+      <SignOutDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={signOut}
+        userName={profile?.full_name || profile?.email || undefined}
+      />
     </>
   )
 }

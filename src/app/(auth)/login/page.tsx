@@ -118,7 +118,7 @@ function LoginPageInner() {
           <CardDescription className="text-slate-400">
             {inviteToken
               ? "Sign in and we\u2019ll take you to the invitation."
-              : "Your Dormant Customer Reclamation Engine!"}
+              : "Applying Real-Time Customer Intelligence to Your Entire Business!"}
           </CardDescription>
           {!inviteToken && (
             <p className="mt-2 text-sm font-medium text-slate-300">Sign in</p>

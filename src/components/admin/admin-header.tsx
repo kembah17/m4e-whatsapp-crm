@@ -40,6 +40,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ onOpenSidebar }: AdminHeaderProps) {
   const pathname = usePathname()
   const { profile, signOut } = useAdminAuth()
+  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false)
   const title = getPageTitle(pathname)
 
   const initial =
@@ -119,7 +120,7 @@ export function AdminHeader({ onOpenSidebar }: AdminHeaderProps) {
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
-              onClick={signOut}
+              onClick={() => setShowSignOutDialog(true)}
               className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
             >
               <LogOut className="size-4" />
@@ -128,6 +129,13 @@ export function AdminHeader({ onOpenSidebar }: AdminHeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <SignOutDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={signOut}
+        userName={profile?.full_name || profile?.email || undefined}
+      />
     </header>
   )
 }

@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
           </div>
           <CardTitle className="text-xl text-white font-heading">Business Growth Engine</CardTitle>
           <CardDescription className="text-slate-400">
-            Your Dormant Customer Reclamation Engine!
+            Applying Real-Time Customer Intelligence to Your Entire Business!
           </CardDescription>
           <p className="mt-2 text-sm font-medium text-slate-300">Reset password</p>
         </CardHeader>

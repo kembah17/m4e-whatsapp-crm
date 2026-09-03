@@ -298,6 +298,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
   const isSuperAdmin = profile?.is_super_admin ?? false;
+  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false);
 
   // Track which groups are expanded. Auto-expand the group containing
   // the active page so users always see where they are.
@@ -595,7 +596,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem
-                onClick={signOut}
+                onClick={() => setShowSignOutDialog(true)}
                 className="text-popover-foreground focus:bg-accent focus:text-accent-foreground"
               >
                 <LogOut className="size-4" />
@@ -605,6 +606,13 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
           </DropdownMenu>
         </div>
       </aside>
+
+      <SignOutDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={signOut}
+        userName={profile?.full_name || profile?.email || undefined}
+      />
     </>
   );
 }

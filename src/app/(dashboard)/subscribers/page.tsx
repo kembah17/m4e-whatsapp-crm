@@ -472,6 +472,20 @@ export default function SubscribersPage() {
           </table>
         </div>
       </div>
+
+      {/* WhatsApp Disconnect Dialog */}
+      {disconnectTarget && (
+        <WhatsAppDisconnectDialog
+          open={!!disconnectTarget}
+          onOpenChange={(open) => { if (!open) setDisconnectTarget(null); }}
+          accountId={disconnectTarget.accountId}
+          accountName={disconnectTarget.name}
+          onDisconnected={() => {
+            setDisconnectTarget(null);
+            fetchSubscribers();
+          }}
+        />
+      )}
     </div>
   )
 }
