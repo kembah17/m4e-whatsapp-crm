@@ -30,10 +30,13 @@ async function resolveAccountId(
 let _adminClient: any = null
 function supabaseAdmin() {
   if (!_adminClient) {
-    _adminClient = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    )
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !key) {
+      console.error('[Embedded Signup] Missing env vars:', { hasUrl: !!url, hasKey: !!key })
+      throw new Error('Server misconfiguration: missing Supabase admin credentials')
+    }
+    _adminClient = createAdminClient(url, key)
   }
   return _adminClient
 }
@@ -362,15 +365,32 @@ async function persistAndRespond({
     updated_at: now,
   }
 
-  // Upsert config
-  const { data: existingConfig } = await supabase
+  // Upsert config using admin client to bypass RLS
+  console.log('[Embedded Signup] Persisting config for account:', accountId)
+  console.log('[Embedded Signup] Config payload keys:', Object.keys(configPayload))
+  let admin
+  try {
+    admin = supabaseAdmin()
+  } catch (adminErr) {
+    console.error('[Embedded Signup] Admin client creation failed:', adminErr)
+    return NextResponse.json(
+      { error: `Server configuration error: ${adminErr instanceof Error ? adminErr.message : 'unknown'}` },
+      { status: 500 },
+    )
+  }
+  const { data: existingConfig, error: selectError } = await admin
     .from('whatsapp_config')
     .select('id')
     .eq('account_id', accountId)
     .maybeSingle()
 
+  if (selectError) {
+    console.error('[Embedded Signup] Failed to check existing config:', selectError)
+  }
+  console.log('[Embedded Signup] Existing config:', existingConfig ? 'found (UPDATE path)' : 'not found (INSERT path)')
+
   if (existingConfig) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await admin
       .from('whatsapp_config')
       .update(configPayload)
       .eq('account_id', accountId)
@@ -378,19 +398,27 @@ async function persistAndRespond({
     if (updateError) {
       console.error('Failed to update whatsapp_config:', updateError)
       return NextResponse.json(
-        { error: 'Config saved to Meta but failed to persist locally' },
+        { error: `Config saved to Meta but failed to persist locally: ${updateError.message}` },
         { status: 500 },
       )
     }
   } else {
-    const { error: insertError } = await supabase
+    // For insert, we also need user_id
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('user_id')
+      .eq('account_id', accountId)
+      .limit(1)
+      .single()
+
+    const { error: insertError } = await admin
       .from('whatsapp_config')
-      .insert(configPayload)
+      .insert({ ...configPayload, user_id: profile?.user_id })
 
     if (insertError) {
       console.error('Failed to insert whatsapp_config:', insertError)
       return NextResponse.json(
-        { error: 'Config saved to Meta but failed to persist locally' },
+        { error: `Config saved to Meta but failed to persist locally: ${insertError.message}` },
         { status: 500 },
       )
     }
