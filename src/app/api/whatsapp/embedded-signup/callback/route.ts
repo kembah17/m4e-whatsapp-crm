@@ -79,8 +79,9 @@ export async function POST(request: NextRequest) {
       state_token?: string
     }
 
-    // redirect_uri from the frontend (window.location.origin) — required for Meta OAuth token exchange
-    const redirectUri = (body.redirect_uri as string) || new URL(request.url).origin
+    // For FB.login() JS SDK code exchanges, Meta requires redirect_uri to be empty string
+    // because the JS SDK popup doesn't use HTTP redirects
+    const redirectUri = ''
 
     // waba_id and phone_number_id are optional — will be auto-discovered if missing
     const frontendWabaId = body.waba_id as string | undefined
