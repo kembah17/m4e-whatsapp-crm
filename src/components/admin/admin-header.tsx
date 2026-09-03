@@ -1,7 +1,9 @@
 "use client"
 
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { LogOut, Menu, Shield, User } from "lucide-react"
 import {
@@ -17,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ModeToggle } from "@/components/layout/mode-toggle"
+import { SignOutDialog } from "@/components/auth/sign-out-dialog"
 
 const pageTitles: Record<string, string> = {
   "/admin/dashboard": "Platform Overview",
@@ -40,7 +43,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ onOpenSidebar }: AdminHeaderProps) {
   const pathname = usePathname()
   const { profile, signOut } = useAdminAuth()
-  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false)
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false)
   const title = getPageTitle(pathname)
 
   const initial =

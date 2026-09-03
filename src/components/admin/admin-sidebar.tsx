@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import {
@@ -38,6 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { SignOutDialog } from "@/components/auth/sign-out-dialog"
 
 interface NavItem {
   href: string
@@ -71,7 +72,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ open = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
   const { profile, signOut } = useAdminAuth()
-  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false)
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false)
 
   // Close drawer on route change (mobile)
   useEffect(() => {
