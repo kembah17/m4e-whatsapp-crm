@@ -285,8 +285,6 @@ export function EmbeddedSignup() {
           }
 
           const loginOptions: FBLoginOptions = {
-            response_type: "code",
-            override_default_response_type: true,
             extras: {
               setup: {},
               featureType: "",
@@ -315,14 +313,14 @@ export function EmbeddedSignup() {
         },
       );
 
-      // Check if user cancelled
-      if (!fbResponse.authResponse?.code) {
+      // Check if user cancelled or no token received
+      if (!fbResponse.authResponse?.accessToken) {
         setStep("idle");
         toast.error("Signup was cancelled or no authorization was granted.");
         return;
       }
 
-      const code = fbResponse.authResponse.code;
+      const accessToken = fbResponse.authResponse.accessToken;
 
       // Extract WABA ID and Phone Number ID from the session info
       const authResponse = fbResponse.authResponse as Record<string, unknown>;
@@ -367,7 +365,7 @@ export function EmbeddedSignup() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            code,
+            access_token: accessToken,
             state_token,
             // Only include WABA/phone if available from popup response
             // Server will auto-discover them if missing (scope-based OAuth)

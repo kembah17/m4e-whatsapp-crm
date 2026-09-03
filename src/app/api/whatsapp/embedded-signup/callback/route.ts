@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
-  completeEmbeddedSignup,
   autoDiscoverWabaAndPhone,
   exchangeCodeForToken,
   getBusinessInfo,
@@ -42,13 +41,15 @@ function supabaseAdmin() {
 /**
  * POST /api/whatsapp/embedded-signup/callback
  *
- * Receives the authorization code and optionally WABA/phone details from the
- * frontend after the Facebook SDK popup completes.
+ * Receives either an access_token (direct from JS SDK) or an authorization code
+ * from the frontend after the Facebook SDK popup completes.
  *
- * Two paths:
- *   Path A: waba_id + phone_number_id provided (config_id mode) → use completeEmbeddedSignup()
- *   Path B: waba_id/phone_number_id missing (scope-based OAuth) → exchange code once,
- *           auto-discover WABA/phone, then run remaining steps with the token
+ * Preferred flow (direct token):
+ *   Frontend calls FB.login() without response_type:'code' → gets accessToken
+ *   → sends access_token to this endpoint → server uses it directly
+ *
+ * Legacy flow (code exchange):
+ *   Frontend sends code → server exchanges for token → uses token
  */
 export async function POST(request: NextRequest) {
   try {
@@ -74,23 +75,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { code, state_token } = body as {
-      code?: string
-      state_token?: string
-    }
-
-    // For FB.login() JS SDK code exchanges, Meta requires redirect_uri to be empty string
-    // because the JS SDK popup doesn't use HTTP redirects
-    const redirectUri = ''
-
-    // waba_id and phone_number_id are optional — will be auto-discovered if missing
+    const { state_token } = body as { state_token?: string }
+    const frontendAccessToken = body.access_token as string | undefined
+    const frontendCode = body.code as string | undefined
     const frontendWabaId = body.waba_id as string | undefined
     const frontendPhoneNumberId = body.phone_number_id as string | undefined
-    const needsAutoDiscovery = !frontendWabaId || !frontendPhoneNumberId
 
-    if (!code || !state_token) {
+    if (!state_token) {
       return NextResponse.json(
-        { error: 'Missing required fields: code, state_token' },
+        { error: 'Missing required field: state_token' },
+        { status: 400 },
+      )
+    }
+
+    // Must have either access_token or code
+    if (!frontendAccessToken && !frontendCode) {
+      return NextResponse.json(
+        { error: 'Missing required field: access_token or code' },
         { status: 400 },
       )
     }
@@ -124,153 +125,109 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check env vars
-    const appId = process.env.META_APP_ID
-    const appSecret = process.env.META_APP_SECRET
+    // ================================================================
+    // STEP 1: Obtain access token
+    // Either use the direct token from JS SDK, or exchange a code
+    // ================================================================
+    let accessToken: string
+    let tokenExpiresAt: string | null = null
 
-    if (!appId || !appSecret) {
-      return NextResponse.json(
-        { error: 'META_APP_ID or META_APP_SECRET not configured' },
-        { status: 500 },
-      )
+    if (frontendAccessToken) {
+      // Direct token flow (preferred) — no code exchange needed
+      console.log('[Embedded Signup] Using direct access token from JS SDK')
+      accessToken = frontendAccessToken
+      // JS SDK tokens are short-lived (~1-2 hours), set approximate expiry
+      tokenExpiresAt = new Date(Date.now() + 3600 * 1000).toISOString()
+    } else {
+      // Legacy code exchange flow
+      console.log('[Embedded Signup] Exchanging authorization code for token')
+      const appId = process.env.META_APP_ID
+      const appSecret = process.env.META_APP_SECRET
+      if (!appId || !appSecret) {
+        return NextResponse.json(
+          { error: 'META_APP_ID or META_APP_SECRET not configured' },
+          { status: 500 },
+        )
+      }
+      try {
+        const tokenResult = await exchangeCodeForToken({
+          code: frontendCode!,
+          appId,
+          appSecret,
+          redirectUri: '',
+        })
+        accessToken = tokenResult.accessToken
+        if (tokenResult.expiresIn && tokenResult.expiresIn > 0) {
+          tokenExpiresAt = new Date(
+            Date.now() + tokenResult.expiresIn * 1000,
+          ).toISOString()
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Token exchange failed'
+        console.error('[Embedded Signup] Token exchange failed:', msg)
+        await supabase
+          .from('embedded_signup_sessions')
+          .update({
+            status: 'failed',
+            error_message: msg,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', session.id)
+        return NextResponse.json({ error: msg }, { status: 502 })
+      }
     }
 
     // ================================================================
-    // PATH A: Frontend provided waba_id + phone_number_id
-    //         Use completeEmbeddedSignup() which handles everything
+    // STEP 2: Discover WABA and phone number
+    // Use frontend-provided IDs if available, otherwise auto-discover
     // ================================================================
-    if (!needsAutoDiscovery) {
-      // Check for phone_number_id conflict with another account
-      const { data: conflict } = await supabaseAdmin()
-        .from('whatsapp_config')
-        .select('account_id')
-        .eq('phone_number_id', frontendPhoneNumberId)
-        .neq('account_id', accountId)
-        .maybeSingle()
+    let wabaId: string
+    let phoneNumberId: string
 
-      if (conflict) {
-        await supabase
-          .from('embedded_signup_sessions')
-          .update({
-            status: 'failed',
-            error_message: 'Phone number already claimed by another account',
-          })
-          .eq('id', session.id)
-
-        return NextResponse.json(
-          { error: 'This phone number is already connected to another account' },
-          { status: 409 },
-        )
-      }
-
-      let result
+    if (frontendWabaId && frontendPhoneNumberId) {
+      console.log('[Embedded Signup] Using frontend-provided WABA/Phone IDs')
+      wabaId = frontendWabaId
+      phoneNumberId = frontendPhoneNumberId
+    } else {
+      console.log('[Embedded Signup] Auto-discovering WABA and phone number...')
       try {
-        result = await completeEmbeddedSignup({
-          code,
-          wabaId: frontendWabaId!,
-          phoneNumberId: frontendPhoneNumberId!,
-          appId,
-          appSecret,
-          redirectUri,
-        })
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Embedded signup failed'
+        const discovered = await autoDiscoverWabaAndPhone({ accessToken })
+        wabaId = discovered.wabaId
+        phoneNumberId = discovered.phoneNumberId
+        console.log(
+          `[Embedded Signup] Auto-discovered WABA: ${wabaId}, Phone: ${phoneNumberId}`,
+        )
+      } catch (discoveryErr) {
+        const discoveryMessage =
+          discoveryErr instanceof Error
+            ? discoveryErr.message
+            : 'Failed to discover WhatsApp Business Account'
 
+        console.error('[Embedded Signup] Auto-discovery failed:', discoveryMessage)
         await supabase
           .from('embedded_signup_sessions')
           .update({
             status: 'failed',
-            error_message: errorMessage,
+            error_message: `Auto-discovery failed: ${discoveryMessage}`,
             completed_at: new Date().toISOString(),
           })
           .eq('id', session.id)
 
-        return NextResponse.json({ error: errorMessage }, { status: 502 })
+        return NextResponse.json(
+          {
+            error: discoveryMessage,
+            hint: 'The system could not automatically find your WhatsApp Business Account. '
+              + 'Ensure your Meta Business account has a WABA with at least one phone number, '
+              + 'or use Manual Setup to enter your credentials directly.',
+          },
+          { status: 422 },
+        )
       }
-
-      // Persist and respond (shared helper below)
-      return await persistAndRespond({
-        supabase,
-        accountId,
-        session,
-        wabaId: frontendWabaId!,
-        result,
-        autoDiscovered: false,
-      })
     }
 
     // ================================================================
-    // PATH B: Auto-discovery needed (scope-based OAuth, no config_id)
-    //         Exchange code ONCE, discover WABA/phone, then run steps
+    // STEP 3: Check for phone number conflict with another account
     // ================================================================
-    console.log(
-      '[Embedded Signup] WABA/Phone not in popup response — starting auto-discovery...',
-    )
-
-    // Step 1: Exchange code for token (SINGLE exchange — codes are single-use)
-    let accessToken: string
-    let tokenExpiresAt: string | null = null
-    try {
-      const tokenResult = await exchangeCodeForToken({ code, appId, appSecret, redirectUri })
-      accessToken = tokenResult.accessToken
-      if (tokenResult.expiresIn && tokenResult.expiresIn > 0) {
-        tokenExpiresAt = new Date(
-          Date.now() + tokenResult.expiresIn * 1000,
-        ).toISOString()
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Token exchange failed'
-      console.error('[Embedded Signup] Token exchange failed:', msg)
-      await supabase
-        .from('embedded_signup_sessions')
-        .update({
-          status: 'failed',
-          error_message: msg,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', session.id)
-      return NextResponse.json({ error: msg }, { status: 502 })
-    }
-
-    // Step 2: Auto-discover WABA and phone number
-    let wabaId: string
-    let phoneNumberId: string
-    try {
-      const discovered = await autoDiscoverWabaAndPhone({ accessToken })
-      wabaId = discovered.wabaId
-      phoneNumberId = discovered.phoneNumberId
-      console.log(
-        `[Embedded Signup] Auto-discovered WABA: ${wabaId}, Phone: ${phoneNumberId}`,
-      )
-    } catch (discoveryErr) {
-      const discoveryMessage =
-        discoveryErr instanceof Error
-          ? discoveryErr.message
-          : 'Failed to discover WhatsApp Business Account'
-
-      console.error('[Embedded Signup] Auto-discovery failed:', discoveryMessage)
-      await supabase
-        .from('embedded_signup_sessions')
-        .update({
-          status: 'failed',
-          error_message: `Auto-discovery failed: ${discoveryMessage}`,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', session.id)
-
-      return NextResponse.json(
-        {
-          error: discoveryMessage,
-          hint: 'The system could not automatically find your WhatsApp Business Account. '
-            + 'Ensure your Meta Business account has a WABA with at least one phone number, '
-            + 'or use Manual Setup to enter your credentials directly.',
-        },
-        { status: 422 },
-      )
-    }
-
-    // Check for phone_number_id conflict
     const { data: conflict } = await supabaseAdmin()
       .from('whatsapp_config')
       .select('account_id')
@@ -293,31 +250,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Step 3: Get business info
+    // ================================================================
+    // STEP 4: Get business info
+    // ================================================================
     const businessInfo = await getBusinessInfo({ accessToken, wabaId })
 
-    // Step 4: Get phone info
+    // ================================================================
+    // STEP 5: Get phone info
+    // ================================================================
     const phones = await getPhoneNumbers({ accessToken, wabaId })
     const phoneInfo = phones.find((p) => p.id === phoneNumberId) ?? phones[0]
     if (!phoneInfo) {
       throw new Error('Phone number not found after discovery')
     }
 
-    // Step 5: Register phone for Cloud API
+    // ================================================================
+    // STEP 6: Register phone for Cloud API
+    // ================================================================
     const registration = await registerPhoneForCloudAPI({
       accessToken,
       phoneNumberId: phoneInfo.id,
     })
 
-    // Step 6: Subscribe app to WABA
+    // ================================================================
+    // STEP 7: Subscribe app to WABA
+    // ================================================================
     const subscription = await subscribeAppToWaba({ accessToken, wabaId })
 
-    // Step 7: Encrypt token
+    // ================================================================
+    // STEP 8: Encrypt token and build result
+    // ================================================================
     const encryptedAccessToken = encrypt(accessToken)
 
-    // Build result object matching EmbeddedSignupResult shape
     const result = {
-      success: true as const,
       encryptedAccessToken,
       tokenExpiresAt,
       businessInfo,
@@ -327,13 +292,16 @@ export async function POST(request: NextRequest) {
       subscribedApps: subscription.success,
     }
 
+    // ================================================================
+    // STEP 9: Persist to database and respond
+    // ================================================================
     return await persistAndRespond({
       supabase,
       accountId,
       session,
       wabaId,
       result,
-      autoDiscovered: true,
+      autoDiscovered: !frontendWabaId || !frontendPhoneNumberId,
     })
   } catch (err) {
     console.error('Embedded signup callback error:', err)
