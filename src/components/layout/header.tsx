@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 import { BranchSwitcher } from "@/components/layout/branch-switcher";
+import { SignOutDialog } from "@/components/auth/sign-out-dialog";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -47,7 +48,7 @@ interface HeaderProps {
 export function Header({ onOpenSidebar }: HeaderProps) {
   const pathname = usePathname();
   const { profile, signOut } = useAuth();
-  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const title = getPageTitle(pathname);
 
   const initial =

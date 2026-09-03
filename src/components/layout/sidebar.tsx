@@ -98,6 +98,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SignOutDialog } from "@/components/auth/sign-out-dialog";
 
 interface NavItem {
   href: string;
@@ -298,7 +299,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { profile, profileLoading, account, accountRole, signOut } = useAuth();
   const totalUnread = useTotalUnread();
   const isSuperAdmin = profile?.is_super_admin ?? false;
-  const [showSignOutDialog, setShowSignOutDialog] = React.useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
 
   // Track which groups are expanded. Auto-expand the group containing
   // the active page so users always see where they are.
