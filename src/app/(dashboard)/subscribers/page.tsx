@@ -28,7 +28,9 @@ import {
   Shield,
   Zap,
   Star,
+  Unplug,
 } from 'lucide-react'
+import { WhatsAppDisconnectDialog } from '@/components/admin/whatsapp-disconnect-dialog'
 
 interface Subscriber {
   accountId: string
@@ -77,6 +79,7 @@ export default function SubscribersPage() {
   const [sortField, setSortField] = useState<SortField>('health_score')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const [disconnectTarget, setDisconnectTarget] = useState<{ accountId: string; name: string } | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -458,6 +461,13 @@ export default function SubscribersPage() {
                                 <button className="w-full flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors">
                                   <Calendar className="w-4 h-4" />
                                   Schedule Review Call
+                                </button>
+                                <button
+                                  onClick={() => setDisconnectTarget({ accountId: sub.accountId, name: sub.businessName })}
+                                  className="w-full flex items-center gap-2 px-3 py-2 bg-orange-900/30 hover:bg-orange-800/40 rounded-lg text-sm text-orange-400 transition-colors border border-orange-800/30"
+                                >
+                                  <Unplug className="w-4 h-4" />
+                                  Disconnect WhatsApp
                                 </button>
                               </div>
                             </div>
