@@ -187,7 +187,7 @@ export function formatNaira(amount: number): string {
 }
 
 // Trial configuration
-export const TRIAL_DURATION_DAYS = 45
+export const TRIAL_DURATION_DAYS = 30
 export const GRACE_PERIOD_DAYS = 3
 export const READ_ONLY_DAYS = 7
 export const SUSPEND_AFTER_DAYS = GRACE_PERIOD_DAYS + READ_ONLY_DAYS // 10 days total
