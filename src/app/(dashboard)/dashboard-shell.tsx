@@ -60,7 +60,9 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
           return;
         }
         const data = await res.json();
-        const completed = data.onboarding_completed === true;
+        // Check both field names: isComplete (from platform_onboarding API) and
+        // onboarding_completed (legacy accounts table field) for compatibility
+        const completed = data.isComplete === true || data.onboarding_completed === true;
         setOnboardingDone(completed);
 
         if (!completed && !pathname.startsWith("/onboarding")) {

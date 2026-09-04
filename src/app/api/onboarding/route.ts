@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentAccount } from '@/lib/auth/account'
+import { createClient } from '@/lib/supabase/server'
 import {
   getOnboardingProgress,
   completeStep,
@@ -15,6 +16,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check the accounts table first - if onboarding_completed is true there,
+    // respect it even if platform_onboarding has no record or shows incomplete
+    const supabase = await createClient()
+    const { data: accountData } = await supabase
+      .from('accounts')
+      .select('onboarding_completed')
+      .eq('id', account.account_id)
+      .single()
+
+    const accountOnboardingDone = accountData?.onboarding_completed === true
+
     const progress = await getOnboardingProgress(account.account_id)
 
     // Auto-detect completed steps
@@ -22,6 +34,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ...progress,
+      // Include both field names for compatibility with DashboardShell
+      onboarding_completed: progress.isComplete || accountOnboardingDone,
       autoDetectedSteps: autoCompleted,
     })
   } catch (error) {
