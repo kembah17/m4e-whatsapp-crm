@@ -206,6 +206,16 @@ function LoginPageInner() {
               Create account
             </Link>
           </p>
+          <p className="mt-3 text-center text-sm text-slate-500">
+            <a
+              href="https://marketing4effect.com/subscribe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-primary/80 underline underline-offset-2"
+            >
+              View Plans &amp; Pricing →
+            </a>
+          </p>
         </CardContent>
       </Card>
     </div>
