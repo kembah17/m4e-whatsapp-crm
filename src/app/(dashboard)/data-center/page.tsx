@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ImportWizard } from "@/components/contacts/import-wizard";
+import { ProductImportWizard } from "@/components/products/product-import-wizard";
 import {
   Database,
   Upload,
@@ -27,6 +28,7 @@ import {
   Lightbulb,
   ArrowRight,
   CheckCircle2,
+  Package,
 } from "lucide-react";
 
 interface DataQuality {
@@ -43,6 +45,7 @@ export default function DataCenterPage() {
   const supabase = createClient();
   const { accountId } = useAuth();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [productWizardOpen, setProductWizardOpen] = useState(false);
   const [quality, setQuality] = useState<DataQuality>({
     totalContacts: 0,
     withPhone: 0,
@@ -113,8 +116,22 @@ export default function DataCenterPage() {
 
   useEffect(() => {
     fetchQuality();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchProductCount();
+    // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [accountId]);
+
+  const [productCount, setProductCount] = useState(0);
+
+  const fetchProductCount = async () => {
+    if (!accountId) return;
+    try {
+      const { count } = await supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("account_id", accountId);
+      setProductCount(count ?? 0);
+    } catch {}
+  };
 
   const pct = (n: number) =>
     quality.totalContacts > 0
@@ -262,6 +279,33 @@ export default function DataCenterPage() {
           </CardContent>
         </Card>
 
+<Card
+          className="cursor-pointer hover:border-primary transition-colors"
+          onClick={() => setProductWizardOpen(true)}
+        >
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Package className="h-5 w-5 text-emerald-600" />
+              Import Products
+            </CardTitle>
+            <CardDescription>
+              Upload your product catalog from a CSV file. Includes support for
+              images, pricing, inventory, and supplier details.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <Badge variant="secondary">
+                {productCount} products
+              </Badge>
+              <Button variant="outline" size="sm">
+                Import Products
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -320,6 +364,13 @@ export default function DataCenterPage() {
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         onImported={fetchQuality}
+      />
+
+      {/* Product Import Wizard Modal */}
+      <ProductImportWizard
+        open={productWizardOpen}
+        onOpenChange={setProductWizardOpen}
+        onImported={() => { fetchProductCount(); }}
       />
     </div>
   );

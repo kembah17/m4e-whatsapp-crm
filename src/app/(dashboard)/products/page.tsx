@@ -43,8 +43,10 @@ import {
   ChevronRight,
   Trash2,
   ImageIcon,
+  Upload,
 } from 'lucide-react';
 import { ProductForm } from '@/components/products/product-form';
+import { ProductImportWizard } from '@/components/products/product-import-wizard';
 import Image from 'next/image';
 
 const PAGE_SIZE = 25;
@@ -73,6 +75,7 @@ export default function ProductsPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -136,17 +139,26 @@ export default function ProductsPage() {
             Manage your product and service catalog
           </p>
         </div>
-        <GatedButton
-          canAct={canEdit}
-          gateReason="manage products"
-          onClick={() => {
-            setEditProduct(null);
-            setFormOpen(true);
-          }}
-          size="sm"
-        >
-          <Plus className="mr-1 h-4 w-4" /> Add Product
-        </GatedButton>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setImportWizardOpen(true)}
+          >
+            <Upload className="mr-1 h-4 w-4" /> Import CSV
+          </Button>
+          <GatedButton
+            canAct={canEdit}
+            gateReason="manage products"
+            onClick={() => {
+              setEditProduct(null);
+              setFormOpen(true);
+            }}
+            size="sm"
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add Product
+          </GatedButton>
+        </div>
       </div>
 
       {/* Filters */}
@@ -329,6 +341,13 @@ export default function ProductsPage() {
           setFormOpen(false);
           fetchProducts();
         }}
+      />
+
+      {/* Product Import Wizard */}
+      <ProductImportWizard
+        open={importWizardOpen}
+        onOpenChange={setImportWizardOpen}
+        onImported={fetchProducts}
       />
 
       {/* Delete Confirmation */}
