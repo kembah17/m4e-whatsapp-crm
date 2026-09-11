@@ -47,10 +47,7 @@ interface ParsedProduct {
   status?: string;
   unit_of_measure?: string;
   track_inventory?: boolean;
-  stock_quantity?: number;
   reorder_point?: number;
-  supplier_name?: string;
-  supplier_phone?: string;
   tags?: string[];
 }
 
@@ -293,7 +290,7 @@ export function ProductImportWizard({
                 <div className="text-xs text-slate-400 space-y-1">
                   <p><strong className="text-slate-300">Required:</strong> name</p>
                   <p><strong className="text-slate-300">Recommended:</strong> price, category, description, image_url</p>
-                  <p><strong className="text-slate-300">Optional:</strong> sku, cost, short_pitch, status, unit_of_measure, stock_quantity, reorder_point, supplier_name, supplier_phone, tags</p>
+                  <p><strong className="text-slate-300">Optional:</strong> sku, cost, short_pitch, status, unit_of_measure, tags</p>
                   <p className="mt-2">Tags should be separated by semicolons (;) or pipes (|)</p>
                   <p>Image URLs must start with http:// or https://</p>
                 </div>
@@ -375,7 +372,7 @@ export function ProductImportWizard({
                           {p.sku || "—"}
                         </TableCell>
                         <TableCell className="text-xs text-slate-400">
-                          {p.track_inventory ? p.stock_quantity ?? 0 : "—"}
+                          {p.track_inventory ? "Tracked" : "—"}
                         </TableCell>
                       </TableRow>
                     ))}

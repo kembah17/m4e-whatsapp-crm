@@ -1,115 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
-import { supabaseAdmin } from '@/lib/ecommerce/admin-client'
-import type { MovementType } from '@/types/business-growth'
+import {
+  getInventorySummary,
+  getStockByLocation,
+  receiveStock,
+  issueStock,
+  adjustStock,
+} from '@/lib/inventory'
+import type { ReceiveStockInput, IssueStockInput, AdjustStockInput } from '@/types/inventory'
 
-// GET /api/inventory - list stock movements with filters
+// GET /api/inventory - summary + optional stock by location
 export async function GET(req: NextRequest) {
   try {
     const { accountId } = await getCurrentAccount()
-    const admin = supabaseAdmin()
     const url = req.nextUrl.searchParams
+    const locationId = url.get('location_id')
 
-    const productId = url.get('product_id')
-    const movementType = url.get('movement_type') as MovementType | null
-    const dateFrom = url.get('date_from')
-    const dateTo = url.get('date_to')
-    const limit = Math.min(parseInt(url.get('limit') ?? '50'), 100)
-    const offset = parseInt(url.get('offset') ?? '0')
+    if (locationId) {
+      const stock = await getStockByLocation(accountId, locationId)
+      return NextResponse.json({ stock })
+    }
 
-    let query = admin
-      .from('stock_movements')
-      .select('*, product:products(name, sku)', { count: 'exact' })
-      .eq('account_id', accountId)
-      .order('created_at', { ascending: false })
-
-    if (productId) query = query.eq('product_id', productId)
-    if (movementType) query = query.eq('movement_type', movementType)
-    if (dateFrom) query = query.gte('created_at', dateFrom)
-    if (dateTo) query = query.lte('created_at', dateTo)
-
-    query = query.range(offset, offset + limit - 1)
-
-    const { data, error, count } = await query
-    if (error) throw error
-
-    return NextResponse.json({ movements: data ?? [], total: count ?? 0 })
+    const summary = await getInventorySummary(accountId)
+    return NextResponse.json({ summary })
   } catch (err) {
     return toErrorResponse(err)
   }
 }
 
-// POST /api/inventory - record new stock movement
+// POST /api/inventory - receive, issue, or adjust stock
 export async function POST(req: NextRequest) {
   try {
     const { accountId, userId } = await getCurrentAccount()
-    const admin = supabaseAdmin()
     const body = await req.json()
+    const { action, ...payload } = body as { action: string } & Record<string, unknown>
 
-    const { product_id, movement_type, quantity, notes, branch_id, reference_type, reference_id } = body
-
-    if (!product_id || !movement_type || !quantity || quantity <= 0) {
+    if (!action) {
       return NextResponse.json(
-        { error: 'product_id, movement_type, and positive quantity are required' },
+        { error: 'action is required (receive, issue, adjust)' },
         { status: 400 }
       )
     }
 
-    // Get current stock
-    const { data: product, error: prodErr } = await admin
-      .from('products')
-      .select('stock_quantity')
-      .eq('id', product_id)
-      .eq('account_id', accountId)
-      .single()
+    switch (action) {
+      case 'receive': {
+        const input = payload as unknown as ReceiveStockInput
+        if (!input.location_id || !input.product_id || !input.quantity) {
+          return NextResponse.json(
+            { error: 'location_id, product_id, and quantity are required' },
+            { status: 400 }
+          )
+        }
+        const result = await receiveStock(accountId, userId, input)
+        return NextResponse.json(result, { status: 201 })
+      }
 
-    if (prodErr || !product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      case 'issue': {
+        const input = payload as unknown as IssueStockInput
+        if (!input.location_id || !input.product_id || !input.quantity) {
+          return NextResponse.json(
+            { error: 'location_id, product_id, and quantity are required' },
+            { status: 400 }
+          )
+        }
+        const result = await issueStock(accountId, userId, input)
+        return NextResponse.json(result, { status: 201 })
+      }
+
+      case 'adjust': {
+        const input = payload as unknown as AdjustStockInput
+        if (!input.location_id || !input.product_id || input.new_quantity === undefined || !input.reason) {
+          return NextResponse.json(
+            { error: 'location_id, product_id, new_quantity, and reason are required' },
+            { status: 400 }
+          )
+        }
+        const result = await adjustStock(accountId, userId, input)
+        return NextResponse.json(result, { status: 201 })
+      }
+
+      default:
+        return NextResponse.json(
+          { error: `Unknown action: ${action}. Use receive, issue, or adjust.` },
+          { status: 400 }
+        )
     }
-
-    const previousQty = product.stock_quantity ?? 0
-    const isAddition = ['restock', 'return'].includes(movement_type)
-    const newQty = isAddition
-      ? previousQty + quantity
-      : Math.max(0, previousQty - quantity)
-
-    // Insert movement
-    const { data: movement, error: movErr } = await admin
-      .from('stock_movements')
-      .insert({
-        account_id: accountId,
-        product_id,
-        movement_type,
-        quantity,
-        previous_quantity: previousQty,
-        new_quantity: newQty,
-        notes: notes ?? null,
-        branch_id: branch_id ?? null,
-        reference_type: reference_type ?? null,
-        reference_id: reference_id ?? null,
-        created_by: userId,
-      })
-      .select()
-      .single()
-
-    if (movErr) throw movErr
-
-    // Update product stock
-    const updateFields: Record<string, unknown> = {
-      stock_quantity: newQty,
-      updated_at: new Date().toISOString(),
-    }
-    if (movement_type === 'restock') {
-      updateFields.last_restocked_at = new Date().toISOString()
-    }
-
-    await admin
-      .from('products')
-      .update(updateFields)
-      .eq('id', product_id)
-      .eq('account_id', accountId)
-
-    return NextResponse.json({ movement }, { status: 201 })
   } catch (err) {
     return toErrorResponse(err)
   }

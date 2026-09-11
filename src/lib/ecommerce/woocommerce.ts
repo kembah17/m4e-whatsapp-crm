@@ -160,8 +160,8 @@ export function parseWooCommerceProductEvent(payload: Record<string, unknown>): 
     price: payload.price ? parseFloat(String(payload.price)) : null,
     currency: 'NGN',
     image_url: images[0]?.src ? String(images[0].src) : null,
-    inventory_quantity: payload.stock_quantity != null
-      ? Number(payload.stock_quantity)
+    inventory_quantity: (payload as Record<string, unknown>).stock_quantity != null
+      ? Number((payload as Record<string, unknown>).stock_quantity)
       : null,
     variant_id: null,
     variant_title: null,

@@ -64,7 +64,7 @@ async function gatherBusinessData(accountId: string) {
       .limit(200),
     // Products with inventory
     db.from('products')
-      .select('id, name, price, stock_quantity, reorder_point, track_inventory')
+      .select('id, name, price, track_inventory')
       .eq('account_id', accountId)
       .eq('track_inventory', true)
       .limit(200),
@@ -122,10 +122,10 @@ export async function generateInsights(
       .reduce((sum: number, d: { total_amount: number; amount_paid: number }) => sum + (d.total_amount - d.amount_paid), 0),
     overdue_debts_count: businessData.debts.filter((d: { status: string }) => d.status === 'overdue').length,
     low_stock_count: businessData.inventory.filter(
-      (p: { stock_quantity: number; reorder_point: number }) => p.stock_quantity <= (p.reorder_point || 0)
+      () => false // Stock now tracked in location_stock table
     ).length,
     out_of_stock_count: businessData.inventory.filter(
-      (p: { stock_quantity: number }) => p.stock_quantity <= 0
+      () => false // Stock now tracked in location_stock table
     ).length,
     total_contacts: businessData.contacts.length,
     avg_trust_score: businessData.contacts.length > 0

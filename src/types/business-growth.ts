@@ -77,56 +77,14 @@ export interface TrustScoreHistory {
 }
 
 // ============================================================
-// Inventory Management
+// Inventory Management (v2 - see @/types/inventory for full types)
 // ============================================================
-export type MovementType = 'sale' | 'restock' | 'adjustment' | 'return' | 'damage' | 'transfer'
 export type UnitOfMeasure = 'pieces' | 'kg' | 'litres' | 'boxes' | 'cartons' | 'dozen'
-export type AlertSeverity = 'info' | 'warning' | 'critical'
-export type InventoryAlertType = 'low_stock' | 'out_of_stock' | 'overstock' | 'expiring'
 
-// Extended product fields
+// Product inventory fields (kept on products table)
 export interface ProductInventoryExtensions {
-  stock_quantity?: number
-  reorder_point?: number
-  reorder_quantity?: number
   track_inventory?: boolean
   unit_of_measure?: UnitOfMeasure
-  supplier_name?: string | null
-  supplier_phone?: string | null
-  last_restocked_at?: string | null
-}
-
-export interface StockMovement {
-  id: string
-  account_id: string
-  product_id: string
-  movement_type: MovementType
-  quantity: number
-  previous_quantity: number
-  new_quantity: number
-  reference_type?: string | null
-  reference_id?: string | null
-  notes?: string | null
-  branch_id?: string | null
-  created_by?: string | null
-  created_at: string
-  // Joined
-  product?: { name: string; sku?: string }
-}
-
-export interface InventoryAlert {
-  id: string
-  account_id: string
-  product_id: string
-  alert_type: InventoryAlertType
-  severity: AlertSeverity
-  message: string
-  is_resolved: boolean
-  resolved_at?: string | null
-  resolved_by?: string | null
-  created_at: string
-  // Joined
-  product?: { name: string; stock_quantity?: number; reorder_point?: number }
 }
 
 // ============================================================

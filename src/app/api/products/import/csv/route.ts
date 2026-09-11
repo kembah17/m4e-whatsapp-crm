@@ -14,10 +14,7 @@ interface ParsedProduct {
   status?: string;
   unit_of_measure?: string;
   track_inventory?: boolean;
-  stock_quantity?: number;
   reorder_point?: number;
-  supplier_name?: string;
-  supplier_phone?: string;
   tags?: string[];
 }
 
@@ -65,16 +62,8 @@ const COLUMN_MAP: Record<string, keyof ParsedProduct> = {
   unit: 'unit_of_measure',
   uom: 'unit_of_measure',
   track_inventory: 'track_inventory',
-  stock_quantity: 'stock_quantity',
-  stock: 'stock_quantity',
-  quantity: 'stock_quantity',
-  qty: 'stock_quantity',
   reorder_point: 'reorder_point',
   'reorder point': 'reorder_point',
-  supplier_name: 'supplier_name',
-  supplier: 'supplier_name',
-  supplier_phone: 'supplier_phone',
-  'supplier phone': 'supplier_phone',
   tags: 'tags',
 };
 
@@ -206,8 +195,6 @@ function parseProducts(content: string): ImportResult {
     if (raw.description) product.description = raw.description.trim();
     if (raw.short_pitch) product.short_pitch = raw.short_pitch.trim();
     if (raw.sku) product.sku = raw.sku.trim();
-    if (raw.supplier_name) product.supplier_name = raw.supplier_name.trim();
-    if (raw.supplier_phone) product.supplier_phone = raw.supplier_phone.trim();
     if (raw.unit_of_measure) product.unit_of_measure = raw.unit_of_measure.trim();
 
     // Image URL with validation
@@ -267,7 +254,7 @@ function parseProducts(content: string): ImportResult {
 // GET: Download CSV template
 export async function GET() {
   const template = [
-    'name,price,category,description,short_pitch,cost,sku,image_url,status,unit_of_measure,stock_quantity,reorder_point,supplier_name,supplier_phone,tags',
+    'name,price,category,description,short_pitch,cost,sku,image_url,status,unit_of_measure,tags',
     'Jollof Rice Spice Mix,2500,Spices,Premium jollof rice seasoning blend,The secret to perfect party jollof,800,JRS-001,https://example.com/jollof-spice.jpg,active,pieces,100,20,Mama Spice Ltd,08012345678,spices;cooking;popular',
     'Ankara Fabric (6 yards),15000,Fabrics,Premium quality ankara fabric,Vibrant prints for every occasion,8000,ANK-006,,active,pieces,50,10,Lagos Textile Market,08098765432,fabric;ankara;fashion',
   ].join('\n');

@@ -13,10 +13,7 @@ interface ProductToSave {
   status?: string;
   unit_of_measure?: string;
   track_inventory?: boolean;
-  stock_quantity?: number;
   reorder_point?: number;
-  supplier_name?: string;
-  supplier_phone?: string;
   tags?: string[];
 }
 
@@ -53,10 +50,7 @@ export async function POST(req: NextRequest) {
       image_url: p.image_url?.trim() || null,
       unit_of_measure: p.unit_of_measure?.trim() || 'pieces',
       track_inventory: p.track_inventory ?? false,
-      stock_quantity: p.stock_quantity ?? 0,
       reorder_point: p.reorder_point ?? 5,
-      supplier_name: p.supplier_name?.trim() || null,
-      supplier_phone: p.supplier_phone?.trim() || null,
       tags: p.tags || [],
     }));
 
