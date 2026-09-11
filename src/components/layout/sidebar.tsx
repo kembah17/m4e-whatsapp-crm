@@ -29,6 +29,7 @@ import {
   HelpCircle,
   QrCode,
   FileInput,
+  Factory,
   Filter,
   Megaphone,
   Brain,
@@ -132,6 +133,7 @@ const navGroups: NavGroup[] = [
     label: "Sales & Pipeline",
     icon: TrendingUp,
     items: [
+      { href: "/industry-setup", label: "Industry Setup", icon: Factory },
       { href: "/pipelines", label: "Pipelines", icon: GitBranch },
       { href: "/funnel", label: "Funnel", icon: Filter },
       { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },

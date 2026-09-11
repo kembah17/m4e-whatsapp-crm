@@ -132,7 +132,7 @@ export const REAL_ESTATE_SALES_BUNDLE: IndustryWorkflowBundle = {
           'Sales agreement or contract of sale signed by both parties',
         ],
         checklist: [
-          { text: 'Verify property title document: C of O, R of O, Governor's Consent, or Deed of Assignment', required: true },
+          { text: 'Verify property title document: C of O, R of O, Governor\u2019s Consent, or Deed of Assignment', required: true },
           { text: 'Conduct search at Land Registry to confirm title is genuine and unencumbered', required: true },
           { text: 'Verify survey plan matches actual property boundaries', required: true },
           { text: 'Prepare or review Contract of Sale / Deed of Assignment with lawyer', required: true },
@@ -186,7 +186,7 @@ export const REAL_ESTATE_SALES_BUNDLE: IndustryWorkflowBundle = {
           { text: 'Confirm full payment received and issue final receipt', required: true },
           { text: 'Prepare and hand over allocation letter or title documents to buyer', required: true },
           { text: 'Hand over property keys (for built properties) with inventory checklist', required: true },
-          { text: 'Initiate Governor's Consent application for title transfer (if applicable)', required: true },
+          { text: 'Initiate Governor\u2019s Consent application for title transfer (if applicable)', required: true },
           { text: 'Send congratulations message and welcome pack via WhatsApp', required: true },
           { text: 'Request referral: ask buyer if they know anyone looking for property', required: false },
           { text: 'Update deal as Won in CRM with final amount and close date', required: true },
