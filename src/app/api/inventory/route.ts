@@ -3,6 +3,7 @@ import { getCurrentAccount, toErrorResponse } from '@/lib/auth/account'
 import {
   getInventorySummary,
   getStockByLocation,
+  getAllStock,
   receiveStock,
   issueStock,
   adjustStock,
@@ -15,9 +16,15 @@ export async function GET(req: NextRequest) {
     const { accountId } = await getCurrentAccount()
     const url = req.nextUrl.searchParams
     const locationId = url.get('location_id')
+    const allStock = url.get('all_stock')
 
     if (locationId) {
       const stock = await getStockByLocation(accountId, locationId)
+      return NextResponse.json({ stock })
+    }
+
+    if (allStock === 'true') {
+      const stock = await getAllStock(accountId)
       return NextResponse.json({ stock })
     }
 

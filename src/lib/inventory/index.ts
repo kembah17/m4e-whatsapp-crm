@@ -457,6 +457,21 @@ export async function getStockByLocation(
   return data ?? []
 }
 
+/** Get all stock across all locations for an account. */
+export async function getAllStock(
+  accountId: string
+): Promise<LocationStock[]> {
+  const admin = supabaseAdmin()
+  const { data, error } = await admin
+    .from('location_stock')
+    .select('*, product:products(name, sku, price), location:stock_locations(name, location_type)')
+    .eq('account_id', accountId)
+    .order('quantity_on_hand', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}
+
 /** Get paginated ledger entries with filters. */
 export async function getStockLedger(
   accountId: string,
