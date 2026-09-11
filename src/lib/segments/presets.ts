@@ -212,6 +212,88 @@ export const SEGMENT_TEMPLATES: SegmentTemplate[] = [
       { field: 'total_purchase_value', operator: 'greater_than', value: 500000 },
     ],
   },
+  // ── Industry Workflow Bundle Segments ─────────────────────
+  {
+    id: 'high_value_customers',
+    name: 'High-Value Customers',
+    icon: '💰',
+    description: 'Customers with total purchases exceeding ₦500,000',
+    category: 'value',
+    rules: [
+      { field: 'total_purchase_value', operator: 'greater_than', value: 500000 },
+    ],
+  },
+  {
+    id: 'pending_payments',
+    name: 'Pending Payments',
+    icon: '⏳',
+    description: 'Contacts with outstanding invoices or unpaid balances',
+    category: 'value',
+    rules: [
+      { field: 'outstanding_balance', operator: 'greater_than', value: 0 },
+    ],
+  },
+  {
+    id: 'event_leads',
+    name: 'Event & Catering Leads',
+    icon: '🎉',
+    description: 'Contacts tagged with event, catering, or party interest',
+    category: 'industry',
+    rules: [
+      { field: 'tags', operator: 'contains', value: 'event' },
+    ],
+  },
+  {
+    id: 'property_seekers',
+    name: 'Property Seekers',
+    icon: '🏠',
+    description: 'Contacts actively looking for property to buy or rent',
+    category: 'industry',
+    rules: [
+      { field: 'tags', operator: 'contains', value: 'property-seeker' },
+    ],
+  },
+  {
+    id: 'appointment_no_shows',
+    name: 'Appointment No-Shows',
+    icon: '❌',
+    description: 'Contacts who missed scheduled appointments without cancelling',
+    category: 'engagement',
+    rules: [
+      { field: 'tags', operator: 'contains', value: 'no-show' },
+    ],
+  },
+  {
+    id: 'referral_sources',
+    name: 'Referral Sources',
+    icon: '🤝',
+    description: 'Contacts who have referred other customers to the business',
+    category: 'value',
+    rules: [
+      { field: 'referral_count', operator: 'greater_than', value: 0 },
+    ],
+  },
+  {
+    id: 'seasonal_buyers',
+    name: 'Seasonal Buyers',
+    icon: '📆',
+    description: 'Contacts who purchase during specific periods like holidays, back-to-school, or festive seasons',
+    category: 'industry',
+    rules: [
+      { field: 'tags', operator: 'contains', value: 'seasonal-buyer' },
+    ],
+  },
+  {
+    id: 'repeat_customers',
+    name: 'Repeat Customers (3+)',
+    icon: '🔄',
+    description: 'Contacts with three or more completed purchases',
+    category: 'value',
+    rules: [
+      { field: 'purchase_count', operator: 'greater_than', value: 2 },
+    ],
+  },
+
 ]
 
 export function getSegmentTemplate(id: string): SegmentTemplate | undefined {
