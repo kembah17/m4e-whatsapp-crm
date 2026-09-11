@@ -42,8 +42,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
+  ImageIcon,
 } from 'lucide-react';
 import { ProductForm } from '@/components/products/product-form';
+import Image from 'next/image';
 
 const PAGE_SIZE = 25;
 
@@ -209,6 +211,7 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableHead className="text-slate-400 w-[60px]">Image</TableHead>
                 <TableHead className="text-slate-400">Name</TableHead>
                 <TableHead className="text-slate-400">Category</TableHead>
                 <TableHead className="text-slate-400">Price</TableHead>
@@ -226,6 +229,22 @@ export default function ProductsPage() {
                     setFormOpen(true);
                   }}
                 >
+                  <TableCell>
+                    <div className="h-10 w-10 rounded-md overflow-hidden bg-slate-800 flex items-center justify-center flex-shrink-0">
+                      {product.image_url ? (
+                        <Image
+                          src={product.image_url}
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                          className="object-cover h-full w-full"
+                          unoptimized
+                        />
+                      ) : (
+                        <ImageIcon className="h-4 w-4 text-slate-600" />
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div>
                       <p className="text-sm font-medium text-white">{product.name}</p>

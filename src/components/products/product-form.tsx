@@ -32,6 +32,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
+import { ProductImageUpload } from './product-image-upload';
 
 interface ProductFormProps {
   open: boolean;
@@ -416,28 +417,23 @@ export function ProductForm({
             <SuggestionHint field="short_pitch" label="Pitch" />
           </div>
 
-          {/* SKU + Image URL */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="product-sku">SKU</Label>
-              <Input
-                id="product-sku"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                placeholder="Optional"
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="product-image">Image URL</Label>
-              <Input
-                id="product-image"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
+          {/* Product Image */}
+          <ProductImageUpload
+            value={imageUrl}
+            onChange={setImageUrl}
+            disabled={!canEdit}
+          />
+
+          {/* SKU */}
+          <div className="space-y-1.5">
+            <Label htmlFor="product-sku">SKU</Label>
+            <Input
+              id="product-sku"
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+              placeholder="Optional"
+              className="bg-slate-800/50 border-slate-700"
+            />
           </div>
 
           <Separator className="bg-slate-800" />
