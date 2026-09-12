@@ -1,7 +1,7 @@
 "use client"
 
 
-import { useCallback, useEffect, useState, useMemo } from "react"
+import React, { useCallback, useEffect, useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import {
   Package, CheckCircle2, Clock, AlertTriangle, ArrowRight,
