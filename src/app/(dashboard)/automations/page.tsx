@@ -48,6 +48,16 @@ const TEMPLATE_ORDER: TemplateSlug[] = [
   "out_of_office",
   "lead_qualifier",
   "follow_up_reminder",
+  "payment_reminder",
+  "delivery_notification",
+  "appointment_reminder_24h",
+  "review_request",
+  "dormant_reactivation",
+  "new_enquiry_auto_assign",
+  "vip_alert",
+  "overdue_payment_escalation",
+  "booking_confirmation",
+  "post_checkout_feedback",
 ]
 
 const TEMPLATE_ICON: Record<TemplateSlug, typeof Zap> = {
@@ -55,6 +65,16 @@ const TEMPLATE_ICON: Record<TemplateSlug, typeof Zap> = {
   out_of_office: Clock,
   lead_qualifier: Users,
   follow_up_reminder: PhoneCall,
+  payment_reminder: CreditCard,
+  delivery_notification: Truck,
+  appointment_reminder_24h: CalendarClock,
+  review_request: Star,
+  dormant_reactivation: UserCheck,
+  new_enquiry_auto_assign: UserPlus,
+  vip_alert: Crown,
+  overdue_payment_escalation: AlertTriangle,
+  booking_confirmation: CheckCircle,
+  post_checkout_feedback: MessageSquare,
 }
 
 export default function AutomationsPage() {
@@ -154,7 +174,7 @@ export default function AutomationsPage() {
     )
   }
 
-  const showTemplates = automations.length < 3
+  const [showTemplates, setShowTemplates] = useState(true)
 
   return (
     <div className="space-y-6">

@@ -92,6 +92,7 @@ export default function SupportPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('board')
   const [hasAnyTickets, setHasAnyTickets] = useState<boolean | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const loadTickets = useCallback(async () => {
     setLoading(true)
@@ -107,6 +108,7 @@ export default function SupportPage() {
       if (!res.ok) throw new Error('Failed to load tickets')
       const data = await res.json()
       const ticketList = Array.isArray(data) ? data : (data.data ?? data.tickets ?? [])
+      setLoadError(null)
       setTickets(ticketList)
       // Track if account has ever had tickets (only on unfiltered load)
       if (!filters.status && !filters.priority && !filters.category_id && !filters.search) {
@@ -114,6 +116,8 @@ export default function SupportPage() {
       }
     } catch (err) {
       console.error('Failed to load tickets:', err)
+      setLoadError(err instanceof Error ? err.message : 'Failed to load tickets')
+      toast.error('Failed to load support tickets. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -40,10 +40,10 @@ export async function getTickets(
     .from('support_tickets')
     .select(
       `*,
-       contact:contacts(id, name, phone),
-       category:ticket_categories(id, name, icon, color),
+       contact:contacts!left(id, name, phone),
+       category:ticket_categories!left(id, name, icon, color),
        assigned_profile:profiles!support_tickets_assigned_to_fkey(id, full_name, avatar_url),
-       sla_policy:sla_policies(id, name, priority, first_response_minutes, resolution_minutes)`,
+       sla_policy:sla_policies!left(id, name, priority, first_response_minutes, resolution_minutes)`,
       { count: 'exact' }
     )
     .eq('account_id', accountId)
@@ -107,10 +107,10 @@ export async function getTicketById(
     .from('support_tickets')
     .select(
       `*,
-       contact:contacts(id, name, phone),
-       category:ticket_categories(id, name, icon, color),
+       contact:contacts!left(id, name, phone),
+       category:ticket_categories!left(id, name, icon, color),
        assigned_profile:profiles!support_tickets_assigned_to_fkey(id, full_name, avatar_url),
-       sla_policy:sla_policies(id, name, priority, first_response_minutes, resolution_minutes)`
+       sla_policy:sla_policies!left(id, name, priority, first_response_minutes, resolution_minutes)`
     )
     .eq('id', ticketId)
     .eq('account_id', accountId)

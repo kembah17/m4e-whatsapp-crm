@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/hooks/use-auth'
 import {
   CreditCard,
   Package,
@@ -146,6 +147,8 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'packages' | 'history'>('overview')
+  const { profile } = useAuth()
+  const isSuperAdmin = profile?.is_super_admin ?? false
 
   const fetchBilling = useCallback(async () => {
     try {
@@ -165,6 +168,13 @@ export default function BillingPage() {
   }, [])
 
   useEffect(() => { fetchBilling() }, [fetchBilling])
+
+  // Default to history tab for non-super-admin accounts
+  useEffect(() => {
+    if (profile && !profile.is_super_admin) {
+      setActiveTab('history')
+    }
+  }, [profile])
 
   const handleSubscribe = async (tier: string, interval: string) => {
     setActionLoading(`subscribe_${tier}_${interval}`)
@@ -343,6 +353,26 @@ export default function BillingPage() {
         )}
       </div>
 
+
+
+      {/* Non-admin: Contact M4E for plan changes */}
+      {!isSuperAdmin && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
+          <Crown className="mx-auto h-8 w-8 text-amber-400 mb-3" />
+          <h3 className="text-lg font-semibold text-white mb-2">Need to Change Your Plan?</h3>
+          <p className="text-neutral-400 mb-4">
+            Contact your Marketing4Effect account manager to discuss plan upgrades, package purchases, or billing questions.
+          </p>
+          <a
+            href="mailto:info@marketing4effect.com?subject=Billing%20Inquiry"
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-500/20 px-4 py-2 text-amber-400 hover:bg-amber-500/30 transition-colors"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Contact M4E
+          </a>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1 bg-neutral-900 p-1 rounded-lg w-fit">
         {(['overview', 'packages', 'history'] as const).map(tab => (
@@ -361,7 +391,7 @@ export default function BillingPage() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'overview' && (
+      {activeTab === 'overview' && isSuperAdmin && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {SUBSCRIPTION_PLANS.map(plan => {
             const isCurrentPlan = currentTier === plan.tier
@@ -415,7 +445,7 @@ export default function BillingPage() {
         </div>
       )}
 
-      {activeTab === 'packages' && (
+      {activeTab === 'packages' && isSuperAdmin && (
         <div className="space-y-4">
           <p className="text-neutral-400 text-sm">One-time project packages for comprehensive business growth</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
