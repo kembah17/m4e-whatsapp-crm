@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings } from "lucide-react";
+import { GitBranch, Plus, ChevronDown, Settings, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
@@ -64,6 +64,13 @@ export default function PipelinesPage() {
   const [selectedPreset, setSelectedPreset] = useState<string>('default_sales');
   const [creating, setCreating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Delete pipeline state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPipelineId, setDeletingPipelineId] = useState<string>("");
+  const [deletingPipelineName, setDeletingPipelineName] = useState<string>("");
+  const [deletingDealCount, setDeletingDealCount] = useState<number>(0);
+  const [deleting, setDeleting] = useState(false);
 
   // Deal form state is lifted here so both the top-bar "Add Deal" and
   // the per-column "+" trigger the same Sheet.
@@ -304,6 +311,44 @@ export default function PipelinesPage() {
     toast.success("Pipeline created");
   }
 
+
+  async function handleDeletePipeline() {
+    if (!deletingPipelineId) return;
+    setDeleting(true);
+
+    const { error } = await supabase
+      .from("pipelines")
+      .delete()
+      .eq("id", deletingPipelineId);
+
+    if (error) {
+      toast.error("Failed to delete pipeline: " + error.message);
+      setDeleting(false);
+      return;
+    }
+
+    setDeleteDialogOpen(false);
+    setDeletingPipelineId("");
+    setDeletingPipelineName("");
+    setDeletingDealCount(0);
+    setDeleting(false);
+    toast.success("Pipeline deleted");
+    await refreshPipelines();
+  }
+
+  async function confirmDeletePipeline(pipeline: Pipeline) {
+    // Count deals in this pipeline to warn the user
+    const { count } = await supabase
+      .from("deals")
+      .select("*", { count: "exact", head: true })
+      .eq("pipeline_id", pipeline.id);
+
+    setDeletingPipelineId(pipeline.id);
+    setDeletingPipelineName(pipeline.name);
+    setDeletingDealCount(count ?? 0);
+    setDeleteDialogOpen(true);
+  }
+
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
   if (loading) {
@@ -369,6 +414,15 @@ export default function PipelinesPage() {
                 >
                   <Settings className="mr-2 h-3.5 w-3.5" />
                   Manage Pipelines
+                </DropdownMenuItem>
+              )}
+              {selectedPipeline && canEditSettings && (
+                <DropdownMenuItem
+                  onClick={() => confirmDeletePipeline(selectedPipeline)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                  Delete Pipeline
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -521,6 +575,59 @@ export default function PipelinesPage() {
         />
       )}
 
+
+
+      {/* Delete Pipeline Confirmation */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-popover border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-popover-foreground">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Pipeline
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-foreground">{deletingPipelineName}</span>?
+            </p>
+            {deletingDealCount > 0 && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+                <p className="text-sm font-medium text-destructive">
+                  ⚠️ This pipeline contains {deletingDealCount} deal{deletingDealCount !== 1 ? "s" : ""}.
+                </p>
+                <p className="mt-1 text-xs text-destructive/80">
+                  All deals, stages, and checklists in this pipeline will be permanently deleted.
+                  This action cannot be undone.
+                </p>
+              </div>
+            )}
+            {deletingDealCount === 0 && (
+              <p className="text-xs text-muted-foreground">
+                All stages and checklists in this pipeline will be permanently deleted.
+                This action cannot be undone.
+              </p>
+            )}
+          </div>
+          <DialogFooter className="bg-popover/50 border-border">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleting}
+              className="border-border text-muted-foreground hover:bg-muted"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletePipeline}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Pipeline"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* Deal Form (Sheet) */}
       <DealForm
         open={dealFormOpen}
