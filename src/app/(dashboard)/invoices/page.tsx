@@ -504,13 +504,13 @@ export default function InvoicesPage() {
 
       {/* Create Invoice Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create {DOC_TYPE_LABELS[createForm.doc_type]}</DialogTitle>
           </DialogHeader>
           <div className="space-y-5">
             {/* Header Fields */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label className="text-zinc-300">Document Type</Label>
                 <Select value={createForm.doc_type} onValueChange={(v) => setCreateForm((p) => ({ ...p, doc_type: v as DocType }))}>
@@ -569,7 +569,7 @@ export default function InvoicesPage() {
               </div>
               <div className="space-y-2">
                 {lineItems.map((item, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+                  <div key={idx} className="grid grid-cols-12 gap-3 items-end">
                     <div className="col-span-2">
                       {idx === 0 && <Label className="text-xs text-zinc-500">Product</Label>}
                       <Select

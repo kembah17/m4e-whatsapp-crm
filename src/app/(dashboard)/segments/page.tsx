@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { SegmentBuilder } from "@/components/contacts/segment-builder";
 import type { SegmentGroup } from "@/lib/segments/segment-engine";
+import { SEGMENT_TEMPLATES } from "@/lib/segments/presets";
 
 interface Segment {
   id: string;
