@@ -104,7 +104,7 @@ interface ApplyResult {
   failures?: FailedItem[]
 }
 
-type Step = "industry" | "preview" | "applying" | "complete"
+type Step = "industry" | "preview" | "applying" | "complete" | "custom"
 
 // Utility
 function delay(ms: number) {
@@ -124,6 +124,8 @@ export default function IndustrySetupPage() {
     automations: boolean | null
     segments: boolean | null
   }>({ pipeline: null, flows: null, automations: null, segments: null })
+  const [customStages, setCustomStages] = useState<string[]>(["New Lead", "Contacted", "Qualified", "Proposal Sent", "Won"])
+  const [customBusinessName, setCustomBusinessName] = useState("")
   const [result, setResult] = useState<ApplyResult | null>(null)
   const [appliedBundles, setAppliedBundles] = useState<string[]>([])
 
@@ -248,6 +250,131 @@ export default function IndustrySetupPage() {
                 </button>
               )
             })}
+          </div>
+
+            {/* Custom / Other option */}
+            <button
+              type="button"
+              onClick={() => setStep("custom")}
+              className="group relative flex flex-col items-start gap-3 rounded-xl border border-dashed border-neutral-700 bg-neutral-900/50 p-5 text-left transition-all hover:border-primary/50 hover:bg-neutral-800"
+            >
+              <span className="text-3xl">⚙️</span>
+              <div>
+                <p className="font-semibold text-white group-hover:text-primary transition-colors">
+                  Custom / Other
+                </p>
+                <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                  Set up your own pipeline stages for any business type
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-neutral-500 mt-auto">
+                <span className="flex items-center gap-1">
+                  <Settings className="h-3 w-3" /> Manual setup
+                </span>
+              </div>
+            </button>
+        </div>
+      )}
+
+      {/* ---- Step: Custom Setup ---- */}
+      {step === "custom" && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setStep("industry")}
+            className="mb-4 flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to industries
+          </button>
+
+          <h2 className="text-lg font-semibold text-white mb-1">Custom Pipeline Setup</h2>
+          <p className="text-neutral-500 text-sm mb-6">
+            Define your own pipeline stages. You can always add flows, automations, and segments later.
+          </p>
+
+          <div className="space-y-4 max-w-lg">
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-1">Business Type (optional)</label>
+              <input
+                type="text"
+                value={customBusinessName}
+                onChange={(e) => setCustomBusinessName(e.target.value)}
+                placeholder="e.g. Laundry Service, Car Wash, Event Planning..."
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-white placeholder:text-neutral-500 focus:border-primary focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-2">Pipeline Stages</label>
+              <p className="text-xs text-neutral-500 mb-3">Drag to reorder, click × to remove, or add new stages below.</p>
+              <div className="space-y-2">
+                {customStages.map((stage, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-xs text-neutral-500 w-6 text-center">{i + 1}</span>
+                    <input
+                      type="text"
+                      value={stage}
+                      onChange={(e) => {
+                        const updated = [...customStages]
+                        updated[i] = e.target.value
+                        setCustomStages(updated)
+                      }}
+                      className="flex-1 rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-white focus:border-primary focus:outline-none"
+                    />
+                    {customStages.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomStages(customStages.filter((_, j) => j !== i))}
+                        className="text-neutral-500 hover:text-red-400 transition-colors"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {customStages.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() => setCustomStages([...customStages, ""])}
+                  className="mt-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  + Add stage
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setStep("applying")
+                try {
+                  const stages = customStages.filter(s => s.trim())
+                  if (stages.length < 2) {
+                    setResult({ success: false, errors: ["Need at least 2 pipeline stages"], created: { pipelines: 0, flows: 0, automations: 0, segments: 0 } })
+                    setStep("complete")
+                    return
+                  }
+                  const resp = await fetch("/api/pipelines", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: customBusinessName || "Custom Pipeline",
+                      stages: stages.map((name, i) => ({ name, position: i }))
+                    })
+                  })
+                  if (!resp.ok) throw new Error("Failed to create pipeline")
+                  setResult({ success: true, errors: [], created: { pipelines: 1, flows: 0, automations: 0, segments: 0 } })
+                } catch (err) {
+                  setResult({ success: false, errors: [err instanceof Error ? err.message : "Unknown error"], created: { pipelines: 0, flows: 0, automations: 0, segments: 0 } })
+                }
+                setStep("complete")
+              }}
+              disabled={customStages.filter(s => s.trim()).length < 2}
+              className="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Create Custom Pipeline
+            </button>
           </div>
         </div>
       )}
