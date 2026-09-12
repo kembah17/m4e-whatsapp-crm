@@ -41,8 +41,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { contacts: rawContacts, tagName } = body as {
+    const { contacts: rawContacts, updateContacts: rawUpdateContacts, tagName } = body as {
       contacts: BulkContact[];
+      updateContacts?: BulkContact[];
       tagName?: string;
     };
 
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
     const userId = user.id;
 
     let imported = 0;
+    let updated = 0;
     let duplicates = 0;
     let failed = 0;
     const importedContactIds: string[] = [];
@@ -134,8 +136,66 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Handle update contacts if provided
+    const updateList = Array.isArray(rawUpdateContacts) ? rawUpdateContacts : [];
+    const updatedContactIds: string[] = [];
+
+    for (const c of updateList) {
+      if (!c.phone || c.phone.trim().length === 0) {
+        failed++;
+        continue;
+      }
+
+      const phone = c.phone.trim();
+      const phoneDigits = phone.replace(/\D/g, '');
+
+      // Find existing contact by normalized phone
+      const { data: existing } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('account_id', accountId)
+        .eq('phone_normalized', phoneDigits)
+        .limit(1)
+        .maybeSingle();
+
+      if (!existing) {
+        // No existing contact found, skip
+        failed++;
+        continue;
+      }
+
+      // Build update payload with only non-empty fields
+      const updatePayload: Record<string, string | null> = {};
+      if (c.name?.trim()) updatePayload.name = c.name.trim();
+      if (c.email?.trim()) updatePayload.email = c.email.trim();
+      if (c.phone?.trim()) updatePayload.phone = c.phone.trim();
+
+      if (Object.keys(updatePayload).length === 0) {
+        // Nothing to update
+        duplicates++;
+        continue;
+      }
+
+      const { error: updateErr } = await supabase
+        .from('contacts')
+        .update(updatePayload)
+        .eq('id', existing.id);
+
+      if (updateErr) {
+        console.error('[bulk-import] update error:', updateErr);
+        failed++;
+        continue;
+      }
+
+      updated++;
+      updatedContactIds.push(existing.id);
+    }
+
+    // Combine all contact IDs for tag assignment
+    const allContactIds = [...importedContactIds, ...updatedContactIds];
+
     // Handle tag assignment if tagName provided
-    if (tagName && tagName.trim() && importedContactIds.length > 0) {
+    if (tagName && tagName.trim() && allContactIds.length > 0) {
       const trimmedTag = tagName.trim();
 
       // Find or create tag
@@ -166,9 +226,9 @@ export async function POST(req: NextRequest) {
         tagId = newTag?.id ?? null;
       }
 
-      // Assign tag to all imported contacts
+      // Assign tag to all imported and updated contacts
       if (tagId) {
-        const tagAssignments = importedContactIds.map((contactId) => ({
+        const tagAssignments = allContactIds.map((contactId) => ({
           contact_id: contactId,
           tag_id: tagId!,
         }));
@@ -193,10 +253,11 @@ export async function POST(req: NextRequest) {
       metadata: {
         tag: tagName?.trim() || null,
         imported_by: userId,
+        updated,
       },
     });
 
-    return NextResponse.json({ imported, duplicates, failed, originalCount, truncated, ...(warning && { warning }) });
+    return NextResponse.json({ imported, updated, duplicates, failed, originalCount, truncated, ...(warning && { warning }) });
   } catch (err) {
     console.error('[bulk-import] error:', err);
     return NextResponse.json(

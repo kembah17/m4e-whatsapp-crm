@@ -59,6 +59,7 @@ interface ReviewContact extends ExtractedContact {
 
 interface ImportResult {
   imported: number;
+  updated: number;
   duplicates: number;
   failed: number;
 }
@@ -169,6 +170,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [updateExisting, setUpdateExisting] = useState(false);
 
   // ── Reset ─────────────────────────────────────────────────
 
@@ -185,6 +187,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
     setImporting(false);
     setImportProgress(0);
     setImportResult(null);
+    setUpdateExisting(false);
   }, []);
 
   const handleOpenChange = useCallback(
@@ -361,8 +364,11 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   // ── Bulk Import ───────────────────────────────────────────
 
   const runImport = useCallback(async () => {
-    const selected = contacts.filter((c) => c.selected && !c.isDuplicate);
-    if (selected.length === 0) {
+    const newContacts = contacts.filter((c) => c.selected && !c.isDuplicate);
+    const duplicatesToUpdate = updateExisting
+      ? contacts.filter((c) => c.isDuplicate && c.selected)
+      : [];
+    if (newContacts.length === 0 && duplicatesToUpdate.length === 0) {
       toast.error('No contacts selected for import');
       return;
     }
@@ -372,7 +378,15 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
     setImportProgress(10);
 
     try {
-      const payload = selected.map((c) => ({
+      const payload = newContacts.map((c) => ({
+        name: c.name,
+        phone: c.phone,
+        email: c.email,
+        address: c.address,
+        notes: c.notes,
+      }));
+
+      const updatePayload = duplicatesToUpdate.map((c) => ({
         name: c.name,
         phone: c.phone,
         email: c.email,
@@ -385,7 +399,11 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
       const res = await fetch('/api/contacts/import/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contacts: payload, tagName: tagName.trim() || undefined }),
+        body: JSON.stringify({
+          contacts: payload,
+          updateContacts: updateExisting ? updatePayload : undefined,
+          tagName: tagName.trim() || undefined,
+        }),
       });
 
       setImportProgress(80);
@@ -396,10 +414,11 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
       setImportResult(result);
       setImportProgress(100);
 
-      toast.success(`Imported ${result.imported} contacts`, {
-        description: result.duplicates > 0
-          ? `${result.duplicates} duplicates skipped`
-          : undefined,
+      const parts: string[] = [];
+      if (result.updated > 0) parts.push(`${result.updated} updated`);
+      if (result.duplicates > 0) parts.push(`${result.duplicates} skipped`);
+      toast.success(`Imported ${result.imported} new contacts`, {
+        description: parts.length > 0 ? parts.join(', ') : undefined,
       });
 
       onImported();
@@ -411,7 +430,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
     } finally {
       setImporting(false);
     }
-  }, [contacts, tagName, onImported]);
+  }, [contacts, tagName, updateExisting, onImported]);
 
   // ── File handlers ─────────────────────────────────────────
 
@@ -617,7 +636,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   };
 
   const selectAll = () => {
-    setContacts((prev) => prev.map((c) => ({ ...c, selected: !c.isDuplicate })));
+    setContacts((prev) => prev.map((c) => ({ ...c, selected: updateExisting ? true : !c.isDuplicate })));
   };
 
   const deselectAll = () => {
@@ -627,6 +646,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   // ── Counts ────────────────────────────────────────────────
 
   const selectedCount = contacts.filter((c) => c.selected && !c.isDuplicate).length;
+  const updateCount = updateExisting ? contacts.filter((c) => c.isDuplicate && c.selected).length : 0;
   const duplicateCount = contacts.filter((c) => c.isDuplicate).length;
   const totalCount = contacts.length;
 
@@ -1035,8 +1055,8 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                 {selectedCount} selected
               </Badge>
               {duplicateCount > 0 && (
-                <Badge variant="secondary" className="text-amber-500">
-                  {duplicateCount} duplicates
+                <Badge variant="secondary" className={updateExisting ? 'text-blue-500' : 'text-amber-500'}>
+                  {duplicateCount} {updateExisting ? 'to update' : 'duplicates'}
                 </Badge>
               )}
               <div className="ml-auto flex gap-2">
@@ -1048,6 +1068,32 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                 </Button>
               </div>
             </div>
+
+            {/* Update existing contacts toggle */}
+            {duplicateCount > 0 && (
+              <label className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={updateExisting}
+                  onChange={(e) => {
+                    setUpdateExisting(e.target.checked);
+                    // When toggling on, select all duplicates; when off, deselect them
+                    setContacts((prev) =>
+                      prev.map((c) =>
+                        c.isDuplicate ? { ...c, selected: e.target.checked } : c,
+                      ),
+                    );
+                  }}
+                  className="h-4 w-4 rounded border-border text-amber-500 focus:ring-amber-500/30"
+                />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Update existing contacts</p>
+                  <p className="text-xs text-muted-foreground">
+                    Merge new data into {duplicateCount} existing contact{duplicateCount !== 1 ? 's' : ''} instead of skipping them
+                  </p>
+                </div>
+              </label>
+            )}
 
             {/* Contacts table */}
             <div className="max-h-64 overflow-auto rounded-lg border border-border">
@@ -1066,13 +1112,13 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                   {contacts.map((c, idx) => (
                     <TableRow
                       key={idx}
-                      className={c.isDuplicate ? 'opacity-50' : ''}
+                      className={c.isDuplicate && !updateExisting ? 'opacity-50' : ''}
                     >
                       <TableCell>
                         <input
                           type="checkbox"
                           checked={c.selected}
-                          disabled={c.isDuplicate}
+                          disabled={c.isDuplicate && !updateExisting}
                           onChange={() => toggleSelect(idx)}
                           className="h-4 w-4 rounded border-border"
                         />
@@ -1099,8 +1145,8 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                           <span className="font-mono text-xs">
                             {c.phone || '—'}
                             {c.isDuplicate && (
-                              <Badge variant="secondary" className="ml-1 text-[10px] text-amber-500">
-                                Duplicate
+                              <Badge variant="secondary" className={`ml-1 text-[10px] ${updateExisting && c.selected ? 'text-blue-500' : 'text-amber-500'}`}>
+                                {updateExisting && c.selected ? 'Will update' : 'Duplicate'}
                               </Badge>
                             )}
                           </span>
@@ -1196,18 +1242,26 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
               <div className="flex flex-col items-center gap-4">
                 <CheckCircle className="h-12 w-12 text-emerald-500" />
                 <p className="text-lg font-medium text-foreground">Import Complete</p>
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className={`grid gap-4 text-center ${importResult.updated > 0 ? 'grid-cols-4' : 'grid-cols-3'}`}>
                   <div>
                     <p className="text-2xl font-bold text-emerald-500">
                       {importResult.imported}
                     </p>
-                    <p className="text-xs text-muted-foreground">Imported</p>
+                    <p className="text-xs text-muted-foreground">New</p>
                   </div>
+                  {importResult.updated > 0 && (
+                    <div>
+                      <p className="text-2xl font-bold text-blue-500">
+                        {importResult.updated}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Updated</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-2xl font-bold text-amber-500">
                       {importResult.duplicates}
                     </p>
-                    <p className="text-xs text-muted-foreground">Duplicates</p>
+                    <p className="text-xs text-muted-foreground">Skipped</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-red-500">
@@ -1245,7 +1299,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                 ) : (
                   <ArrowRight className="mr-2 h-4 w-4" />
                 )}
-                Import {selectedCount} Contact{selectedCount !== 1 ? 's' : ''}
+                Import {selectedCount + updateCount} Contact{(selectedCount + updateCount) !== 1 ? 's' : ''}{updateCount > 0 ? ` (${updateCount} update${updateCount !== 1 ? 's' : ''})` : ''}
               </Button>
             </>
           )}

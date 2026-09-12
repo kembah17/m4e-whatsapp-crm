@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Search, Trash2, Edit2, Upload, X, Loader2,
-  CheckCircle, AlertTriangle, Tag, ChevronDown, ChevronUp,
+  CheckCircle, AlertTriangle, Tag, ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AIKnowledgeEntry, KnowledgeCategory } from '@/types/ai'
@@ -52,6 +52,23 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
   const [showBulkImport, setShowBulkImport] = useState(false)
   const [bulkJson, setBulkJson] = useState('')
   const [bulkImporting, setBulkImporting] = useState(false)
+  const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const [seeding, setSeeding] = useState(false)
+  const [seedForm, setSeedForm] = useState({
+    business_name: '',
+    description: '',
+    industry: '',
+    products: '',
+    services: '',
+    business_hours: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    pricing_info: '',
+    return_policy: '',
+    payment_methods: '',
+  })
   const [quota, setQuota] = useState<{ current: number; limit: number; tier: string } | null>(null)
 
   const fetchEntries = useCallback(async () => {
@@ -73,6 +90,81 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
   }, [activeCategory, search])
 
   useEffect(() => { fetchEntries() }, [fetchEntries])
+
+  const handleSeedKB = async () => {
+    try {
+      setSeeding(true)
+      setError(null)
+
+      const payload: Record<string, unknown> = {}
+      if (seedForm.business_name.trim()) payload.business_name = seedForm.business_name.trim()
+      if (seedForm.description.trim()) payload.description = seedForm.description.trim()
+      if (seedForm.industry.trim()) payload.industry = seedForm.industry.trim()
+      if (seedForm.products.trim()) {
+        payload.products = seedForm.products.split('\n').map(s => s.trim()).filter(Boolean)
+      }
+      if (seedForm.services.trim()) {
+        payload.services = seedForm.services.split('\n').map(s => s.trim()).filter(Boolean)
+      }
+      if (seedForm.business_hours.trim()) payload.business_hours = seedForm.business_hours.trim()
+      if (seedForm.address.trim()) payload.address = seedForm.address.trim()
+      if (seedForm.phone.trim()) payload.phone = seedForm.phone.trim()
+      if (seedForm.email.trim()) payload.email = seedForm.email.trim()
+      if (seedForm.website.trim()) payload.website = seedForm.website.trim()
+      if (seedForm.pricing_info.trim()) payload.pricing_info = seedForm.pricing_info.trim()
+
+      const policies: Record<string, string> = {}
+      if (seedForm.return_policy.trim()) policies.returns = seedForm.return_policy.trim()
+      if (seedForm.payment_methods.trim()) policies.payment = seedForm.payment_methods.trim()
+      if (Object.keys(policies).length > 0) payload.policies = policies
+
+      if (Object.keys(payload).length === 0) {
+        setError('Please fill in at least some business information')
+        return
+      }
+
+      const res = await fetch('/api/ai/knowledge/seed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to seed knowledge base' }))
+        throw new Error(err.error || 'Failed to seed knowledge base')
+      }
+
+      const result = await res.json()
+      setShowSeedDialog(false)
+      fetchEntries()
+      setError(null)
+      // Show success inline since we don't have toast here
+      alert(`Successfully created ${result.created} knowledge base entries!`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to seed knowledge base')
+    } finally {
+      setSeeding(false)
+    }
+  }
+
+  const fetchAccountInfo = async () => {
+    try {
+      const res = await fetch('/api/account')
+      if (!res.ok) return
+      const data = await res.json()
+      const acct = data.account || data
+      setSeedForm(prev => ({
+        ...prev,
+        business_name: acct.business_name || acct.name || prev.business_name,
+        industry: acct.industry || prev.industry,
+        email: acct.support_email || acct.email || prev.email,
+        phone: acct.support_phone || acct.phone || prev.phone,
+        website: acct.website || prev.website,
+      }))
+    } catch {
+      // Silently fail - user can fill in manually
+    }
+  }
 
   const handleSave = async () => {
     if (!form.question.trim() || !form.answer.trim()) {
@@ -210,6 +302,13 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
               className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
+          <button
+            onClick={() => { setShowSeedDialog(true); fetchAccountInfo() }}
+            disabled={readOnly}
+            className="flex items-center gap-1 px-3 py-2 text-sm border border-amber-300 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Sparkles className="h-4 w-4" /> Seed KB
+          </button>
           <button
             onClick={() => setShowBulkImport(true)}
             disabled={readOnly}
@@ -480,6 +579,180 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
           </div>
           <div className="px-4 py-3 bg-gray-50 border-t text-sm text-gray-500">
             {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+          </div>
+        </div>
+      )}
+
+      {/* Seed Knowledge Base Dialog */}
+      {showSeedDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Seed Knowledge Base
+              </h3>
+              <button onClick={() => setShowSeedDialog(false)}>
+                <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Fill in your business information to auto-generate knowledge base entries for your AI chatbot.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Business Name *</label>
+                <input
+                  type="text"
+                  value={seedForm.business_name}
+                  onChange={(e) => setSeedForm(p => ({ ...p, business_name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  placeholder="Your Business Name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={seedForm.description}
+                  onChange={(e) => setSeedForm(p => ({ ...p, description: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  rows={2}
+                  placeholder="What does your business do?"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Industry</label>
+                  <input
+                    type="text"
+                    value={seedForm.industry}
+                    onChange={(e) => setSeedForm(p => ({ ...p, industry: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g. Fashion, Food"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Business Hours</label>
+                  <input
+                    type="text"
+                    value={seedForm.business_hours}
+                    onChange={(e) => setSeedForm(p => ({ ...p, business_hours: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="Mon-Fri 9am-6pm"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Products (one per line)</label>
+                <textarea
+                  value={seedForm.products}
+                  onChange={(e) => setSeedForm(p => ({ ...p, products: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  rows={3}
+                  placeholder={"Product A\nProduct B\nProduct C"}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Services (one per line)</label>
+                <textarea
+                  value={seedForm.services}
+                  onChange={(e) => setSeedForm(p => ({ ...p, services: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  rows={2}
+                  placeholder={"Service A\nService B"}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={seedForm.phone}
+                    onChange={(e) => setSeedForm(p => ({ ...p, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="+234..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="text"
+                    value={seedForm.email}
+                    onChange={(e) => setSeedForm(p => ({ ...p, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="info@business.com"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Website</label>
+                  <input
+                    type="text"
+                    value={seedForm.website}
+                    onChange={(e) => setSeedForm(p => ({ ...p, website: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+                  <input
+                    type="text"
+                    value={seedForm.address}
+                    onChange={(e) => setSeedForm(p => ({ ...p, address: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                    placeholder="123 Main St, Lagos"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Pricing Info</label>
+                <textarea
+                  value={seedForm.pricing_info}
+                  onChange={(e) => setSeedForm(p => ({ ...p, pricing_info: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  rows={2}
+                  placeholder="Describe your pricing structure"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Return/Refund Policy</label>
+                <textarea
+                  value={seedForm.return_policy}
+                  onChange={(e) => setSeedForm(p => ({ ...p, return_policy: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  rows={2}
+                  placeholder="Describe your return/refund policy"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Payment Methods</label>
+                <input
+                  type="text"
+                  value={seedForm.payment_methods}
+                  onChange={(e) => setSeedForm(p => ({ ...p, payment_methods: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                  placeholder="Bank transfer, Cash, Card, etc."
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+              <button
+                onClick={() => setShowSeedDialog(false)}
+                className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSeedKB}
+                disabled={seeding || !seedForm.business_name.trim()}
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {seeding ? 'Generating...' : 'Generate Entries'}
+              </button>
+            </div>
           </div>
         </div>
       )}
