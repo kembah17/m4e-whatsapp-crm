@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // PROFESSIONAL SERVICES — Sales Pipeline
@@ -180,6 +180,14 @@ export const PROFESSIONAL_SERVICES_SALES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'vip_alert', priority: 'optional', description: 'Alert partner when high-value prospect enquires' },
   ],
   suggested_segments: ['active_last_30', 'high_value_customers', 'pending_payments', 'new_contacts_7d', 'dormant_60_plus', 'referral_sources'],
+  setup_actions: [
+    { id: 'proserv-sales-services', title: 'Add service line tags', description: 'Create tags for your practice areas (tax advisory, litigation, audit, HR consulting) for lead routing', priority: 'essential', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏷️' },
+    { id: 'proserv-sales-welcome', title: 'Customise firm welcome message', description: 'Edit the auto-greeting to include your firm profile, service overview, and office address', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'proserv-sales-bank', title: 'Add firm bank details to invoices', description: 'Configure your firm bank account details for client payment instructions', priority: 'essential', category: 'settings', target_url: '/invoices', estimated_minutes: 3, icon: '🏦' },
+    { id: 'proserv-sales-proposal-followup', title: 'Configure proposal follow-up timing', description: 'Adjust the 5-day follow-up for proposals not responded to', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '📞' },
+    { id: 'proserv-sales-discovery', title: 'Set up discovery call booking flow', description: 'Customise the appointment booking flow with your available time slots', priority: 'recommended', category: 'flows', target_url: '/flows', target_params: { template: 'appointment_booking_flow' }, estimated_minutes: 10, icon: '📅' },
+    { id: 'proserv-sales-vip', title: 'Configure VIP prospect alerts', description: 'Set up alerts when high-value prospects enquire so partners can respond quickly', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'vip_alert' }, estimated_minutes: 3, icon: '🔔' },
+  ],
   customization_hints: [
     'Add your specific service lines as tags (tax advisory, litigation, audit, HR consulting)',
     'Configure proposal templates for your most common engagement types',
@@ -368,6 +376,14 @@ export const PROFESSIONAL_SERVICES_DELIVERY_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'follow_up_reminder', priority: 'optional', description: 'Schedule quarterly check-in with past clients for repeat business' },
   ],
   suggested_segments: ['high_value_customers', 'pending_payments', 'active_last_30', 'repeat_buyers', 'referral_sources', 'dormant_60_plus'],
+  setup_actions: [
+    { id: 'proserv-del-milestones', title: 'Set up milestone billing triggers', description: 'Configure billing triggers aligned with your project delivery stages', priority: 'essential', category: 'settings', target_url: '/invoices', estimated_minutes: 10, icon: '💰' },
+    { id: 'proserv-del-payment-reminder', title: 'Configure invoice payment reminders', description: 'Set up automated reminders at 7, 14, and 30 days for outstanding invoices', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 5, icon: '⏰' },
+    { id: 'proserv-del-escalation', title: 'Set up overdue invoice escalation', description: 'Configure escalation to partner after 30 days overdue', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'overdue_payment_escalation' }, estimated_minutes: 3, icon: '🚨' },
+    { id: 'proserv-del-engagement-tags', title: 'Create engagement type tags', description: 'Add tags for engagement types (audit, advisory, litigation) for better reporting', priority: 'recommended', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏷️' },
+    { id: 'proserv-del-testimonial', title: 'Set up post-project testimonial request', description: 'Configure testimonial request 7 days after project completion', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+    { id: 'proserv-del-quarterly', title: 'Set up quarterly client check-in', description: 'Schedule quarterly check-ins with past clients for repeat business opportunities', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '🔄' },
+  ],
   customization_hints: [
     'Set up milestone-based billing triggers aligned with your project stages',
     'Configure weekly status update templates for different engagement types',

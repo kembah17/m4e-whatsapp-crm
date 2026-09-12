@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // RETAIL — Sales Pipeline
@@ -175,6 +175,15 @@ export const RETAIL_SALES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage customers who have not ordered in 60+ days' },
   ],
   suggested_segments: ['active_last_30', 'dormant_60_plus', 'high_value_customers', 'repeat_buyers', 'pending_payments', 'new_contacts_7d'],
+  setup_actions: [
+    { id: 'retail-sales-bank-details', title: 'Add bank account details to quote template', description: 'Customers need your bank details (account name, number, bank) to make transfers for orders', priority: 'essential', category: 'settings', target_url: '/settings', estimated_minutes: 3, icon: '🏦' },
+    { id: 'retail-sales-product-tags', title: 'Create product category tags', description: 'Tag contacts by product interest (electronics, fashion, groceries) for targeted follow-ups', priority: 'essential', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏷️' },
+    { id: 'retail-sales-delivery-fees', title: 'Set delivery fee tiers in settings', description: 'Configure delivery pricing for within-city vs interstate orders', priority: 'essential', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '🚚' },
+    { id: 'retail-sales-welcome-auto', title: 'Customise welcome message automation', description: 'Edit the auto-greeting to include your product catalogue link and business hours', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'retail-sales-payment-reminder', title: 'Configure payment reminder timing', description: 'Adjust the 24-hour payment reminder to match your typical customer payment speed', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '⏰' },
+    { id: 'retail-sales-products', title: 'Add your product catalogue', description: 'Import or create your products with prices in Naira for quick quoting', priority: 'recommended', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '📦' },
+    { id: 'retail-sales-segments', title: 'Review customer segments', description: 'Check the auto-created segments and adjust rules for your business', priority: 'optional', category: 'segments', target_url: '/segments', target_params: { template: 'high_value_customers' }, estimated_minutes: 5, icon: '👥' },
+  ],
   customization_hints: [
     'Add your specific product categories as tags for better segmentation',
     'Set delivery fee tiers based on your coverage areas (within city vs interstate)',
@@ -355,6 +364,14 @@ export const RETAIL_FULFILMENT_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'booking_confirmation', priority: 'optional', description: 'Send order confirmation when payment is verified' },
   ],
   suggested_segments: ['pending_payments', 'active_last_30', 'high_value_customers', 'repeat_buyers', 'location_lagos', 'location_abuja'],
+  setup_actions: [
+    { id: 'retail-ful-warehouse', title: 'Add warehouse locations', description: 'Set up your warehouse and storage locations for accurate stock tracking and delivery estimates', priority: 'essential', category: 'settings', target_url: '/inventory', estimated_minutes: 5, icon: '🏭' },
+    { id: 'retail-ful-riders', title: 'Add dispatch rider contacts', description: 'Create team member entries for your dispatch riders so orders can be assigned quickly', priority: 'essential', category: 'contacts', target_url: '/contacts', estimated_minutes: 5, icon: '🏍️' },
+    { id: 'retail-ful-delivery-notify', title: 'Set up delivery notification automation', description: 'Configure auto-notifications when orders move to Dispatched stage', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 3, icon: '📲' },
+    { id: 'retail-ful-cod-limits', title: 'Configure COD limits', description: 'Set cash-on-delivery limits based on your risk tolerance and customer trust scores', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 3, icon: '💰' },
+    { id: 'retail-ful-logistics', title: 'Add logistics partner details', description: 'Configure your logistics partners (GIG, Kwik, DHL) with waybill formats', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '🚛' },
+    { id: 'retail-ful-review', title: 'Set up post-delivery review request', description: 'Configure timing for requesting customer feedback after delivery confirmation', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Add your warehouse locations and coverage zones for accurate delivery estimates',
     'Configure COD limits based on your risk tolerance and customer trust scores',

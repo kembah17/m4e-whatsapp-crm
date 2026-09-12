@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // HEALTHCARE — Consultation Pipeline
@@ -182,6 +182,14 @@ export const HEALTHCARE_CONSULTATION_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Remind patients due for annual check-ups or screenings' },
   ],
   suggested_segments: ['active_last_30', 'appointment_no_shows', 'new_contacts_7d', 'dormant_60_plus', 'repeat_buyers', 'high_value_customers'],
+  setup_actions: [
+    { id: 'health-consult-departments', title: 'Add department and specialist tags', description: 'Create tags for your departments (General Practice, Paediatrics, Dental, Eye Clinic) for appointment routing', priority: 'essential', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏥' },
+    { id: 'health-consult-welcome', title: 'Customise clinic welcome message', description: 'Edit the auto-greeting to include clinic services, consultation fees, and booking instructions', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'health-consult-reminder', title: 'Set up appointment reminder', description: 'Configure 24-hour reminder with clinic address and Google Maps link', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'appointment_reminder_24h' }, estimated_minutes: 3, icon: '📅' },
+    { id: 'health-consult-fees', title: 'Add consultation fee schedule', description: 'Set up consultation fees per department in your product catalogue', priority: 'recommended', category: 'products', target_url: '/products', estimated_minutes: 10, icon: '💰' },
+    { id: 'health-consult-followup', title: 'Configure post-consultation follow-up', description: 'Set follow-up timing based on condition type (acute: 3 days, chronic: 2 weeks)', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 5, icon: '📞' },
+    { id: 'health-consult-review', title: 'Set up patient feedback request', description: 'Request Google review after positive follow-up interaction', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Add your specific departments and specialists for accurate appointment routing',
     'Configure consultation fees per department and update regularly',
@@ -322,6 +330,14 @@ export const HEALTHCARE_DISPENSING_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'review_request', priority: 'optional', description: 'Request feedback after positive follow-up interaction' },
   ],
   suggested_segments: ['active_last_30', 'repeat_buyers', 'dormant_60_plus', 'new_contacts_7d', 'high_value_customers'],
+  setup_actions: [
+    { id: 'health-disp-categories', title: 'Set up medication categories', description: 'Create product categories for better inventory tracking (antibiotics, analgesics, chronic meds)', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 10, icon: '💊' },
+    { id: 'health-disp-welcome', title: 'Customise pharmacy welcome message', description: 'Edit the auto-greeting to include services, operating hours, and delivery availability', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'health-disp-compliance', title: 'Set up medication compliance follow-up', description: 'Configure 3-day follow-up after dispensing to check medication compliance', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '📋' },
+    { id: 'health-disp-refill', title: 'Configure refill reminders', description: 'Set up reminders based on common prescription durations (7, 14, 30, 90 days)', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'dormant_reactivation' }, estimated_minutes: 5, icon: '🔄' },
+    { id: 'health-disp-inventory', title: 'Set up medication inventory tracking', description: 'Configure stock levels and reorder alerts for your most-dispensed medications', priority: 'recommended', category: 'settings', target_url: '/inventory', estimated_minutes: 10, icon: '📦' },
+    { id: 'health-disp-pcn', title: 'Add PCN licence to communications', description: 'Include your Pharmacy Council of Nigeria licence number in receipts and messages', priority: 'optional', category: 'settings', target_url: '/settings', estimated_minutes: 2, icon: '📜' },
+  ],
   customization_hints: [
     'Set up medication categories for better inventory tracking',
     'Configure refill reminders based on common prescription durations (7, 14, 30, 90 days)',

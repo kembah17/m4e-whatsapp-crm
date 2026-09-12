@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // HOTELS — Reservation Pipeline
@@ -206,6 +206,15 @@ export const HOTEL_RESERVATION_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Send special rates to past guests who have not returned in 90+ days' },
   ],
   suggested_segments: ['active_last_30', 'high_value_customers', 'repeat_buyers', 'dormant_60_plus', 'new_contacts_7d', 'seasonal_buyers'],
+  setup_actions: [
+    { id: 'hotel-res-rooms', title: 'Add room types to product catalogue', description: 'Set up your room categories with photos, rates in Naira, and amenities for quick sharing', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '🛏️' },
+    { id: 'hotel-res-welcome', title: 'Customise booking enquiry greeting', description: 'Edit the auto-greeting to include room types, rates, and your hotel address with landmark directions', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'hotel-res-confirmation', title: 'Set up booking confirmation automation', description: 'Configure auto-confirmation when deposit is received with check-in details', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'booking_confirmation' }, estimated_minutes: 3, icon: '✅' },
+    { id: 'hotel-res-corporate', title: 'Configure corporate rate codes', description: 'Set up special rates for your business clients and corporate accounts', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '💼' },
+    { id: 'hotel-res-prearrival', title: 'Set up pre-arrival reminder', description: 'Configure 24-hour pre-arrival message with hotel address and check-in instructions', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'appointment_reminder_24h' }, estimated_minutes: 3, icon: '📅' },
+    { id: 'hotel-res-checkout', title: 'Configure post-checkout feedback', description: 'Set up feedback and review request 2 hours after checkout', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'post_checkout_feedback' }, estimated_minutes: 3, icon: '⭐' },
+    { id: 'hotel-res-vip', title: 'Create VIP guest tags', description: 'Tag returning guests for special treatment and priority service', priority: 'optional', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 3, icon: '👑' },
+  ],
   customization_hints: [
     'Set up room type catalogue with photos and current rates for quick sharing',
     'Configure corporate rate codes for your business clients',
@@ -426,6 +435,14 @@ export const HOTEL_EVENT_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage past event clients before festive seasons' },
   ],
   suggested_segments: ['event_leads', 'high_value_customers', 'repeat_buyers', 'referral_sources', 'seasonal_buyers', 'active_last_30'],
+  setup_actions: [
+    { id: 'hotel-event-packages', title: 'Create event packages', description: 'Set up event packages at different price points (Silver, Gold, Platinum) with venue capacity details', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '🎪' },
+    { id: 'hotel-event-welcome', title: 'Customise event enquiry greeting', description: 'Edit the auto-greeting to include venue brochure, capacity info, and available dates', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'hotel-event-deposit', title: 'Set up event deposit confirmation', description: 'Configure auto-confirmation when event deposit is received', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'booking_confirmation' }, estimated_minutes: 3, icon: '✅' },
+    { id: 'hotel-event-balance', title: 'Configure balance payment reminder', description: 'Set up reminder for balance payment 5 days before event date', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'hotel-event-seasonal', title: 'Plan seasonal event promotions', description: 'Set up campaigns for December parties, Valentine events, and corporate year-end', priority: 'recommended', category: 'flows', target_url: '/campaigns', estimated_minutes: 10, icon: '🎉' },
+    { id: 'hotel-event-review', title: 'Set up post-event review request', description: 'Configure review and photo request 48 hours after event', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Create event packages at different price points for quick quoting (silver, gold, platinum)',
     'Set up seasonal promotions for December parties, Valentine events, and corporate year-end',

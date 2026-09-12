@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // RESTAURANT — Order Pipeline
@@ -146,6 +146,15 @@ export const RESTAURANT_ORDER_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Send special offer to customers who have not ordered in 30+ days' },
   ],
   suggested_segments: ['active_last_30', 'repeat_buyers', 'dormant_60_plus', 'high_value_customers', 'new_contacts_7d', 'location_lagos'],
+  setup_actions: [
+    { id: 'restaurant-order-menu', title: 'Upload your menu to products', description: 'Add your menu items with prices in Naira, photos, and preparation times', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '📋' },
+    { id: 'restaurant-order-delivery', title: 'Configure delivery zones and fees', description: 'Set delivery pricing based on distance from your restaurant (e.g., within Island, Mainland, interstate)', priority: 'essential', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '🚚' },
+    { id: 'restaurant-order-welcome', title: 'Customise order greeting message', description: 'Edit the auto-greeting to include your menu link and ordering instructions', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'restaurant-order-payment', title: 'Set up quick payment reminder', description: 'Configure the 15-minute payment nudge for orders placed but not paid', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '⏰' },
+    { id: 'restaurant-order-dispatch', title: 'Set up dispatch notification', description: 'Configure auto-notification when food is ready and dispatched with rider details', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 3, icon: '📲' },
+    { id: 'restaurant-order-combos', title: 'Add popular combos as quick options', description: 'Create your best-selling combo meals for quick ordering in the flow', priority: 'optional', category: 'products', target_url: '/products', estimated_minutes: 10, icon: '🍱' },
+    { id: 'restaurant-order-feedback', title: 'Configure post-delivery feedback', description: 'Set timing for requesting customer ratings after delivery', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Upload your current menu as a WhatsApp catalogue or PDF for easy sharing',
     'Set preparation time estimates per menu category (rice dishes: 30min, grills: 45min)',
@@ -360,6 +369,14 @@ export const RESTAURANT_CATERING_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage past catering clients before festive seasons' },
   ],
   suggested_segments: ['event_leads', 'high_value_customers', 'repeat_buyers', 'active_last_30', 'referral_sources', 'seasonal_buyers'],
+  setup_actions: [
+    { id: 'restaurant-catering-packages', title: 'Create catering menu packages', description: 'Set up packages at different price points (e.g., ₦5,000/head, ₦10,000/head, ₦20,000/head) for quick quoting', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '🍽️' },
+    { id: 'restaurant-catering-welcome', title: 'Customise catering enquiry greeting', description: 'Edit the auto-greeting to include menu options, minimum order sizes, and booking lead time', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'restaurant-catering-deposit', title: 'Configure deposit confirmation', description: 'Set up auto-confirmation when catering deposit is received', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'booking_confirmation' }, estimated_minutes: 3, icon: '✅' },
+    { id: 'restaurant-catering-balance', title: 'Set up balance payment reminder', description: 'Configure reminder timing based on your preparation lead time (e.g., 2 weeks and 3 days before event)', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'restaurant-catering-seasonal', title: 'Plan seasonal promotions', description: 'Set up campaigns for December parties, Easter, Sallah, and corporate year-end events', priority: 'recommended', category: 'flows', target_url: '/campaigns', estimated_minutes: 10, icon: '🎉' },
+    { id: 'restaurant-catering-review', title: 'Set up post-event review request', description: 'Configure review and photo request 24 hours after catering event', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Create menu packages at different price points for quick quoting',
     'Set up seasonal promotions for December parties, Easter, and Sallah celebrations',

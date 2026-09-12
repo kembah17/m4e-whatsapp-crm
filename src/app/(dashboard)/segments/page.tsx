@@ -1,16 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  Filter, Loader2, MoreHorizontal, Pencil, Plus, Target, Trash2, Users,
+  Filter, Info, Loader2, MoreHorizontal, Pencil, Plus, Target, Trash2, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SegmentBuilder } from "@/components/contacts/segment-builder";
 import type { SegmentGroup } from "@/lib/segments/segment-engine";
-import { SEGMENT_TEMPLATES } from "@/lib/segments/presets";
+import { SEGMENT_TEMPLATES, getSegmentTemplate } from "@/lib/segments/presets";
 
 interface Segment {
   id: string;
@@ -30,6 +30,8 @@ export default function SegmentsPage() {
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [setupBanner, setSetupBanner] = useState<{ templateName: string } | null>(null);
+  const autoTriggered = useRef(false);
 
   const fetchSegments = useCallback(async () => {
     setLoading(true);
@@ -44,6 +46,21 @@ export default function SegmentsPage() {
   }, []);
 
   useEffect(() => { fetchSegments(); }, [fetchSegments]);
+
+  // Auto-start from template if ?template=ID is in URL (from industry setup)
+  useEffect(() => {
+    if (autoTriggered.current) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const templateId = params.get('template');
+      if (!templateId) return;
+      const template = getSegmentTemplate(templateId);
+      if (!template) return;
+      autoTriggered.current = true;
+      setSetupBanner({ templateName: template.name });
+      startFromTemplate(template);
+    } catch { /* silent */ }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function startCreate() {
     setEditingSegment(null);
@@ -193,6 +210,14 @@ export default function SegmentsPage() {
         <h1 className="text-2xl font-bold mb-6">
           {editingSegment ? "Edit Segment" : "Create Segment"}
         </h1>
+        {setupBanner && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+            <Info className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-muted-foreground">
+              Suggested by your industry setup &mdash; <span className="font-medium text-foreground">{setupBanner.templateName}</span>
+            </span>
+          </div>
+        )}
         <SegmentBuilder
           segmentId={editingSegment?.id}
           initialName={editingSegment?.name}

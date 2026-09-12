@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // AGRICULTURE — Sales Pipeline
@@ -181,6 +181,14 @@ export const AGRICULTURE_SALES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage buyers who have not ordered in 90+ days' },
   ],
   suggested_segments: ['high_value_customers', 'repeat_buyers', 'active_last_30', 'dormant_60_plus', 'pending_payments', 'seasonal_buyers'],
+  setup_actions: [
+    { id: 'agri-sales-crops', title: 'Add crop types and grades as products', description: 'Set up your produce catalogue with crop types, grades, and current prices per tonne/bag', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '🌾' },
+    { id: 'agri-sales-welcome', title: 'Customise buyer welcome message', description: 'Edit the auto-greeting to include available products and current season offerings', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'agri-sales-payment', title: 'Configure payment reminder for buyers', description: 'Set up reminders for outstanding balance before dispatch', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'agri-sales-locations', title: 'Add farm and warehouse locations', description: 'Set up your farm locations and storage facilities for logistics planning', priority: 'recommended', category: 'settings', target_url: '/inventory', estimated_minutes: 5, icon: '📍' },
+    { id: 'agri-sales-seasonal', title: 'Set up seasonal buyer follow-ups', description: 'Configure follow-ups with buyers before next harvest season', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 5, icon: '📅' },
+    { id: 'agri-sales-review', title: 'Set up buyer feedback request', description: 'Request feedback after successful delivery', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Add your specific crop types and grades as product tags',
     'Configure seasonal availability calendar for harvest-dependent products',
@@ -363,6 +371,14 @@ export const AGRICULTURE_PROCUREMENT_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'booking_confirmation', priority: 'optional', description: 'Confirm purchase order receipt with supplier' },
   ],
   suggested_segments: ['pending_payments', 'active_last_30', 'repeat_buyers', 'high_value_customers', 'seasonal_buyers'],
+  setup_actions: [
+    { id: 'agri-proc-suppliers', title: 'Add approved supplier contacts', description: 'Create contact entries for your approved suppliers with product specialities and locations', priority: 'essential', category: 'contacts', target_url: '/contacts', estimated_minutes: 10, icon: '👥' },
+    { id: 'agri-proc-welcome', title: 'Customise supplier communication', description: 'Set up auto-greeting for new supplier enquiries', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'agri-proc-payment', title: 'Configure supplier payment reminders', description: 'Set up reminders for pending supplier payments to finance team', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'agri-proc-quality', title: 'Set up quality specification templates', description: 'Create quality spec templates for your most-purchased inputs', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 10, icon: '✅' },
+    { id: 'agri-proc-delivery', title: 'Configure delivery tracking alerts', description: 'Set up alerts when supplier delivery is expected at warehouse', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 3, icon: '🚛' },
+    { id: 'agri-proc-seasonal', title: 'Plan seasonal procurement calendar', description: 'Align procurement schedules with planting seasons', priority: 'optional', category: 'settings', target_url: '/settings', estimated_minutes: 10, icon: '📅' },
+  ],
   customization_hints: [
     'Add your approved supplier list with contact details and product specialities',
     'Configure seasonal procurement calendar aligned with planting seasons',

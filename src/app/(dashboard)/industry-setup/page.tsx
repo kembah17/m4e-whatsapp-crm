@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import {
   ArrowLeft,
@@ -8,9 +8,12 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  ExternalLink,
   Factory,
   GitBranch,
+  ListChecks,
   Loader2,
+  Settings,
   Sparkles,
   Target,
   Workflow,
@@ -19,9 +22,10 @@ import {
 } from "lucide-react"
 import {
   getBundlesByIndustry,
+  getBundleById,
   getAvailableIndustries,
 } from "@/lib/bundles/registry"
-import type { IndustryWorkflowBundle } from "@/lib/bundles/types"
+import type { IndustryWorkflowBundle, SetupAction } from "@/lib/bundles/types"
 
 // Industry metadata for the selection grid
 const INDUSTRY_META: Record<
@@ -104,11 +108,194 @@ interface ApplyResult {
   failures?: FailedItem[]
 }
 
-type Step = "industry" | "preview" | "applying" | "complete" | "custom"
+type Step = "industry" | "preview" | "applying" | "complete" | "customize" | "custom"
 
 // Utility
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// ================================================================
+// Setup Actions Components
+// ================================================================
+
+function ActionGroup({
+  label,
+  description,
+  badgeClass,
+  actions,
+  completedActions,
+  onToggleAction,
+}: {
+  label: string
+  description: string
+  badgeClass: string
+  actions: SetupAction[]
+  completedActions: string[]
+  onToggleAction: (actionId: string) => void
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badgeClass}`}>
+          {label}
+        </span>
+        <span className="text-xs text-neutral-500">{description}</span>
+      </div>
+      <div className="space-y-2">
+        {actions.map((action) => {
+          const isComplete = completedActions.includes(action.id)
+          const url = action.target_params
+            ? `${action.target_url}?${new URLSearchParams(action.target_params).toString()}`
+            : action.target_url
+
+          return (
+            <div
+              key={action.id}
+              className={`rounded-xl border p-4 transition-all ${
+                isComplete
+                  ? "border-emerald-500/30 bg-emerald-500/5"
+                  : "border-neutral-800 bg-neutral-900 hover:border-neutral-700"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {/* Completion toggle */}
+                <button
+                  type="button"
+                  onClick={() => onToggleAction(action.id)}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                    isComplete
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-neutral-600 hover:border-neutral-400"
+                  }`}
+                >
+                  {isComplete && <Check className="h-3 w-3" />}
+                </button>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {action.icon && <span className="text-base">{action.icon}</span>}
+                    <h4 className={`text-sm font-medium ${isComplete ? "text-neutral-500 line-through" : "text-white"}`}>
+                      {action.title}
+                    </h4>
+                  </div>
+                  <p className="text-xs text-neutral-500 mb-2">{action.description}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1 text-[11px] text-neutral-600">
+                      <Clock className="h-3 w-3" /> {action.estimated_minutes}min
+                    </span>
+                  </div>
+                </div>
+
+                {/* Configure button */}
+                <a
+                  href={url}
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    isComplete
+                      ? "border-neutral-700 text-neutral-500 hover:text-neutral-300"
+                      : "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                  }`}
+                >
+                  Configure <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function SetupActionsPanel({
+  bundle,
+  completedActions,
+  onToggleAction,
+  onBack,
+}: {
+  bundle: IndustryWorkflowBundle
+  completedActions: string[]
+  onToggleAction: (actionId: string) => void
+  onBack: () => void
+}) {
+  const actions = bundle.setup_actions || []
+  const totalActions = actions.length
+  const completedCount = completedActions.length
+  const progressPercent = totalActions > 0 ? Math.round((completedCount / totalActions) * 100) : 0
+
+  const essentialActions = actions.filter(a => a.priority === "essential")
+  const recommendedActions = actions.filter(a => a.priority === "recommended")
+  const optionalActions = actions.filter(a => a.priority === "optional")
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <button
+        type="button"
+        onClick={onBack}
+        className="mb-4 flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to summary
+      </button>
+
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
+          <span className="text-2xl">{bundle.icon}</span>
+          Customize Your {bundle.name}
+        </h2>
+        <p className="text-neutral-400 text-sm mb-4">
+          Complete these actions to get the most out of your setup. Click each action to go to the right page.
+        </p>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2 rounded-full bg-neutral-800 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="text-sm font-medium text-neutral-300 whitespace-nowrap">
+            {completedCount} of {totalActions} done
+          </span>
+        </div>
+      </div>
+
+      {/* Action groups */}
+      <div className="space-y-8">
+        {essentialActions.length > 0 && (
+          <ActionGroup
+            label="Essential"
+            description="Must be configured for your setup to work properly"
+            badgeClass="bg-red-500/10 text-red-400 border-red-500/30"
+            actions={essentialActions}
+            completedActions={completedActions}
+            onToggleAction={onToggleAction}
+          />
+        )}
+        {recommendedActions.length > 0 && (
+          <ActionGroup
+            label="Recommended"
+            description="Significantly improves your workflow experience"
+            badgeClass="bg-amber-500/10 text-amber-400 border-amber-500/30"
+            actions={recommendedActions}
+            completedActions={completedActions}
+            onToggleAction={onToggleAction}
+          />
+        )}
+        {optionalActions.length > 0 && (
+          <ActionGroup
+            label="Optional"
+            description="Nice-to-have enhancements you can do later"
+            badgeClass="bg-neutral-500/10 text-neutral-400 border-neutral-500/30"
+            actions={optionalActions}
+            completedActions={completedActions}
+            onToggleAction={onToggleAction}
+          />
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ================================================================
@@ -128,8 +315,53 @@ export default function IndustrySetupPage() {
   const [customBusinessName, setCustomBusinessName] = useState("")
   const [result, setResult] = useState<ApplyResult | null>(null)
   const [appliedBundles, setAppliedBundles] = useState<string[]>([])
+  const [completedActions, setCompletedActions] = useState<Record<string, string[]>>({})
+  const [activeBundle, setActiveBundle] = useState<IndustryWorkflowBundle | null>(null)
 
   const industries = getAvailableIndustries()
+
+  // Load completed actions and last bundle from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("industry-setup-progress")
+      if (saved) setCompletedActions(JSON.parse(saved))
+
+      // Check URL params for direct navigation
+      const params = new URLSearchParams(window.location.search)
+      const stepParam = params.get("step")
+      const bundleParam = params.get("bundle")
+      if (stepParam === "customize" && bundleParam) {
+        const bundle = getBundleById(bundleParam)
+        if (bundle) {
+          setActiveBundle(bundle)
+          setStep("customize")
+        }
+      } else if (stepParam === "customize") {
+        // Try last applied bundle
+        const lastBundle = localStorage.getItem("industry-setup-last-bundle")
+        if (lastBundle) {
+          const bundle = getBundleById(lastBundle)
+          if (bundle) {
+            setActiveBundle(bundle)
+            setStep("customize")
+          }
+        }
+      }
+    } catch { /* silent */ }
+  }, [])
+
+  // Save completed actions to localStorage
+  function toggleActionComplete(bundleId: string, actionId: string) {
+    setCompletedActions(prev => {
+      const bundleActions = prev[bundleId] || []
+      const updated = bundleActions.includes(actionId)
+        ? bundleActions.filter(id => id !== actionId)
+        : [...bundleActions, actionId]
+      const next = { ...prev, [bundleId]: updated }
+      localStorage.setItem("industry-setup-progress", JSON.stringify(next))
+      return next
+    })
+  }
 
   // Apply a bundle
   async function applyBundle(bundle: IndustryWorkflowBundle) {
@@ -195,11 +427,17 @@ export default function IndustrySetupPage() {
 
       {/* Step indicator */}
       <div className="flex items-center gap-2 mb-8 text-sm">
-        <StepPill label="1. Industry" active={step === "industry"} done={step !== "industry"} />
+        <StepPill label="1. Industry" active={step === "industry"} done={step !== "industry" && step !== "custom"} />
         <ArrowRight className="h-4 w-4 text-neutral-600" />
-        <StepPill label="2. Preview" active={step === "preview"} done={step === "applying" || step === "complete"} />
+        <StepPill label="2. Preview" active={step === "preview"} done={["applying", "complete", "customize"].includes(step)} />
         <ArrowRight className="h-4 w-4 text-neutral-600" />
-        <StepPill label="3. Apply" active={step === "applying" || step === "complete"} done={step === "complete"} />
+        <StepPill label="3. Apply" active={step === "applying" || step === "complete"} done={step === "complete" || step === "customize"} />
+        {(step === "customize" || (step === "complete" && result?.success)) && (
+          <>
+            <ArrowRight className="h-4 w-4 text-neutral-600" />
+            <StepPill label="4. Customize" active={step === "customize"} done={false} />
+          </>
+        )}
       </div>
 
       {/* ---- Step 1: Industry Selection ---- */}
@@ -548,8 +786,42 @@ export default function IndustrySetupPage() {
             >
               <ArrowLeft className="h-4 w-4" /> Choose Different Industry
             </button>
+            {result && result.success && (() => {
+              const bundle = getBundleById(result.bundleId)
+              if (!bundle || !bundle.setup_actions || bundle.setup_actions.length === 0) return null
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveBundle(bundle)
+                    localStorage.setItem("industry-setup-last-bundle", bundle.id)
+                    setStep("customize")
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+                >
+                  <ListChecks className="h-4 w-4" /> Customize Your Setup →
+                </button>
+              )
+            })()}
           </div>
         </div>
+      )}
+
+      {/* ---- Step: Customize Your Setup ---- */}
+      {step === "customize" && activeBundle && (
+        <SetupActionsPanel
+          bundle={activeBundle}
+          completedActions={completedActions[activeBundle.id] || []}
+          onToggleAction={(actionId) => toggleActionComplete(activeBundle.id, actionId)}
+          onBack={() => {
+            if (result) {
+              setStep("complete")
+            } else {
+              setStep("industry")
+              setSelectedIndustry(null)
+            }
+          }}
+        />
       )}
     </div>
   )

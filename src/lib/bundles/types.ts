@@ -42,6 +42,18 @@ export interface SuggestedSegment {
   description: string
 }
 
+export interface SetupAction {
+  id: string
+  title: string
+  description: string
+  priority: 'essential' | 'recommended' | 'optional'
+  category: 'configuration' | 'templates' | 'segments' | 'automations' | 'flows' | 'contacts' | 'products' | 'settings'
+  target_url: string
+  target_params?: Record<string, string>
+  estimated_minutes: number
+  icon?: string
+}
+
 export interface IndustryWorkflowBundle {
   id: string
   industry: string
@@ -54,5 +66,7 @@ export interface IndustryWorkflowBundle {
   suggested_flows: string[]  // Flow template slugs
   suggested_automations: SuggestedAutomation[]
   suggested_segments: string[]  // Segment template IDs
+  setup_actions: SetupAction[]
+  /** @deprecated Use setup_actions instead */
   customization_hints: string[]
 }

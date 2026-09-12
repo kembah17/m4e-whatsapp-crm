@@ -44,6 +44,7 @@ import {
   Award,
   Headphones,
   Lightbulb,
+  ListChecks,
   ChevronDown,
   Database,
   DollarSign,
@@ -134,6 +135,7 @@ const navGroups: NavGroup[] = [
     icon: TrendingUp,
     items: [
       { href: "/industry-setup", label: "Industry Setup", icon: Factory },
+      { href: "/industry-setup?step=customize", label: "Setup Progress", icon: ListChecks },
       { href: "/pipelines", label: "Pipelines", icon: GitBranch },
       { href: "/funnel", label: "Funnel", icon: Filter },
       { href: "/ecommerce", label: "E-Commerce", icon: ShoppingCart },

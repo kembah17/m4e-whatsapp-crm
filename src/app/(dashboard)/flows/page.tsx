@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Workflow,
   Plus,
+  Info,
   Trash2,
   Pencil,
   Loader2,
@@ -90,6 +91,8 @@ export default function FlowsPage() {
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
+  const [setupBanner, setSetupBanner] = useState<{ templateSlug: string; templateName: string } | null>(null);
+  const autoTriggered = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,6 +128,30 @@ export default function FlowsPage() {
       cancelled = true;
     };
   }, []);
+
+  // Auto-trigger template creation if ?template=SLUG is in URL (from industry setup)
+  useEffect(() => {
+    if (autoTriggered.current || loading) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const templateSlug = params.get('template');
+      if (!templateSlug) return;
+      // Find matching template from loaded templates
+      const match = templates.find(t => t.slug === templateSlug);
+      if (match) {
+        autoTriggered.current = true;
+        setSetupBanner({ templateSlug: match.slug, templateName: match.name });
+        setCreateOpen(true);
+      } else if (templates.length === 0) {
+        // Templates not loaded yet, will retry on next render
+        return;
+      } else {
+        // Template slug not found in available templates, just open create dialog
+        autoTriggered.current = true;
+        setCreateOpen(true);
+      }
+    } catch { /* silent */ }
+  }, [loading, templates]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleCreate() {
     if (!newName.trim()) return;
@@ -254,6 +281,15 @@ export default function FlowsPage() {
               Start from a template or build from scratch.
             </DialogDescription>
           </DialogHeader>
+
+          {setupBanner && (
+            <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+              <Info className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-muted-foreground">
+                Suggested by your industry setup &mdash; <span className="font-medium text-popover-foreground">{setupBanner.templateName}</span>
+              </span>
+            </div>
+          )}
 
           {templates.length > 0 && (
             <div className="space-y-3">

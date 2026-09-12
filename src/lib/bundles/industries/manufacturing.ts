@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // MANUFACTURING — Sales Pipeline
@@ -210,6 +210,14 @@ export const MANUFACTURING_SALES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage buyers who have not ordered in 90+ days' },
   ],
   suggested_segments: ['high_value_customers', 'repeat_buyers', 'active_last_30', 'pending_payments', 'dormant_60_plus', 'new_contacts_7d'],
+  setup_actions: [
+    { id: 'mfg-sales-catalogue', title: 'Add product catalogue with MOQs', description: 'Set up your products with specifications, minimum order quantities, and lead times', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '📦' },
+    { id: 'mfg-sales-welcome', title: 'Customise buyer welcome message', description: 'Edit the auto-greeting to include product catalogue and MOQ information', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'mfg-sales-payment', title: 'Configure buyer payment reminders', description: 'Set up reminders for outstanding balance before dispatch', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'mfg-sales-dispatch', title: 'Set up dispatch notification', description: 'Configure auto-notification when goods are dispatched with tracking details', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 3, icon: '🚛' },
+    { id: 'mfg-sales-vip', title: 'Configure high-volume buyer alerts', description: 'Set up alerts when high-volume buyers send enquiries', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'vip_alert' }, estimated_minutes: 3, icon: '🔔' },
+    { id: 'mfg-sales-reorder', title: 'Set up reorder follow-ups', description: 'Follow up with buyers 30 days after delivery for reorder opportunities', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '🔄' },
+  ],
   customization_hints: [
     'Add your product catalogue with specifications, MOQs, and lead times',
     'Configure standard payment terms for different buyer categories',
@@ -397,6 +405,14 @@ export const MANUFACTURING_PRODUCTION_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'review_request', priority: 'optional', description: 'Request buyer feedback after delivery' },
   ],
   suggested_segments: ['pending_payments', 'high_value_customers', 'repeat_buyers', 'active_last_30'],
+  setup_actions: [
+    { id: 'mfg-prod-lines', title: 'Add product lines and specifications', description: 'Set up your specific product lines with standard specifications for production tracking', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '🏭' },
+    { id: 'mfg-prod-dispatch', title: 'Set up dispatch notification', description: 'Configure auto-notification when goods are dispatched from factory', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 3, icon: '🚛' },
+    { id: 'mfg-prod-payment', title: 'Configure balance payment reminder', description: 'Remind finance to confirm balance before dispatch', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '💰' },
+    { id: 'mfg-prod-qc', title: 'Set up quality control escalation', description: 'Configure escalation for quality issues not resolved within 48 hours', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'overdue_payment_escalation' }, estimated_minutes: 3, icon: '🔍' },
+    { id: 'mfg-prod-capacity', title: 'Configure production capacity tracking', description: 'Set up capacity per machine line for scheduling and avoiding over-commitment', priority: 'recommended', category: 'settings', target_url: '/inventory', estimated_minutes: 10, icon: '⚙️' },
+    { id: 'mfg-prod-review', title: 'Set up buyer delivery feedback', description: 'Request buyer feedback after successful delivery', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Add your specific product lines and standard specifications',
     'Configure production capacity per machine line for scheduling',

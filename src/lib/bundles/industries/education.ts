@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // EDUCATION — Admissions Pipeline
@@ -187,6 +187,14 @@ export const EDUCATION_ADMISSIONS_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage past enquiries before new admission cycle' },
   ],
   suggested_segments: ['new_contacts_7d', 'active_last_30', 'dormant_60_plus', 'pending_payments', 'seasonal_buyers', 'referral_sources'],
+  setup_actions: [
+    { id: 'edu-admit-programmes', title: 'Add programmes and classes to products', description: 'Set up your programmes, classes, and fee structures for quick sharing with prospective parents', priority: 'essential', category: 'products', target_url: '/products', estimated_minutes: 15, icon: '📚' },
+    { id: 'edu-admit-welcome', title: 'Customise admissions enquiry greeting', description: 'Edit the auto-greeting to include programme information and admission requirements', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'edu-admit-assessment', title: 'Set up assessment reminder', description: 'Configure 24-hour reminder before entrance assessment with venue details', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'appointment_reminder_24h' }, estimated_minutes: 3, icon: '📅' },
+    { id: 'edu-admit-followup', title: 'Configure application follow-up', description: 'Set up follow-up for applications not completed within 48 hours', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '📞' },
+    { id: 'edu-admit-acceptance', title: 'Set up acceptance deadline reminder', description: 'Remind parents of acceptance deadline and fee payment', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 3, icon: '⏰' },
+    { id: 'edu-admit-segments', title: 'Review admission cycle segments', description: 'Check auto-created segments for new enquiries and dormant prospects', priority: 'optional', category: 'segments', target_url: '/segments', target_params: { template: 'new_contacts_7d' }, estimated_minutes: 5, icon: '📊' },
+  ],
   customization_hints: [
     'Add your specific programmes, classes, and fee structures for quick sharing',
     'Configure admission cycle dates: application open, assessment dates, resumption dates',
@@ -345,6 +353,14 @@ export const EDUCATION_FEES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage parents of students who did not re-enrol for new term' },
   ],
   suggested_segments: ['pending_payments', 'active_last_30', 'high_value_customers', 'repeat_buyers', 'dormant_60_plus'],
+  setup_actions: [
+    { id: 'edu-fees-structure', title: 'Set up fee structure templates', description: 'Configure fee templates for each class and programme with instalment options', priority: 'essential', category: 'settings', target_url: '/invoices', estimated_minutes: 15, icon: '💰' },
+    { id: 'edu-fees-reminders', title: 'Configure fee payment reminders', description: 'Set up automated reminders at 7 days, 3 days, deadline, and overdue', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 5, icon: '⏰' },
+    { id: 'edu-fees-confirmation', title: 'Set up payment acknowledgement', description: 'Configure auto-confirmation when fee payment is received', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'booking_confirmation' }, estimated_minutes: 3, icon: '✅' },
+    { id: 'edu-fees-escalation', title: 'Set up overdue fee escalation', description: 'Configure escalation for fees overdue by 2+ weeks to management', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'overdue_payment_escalation' }, estimated_minutes: 3, icon: '🚨' },
+    { id: 'edu-fees-discounts', title: 'Configure discount rules', description: 'Set up sibling discounts, early payment discounts, and scholarship percentages', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '🎁' },
+    { id: 'edu-fees-instalments', title: 'Set up instalment plan options', description: 'Configure approved payment schedules for parents who need to pay in instalments', priority: 'optional', category: 'settings', target_url: '/installments', estimated_minutes: 10, icon: '📅' },
+  ],
   customization_hints: [
     'Set up your fee structure templates for each class and programme',
     'Configure payment deadline dates aligned with your school calendar',

@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // REAL ESTATE — Sales Pipeline
@@ -205,6 +205,14 @@ export const REAL_ESTATE_SALES_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage prospects who enquired but never visited' },
   ],
   suggested_segments: ['property_seekers', 'high_value_customers', 'pending_payments', 'active_last_30', 'dormant_60_plus', 'referral_sources'],
+  setup_actions: [
+    { id: 'realestate-sales-listings', title: 'Add property listing tags', description: 'Create tags for your estates and developments (e.g., Lekki Phase 1, Banana Island, Maitama) for property matching', priority: 'essential', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏘️' },
+    { id: 'realestate-sales-payment-plans', title: 'Configure payment plan templates', description: 'Set up your standard instalment structures for different property price ranges', priority: 'essential', category: 'settings', target_url: '/installments', estimated_minutes: 10, icon: '💳' },
+    { id: 'realestate-sales-welcome', title: 'Customise property enquiry welcome message', description: 'Edit the auto-greeting to include your available listings summary and office address', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'realestate-sales-viewing', title: 'Set up site visit reminder automation', description: 'Configure reminder timing for property viewings (Lagos vs Abuja market)', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'appointment_reminder_24h' }, estimated_minutes: 3, icon: '📅' },
+    { id: 'realestate-sales-followup', title: 'Configure post-viewing follow-up', description: 'Set the 48-hour follow-up automation for prospects who visited but have not responded', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 3, icon: '📞' },
+    { id: 'realestate-sales-segments', title: 'Review property seeker segments', description: 'Check location-based segments for areas you cover', priority: 'optional', category: 'segments', target_url: '/segments', target_params: { template: 'property_seekers' }, estimated_minutes: 5, icon: '📊' },
+  ],
   customization_hints: [
     'Add your specific estate or development names as tags for property matching',
     'Configure payment plan templates for your standard instalment structures',
@@ -390,6 +398,14 @@ export const REAL_ESTATE_TENANT_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'review_request', priority: 'optional', description: 'Request tenant feedback after 30 days of occupancy' },
   ],
   suggested_segments: ['property_seekers', 'pending_payments', 'active_last_30', 'new_contacts_7d', 'location_lagos', 'location_abuja'],
+  setup_actions: [
+    { id: 'realestate-tenant-properties', title: 'Add property tags for tenant matching', description: 'Create tags for your rental properties (residential, commercial, short-let) with location', priority: 'essential', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏠' },
+    { id: 'realestate-tenant-rent-reminder', title: 'Configure rent payment reminders', description: 'Set up automated rent reminders based on your payment collection cycle', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'payment_reminder' }, estimated_minutes: 5, icon: '💰' },
+    { id: 'realestate-tenant-welcome', title: 'Customise rental enquiry greeting', description: 'Edit the auto-greeting to include available properties and viewing schedule', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'realestate-tenant-screening', title: 'Set up tenant screening checklist', description: 'Customise the screening checklist based on your landlord requirements', priority: 'recommended', category: 'flows', target_url: '/flows', estimated_minutes: 10, icon: '✅' },
+    { id: 'realestate-tenant-agreement', title: 'Add tenancy agreement template', description: 'Upload your standard tenancy agreement for quick generation during onboarding', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '📄' },
+    { id: 'realestate-tenant-review', title: 'Set up tenant feedback request', description: 'Configure feedback request 30 days after occupancy', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Add your specific properties as tags for easy matching with enquiries',
     'Configure rent reminder timing based on your payment collection cycle',

@@ -1,4 +1,4 @@
-import type { IndustryWorkflowBundle } from '../types'
+import type { IndustryWorkflowBundle, SetupAction } from '../types'
 
 // ============================================================
 // LOGISTICS — Shipment Pipeline
@@ -185,6 +185,14 @@ export const LOGISTICS_SHIPMENT_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'dormant_reactivation', priority: 'optional', description: 'Re-engage customers who have not shipped in 60+ days' },
   ],
   suggested_segments: ['active_last_30', 'repeat_buyers', 'high_value_customers', 'new_contacts_7d', 'dormant_60_plus'],
+  setup_actions: [
+    { id: 'logistics-ship-routes', title: 'Set up route pricing matrix', description: 'Configure origin-to-destination rates per kg for your coverage areas', priority: 'essential', category: 'settings', target_url: '/settings', estimated_minutes: 15, icon: '🗺️' },
+    { id: 'logistics-ship-welcome', title: 'Customise shipping enquiry greeting', description: 'Edit the auto-greeting to include shipping rates and booking instructions', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'welcome_message' }, estimated_minutes: 5, icon: '👋' },
+    { id: 'logistics-ship-tracking', title: 'Set up tracking milestone notifications', description: 'Configure auto-notifications at each tracking stage for sender and receiver', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'delivery_notification' }, estimated_minutes: 5, icon: '📲' },
+    { id: 'logistics-ship-hubs', title: 'Add hub locations', description: 'Set up your hub and warehouse locations for accurate tracking updates', priority: 'recommended', category: 'settings', target_url: '/inventory', estimated_minutes: 5, icon: '📍' },
+    { id: 'logistics-ship-cod', title: 'Configure COD reconciliation workflow', description: 'Set up cash-on-delivery reconciliation process for COD shipments', priority: 'recommended', category: 'settings', target_url: '/settings', estimated_minutes: 5, icon: '💰' },
+    { id: 'logistics-ship-feedback', title: 'Set up delivery rating request', description: 'Request customer rating after successful delivery', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Set up your route pricing matrix: origin state to destination state rates per kg',
     'Configure service levels with realistic delivery timelines for your coverage area',
@@ -327,6 +335,14 @@ export const LOGISTICS_CLAIMS_BUNDLE: IndustryWorkflowBundle = {
     { slug: 'review_request', priority: 'optional', description: 'Request feedback after claim resolution' },
   ],
   suggested_segments: ['pending_payments', 'active_last_30', 'high_value_customers', 'repeat_buyers'],
+  setup_actions: [
+    { id: 'logistics-claims-policy', title: 'Define compensation policy in settings', description: 'Set maximum liability per kg, insurance options, and excluded items', priority: 'essential', category: 'settings', target_url: '/settings', estimated_minutes: 10, icon: '📋' },
+    { id: 'logistics-claims-confirm', title: 'Set up claim acknowledgement', description: 'Configure auto-confirmation with claim reference number when claim is filed', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'booking_confirmation' }, estimated_minutes: 3, icon: '✅' },
+    { id: 'logistics-claims-updates', title: 'Configure investigation progress updates', description: 'Set up auto-updates to customer every 2 days during investigation', priority: 'essential', category: 'automations', target_url: '/automations/new', target_params: { template: 'follow_up_reminder' }, estimated_minutes: 5, icon: '📞' },
+    { id: 'logistics-claims-escalation', title: 'Set up claim escalation rules', description: 'Configure escalation for claims not resolved within 5 business days', priority: 'recommended', category: 'automations', target_url: '/automations/new', target_params: { template: 'overdue_payment_escalation' }, estimated_minutes: 3, icon: '🚨' },
+    { id: 'logistics-claims-categories', title: 'Set up claim category tags', description: 'Create tags for claim types (damage, loss, delay, shortage) with investigation checklists', priority: 'recommended', category: 'contacts', target_url: '/contacts', target_params: { tab: 'tags' }, estimated_minutes: 5, icon: '🏷️' },
+    { id: 'logistics-claims-feedback', title: 'Set up post-resolution feedback', description: 'Request feedback after claim resolution', priority: 'optional', category: 'automations', target_url: '/automations/new', target_params: { template: 'review_request' }, estimated_minutes: 3, icon: '⭐' },
+  ],
   customization_hints: [
     'Define your compensation policy: maximum liability per kg, insurance options, excluded items',
     'Set up claim categories with standard investigation checklists',
