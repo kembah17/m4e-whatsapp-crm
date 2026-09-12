@@ -8,6 +8,11 @@ import type {
   DeliverableItem,
   CriterionItem,
 } from '@/types/packages'
+import {
+  orchestratePackageCampaigns,
+  activateScheduledCampaigns,
+  getPackageCampaignStatus,
+} from '@/lib/campaigns/package-orchestrator'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -310,10 +315,22 @@ export async function POST(request: NextRequest) {
             .eq('id', account_id)
         }
 
+        // Auto-orchestrate campaign schedule for this package
+        let orchestrationResult = null
+        try {
+          orchestrationResult = await orchestratePackageCampaigns(db, account_id, package_config_id)
+        } catch (orchErr) {
+          console.warn('[packages/management] Campaign orchestration warning:', orchErr)
+        }
+
         return NextResponse.json({
           success: true,
           milestones_created: created?.length ?? 0,
           package: pkg.name,
+          campaign_orchestration: orchestrationResult ? {
+            schedules_created: orchestrationResult.schedules_created,
+            warnings: orchestrationResult.warnings,
+          } : null,
         }, { status: 201 })
       }
 
@@ -347,8 +364,15 @@ export async function POST(request: NextRequest) {
           .single()
         if (error) throw error
 
-        // If completed, auto-start next milestone
+        // If completed, auto-start next milestone and check campaign activations
         if (status === 'completed' && data) {
+          // Check if any campaigns should be activated for the next week
+          try {
+            const completedWeek = data.week_number ?? 0
+            await activateScheduledCampaigns(db, data.account_id, completedWeek)
+          } catch (actErr) {
+            console.warn('[packages/management] Campaign activation warning:', actErr)
+          }
           const { data: nextMilestone } = await db
             .from('package_milestones')
             .select('id')
@@ -505,6 +529,54 @@ export async function POST(request: NextRequest) {
         if (error) throw error
 
         return NextResponse.json({ success: true })
+      }
+
+
+      /* ---- Orchestrate campaigns for a package assignment ---- */
+      case 'orchestrate_campaigns': {
+        const { account_id, package_config_id } = body
+        if (!account_id || !package_config_id) {
+          return NextResponse.json({ error: 'account_id and package_config_id required' }, { status: 400 })
+        }
+
+        const result = await orchestratePackageCampaigns(db, account_id, package_config_id)
+        return NextResponse.json({
+          success: result.success,
+          schedules_created: result.schedules_created,
+          warnings: result.warnings,
+          schedule: result.schedule,
+        }, { status: result.success ? 201 : 400 })
+      }
+
+      /* ---- Activate campaigns for current week ---- */
+      case 'activate_campaigns': {
+        const { account_id, week } = body
+        if (!account_id || week === undefined) {
+          return NextResponse.json({ error: 'account_id and week required' }, { status: 400 })
+        }
+
+        const result = await activateScheduledCampaigns(db, account_id, week)
+        return NextResponse.json({
+          success: true,
+          activated: result.activated,
+          created: result.created,
+          skipped: result.skipped,
+          errors: result.errors,
+        })
+      }
+
+      /* ---- Get campaign schedule for an account ---- */
+      case 'get_campaign_schedule': {
+        const { account_id } = body
+        if (!account_id) {
+          return NextResponse.json({ error: 'account_id required' }, { status: 400 })
+        }
+
+        const status = await getPackageCampaignStatus(db, account_id)
+        return NextResponse.json({
+          success: true,
+          schedule: status,
+        })
       }
 
       default:

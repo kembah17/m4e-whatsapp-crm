@@ -12,6 +12,7 @@ import {
   Search, MoreVertical, ExternalLink, Lightbulb, ClipboardList,
   GitBranch, Radio, Bot, Workflow, AlertCircle, Star,
 } from "lucide-react"
+import CampaignScheduleTab from "@/components/packages/campaign-schedule-tab"
 
 /* ================================================================== */
 /*  Types                                                              */
@@ -102,7 +103,7 @@ interface ManagementData {
   }
 }
 
-type Tab = "overview" | "assign" | "execute" | "configure" | "reports" | "transitions"
+type Tab = "overview" | "assign" | "execute" | "configure" | "reports" | "transitions" | "campaigns"
 
 /* ================================================================== */
 /*  Helpers                                                            */
@@ -292,6 +293,7 @@ export default function PackageManagerPage() {
     { id: "configure", label: "Configure", icon: Settings },
     { id: "reports", label: "Reports", icon: FileText },
     { id: "transitions", label: "Transitions", icon: ArrowRight },
+    { id: "campaigns", label: "Campaigns", icon: Rocket },
   ]
 
   /* ---- Loading state ---- */
@@ -397,6 +399,7 @@ export default function PackageManagerPage() {
         {activeTab === "configure" && <ConfigureTab account={selectedAccountData} pkgConfig={selectedPkgConfig} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
         {activeTab === "reports" && <ReportsTab account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
         {activeTab === "transitions" && <TransitionsTab account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} packages={data?.packages ?? []} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} onTransition={async (body) => { const result = await doAction(body); if (result.success) await fetchData(); return result }} actionLoading={actionLoading} />}
+        {activeTab === "campaigns" && <CampaignScheduleTab account={selectedAccountData as any} accounts={filteredAccounts as any} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
       </div>
     </div>
   )
