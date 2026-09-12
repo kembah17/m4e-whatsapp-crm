@@ -168,7 +168,7 @@ export function IssueStockModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+      <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PackageMinus className="h-5 w-5 text-red-400" />
@@ -177,9 +177,9 @@ export function IssueStockModal({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Product *</Label>
+            <Label className="text-muted-foreground">Product *</Label>
             {loadingProducts ? (
-              <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
+              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading products...
               </div>
             ) : (
@@ -187,7 +187,7 @@ export function IssueStockModal({
                 value={form.productId}
                 onValueChange={(v) => setForm((p) => ({ ...p, productId: v }))}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Select product" />
                 </SelectTrigger>
                 <SelectContent>
@@ -202,12 +202,12 @@ export function IssueStockModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">Location *</Label>
+            <Label className="text-muted-foreground">Location *</Label>
             <Select
               value={form.locationId}
               onValueChange={(v) => setForm((p) => ({ ...p, locationId: v }))}
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+              <SelectTrigger className="bg-muted border-border mt-1">
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
@@ -222,40 +222,40 @@ export function IssueStockModal({
 
           {/* Stock availability info */}
           {form.productId && form.locationId && (
-            <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700">
+            <div className="bg-muted rounded-lg p-3 border border-border">
               {loadingStock ? (
-                <div className="flex items-center gap-2 text-sm text-zinc-500">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" /> Checking stock...
                 </div>
               ) : stockInfo ? (
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <p className="text-[10px] text-zinc-500 uppercase">On Hand</p>
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-[10px] text-muted-foreground uppercase">On Hand</p>
+                    <p className="text-sm font-bold text-foreground">
                       {stockInfo.quantity_on_hand}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500 uppercase">Reserved</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Reserved</p>
                     <p className="text-sm font-bold text-amber-400">
                       {stockInfo.quantity_reserved}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500 uppercase">Available</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Available</p>
                     <p className="text-sm font-bold text-green-400">
                       {stockInfo.quantity_available}
                     </p>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500">No stock record found</p>
+                <p className="text-sm text-muted-foreground">No stock record found</p>
               )}
             </div>
           )}
 
           <div>
-            <Label className="text-zinc-300">
+            <Label className="text-muted-foreground">
               Quantity *{selectedProduct?.unit_of_measure
                 ? ` (${selectedProduct.unit_of_measure})`
                 : ""}
@@ -267,17 +267,17 @@ export function IssueStockModal({
               value={form.quantity}
               onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))}
               placeholder="Enter quantity to issue"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Notes</Label>
+            <Label className="text-muted-foreground">Notes</Label>
             <Textarea
               value={form.notes}
               onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
               placeholder="e.g. Sale #1234, Customer pickup"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
@@ -286,14 +286,14 @@ export function IssueStockModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700"
+            className="border-border"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={saving || !form.productId || !form.locationId || !form.quantity}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-red-600 hover:bg-red-700 text-primary-foreground"
           >
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Issue Stock

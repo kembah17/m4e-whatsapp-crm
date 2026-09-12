@@ -151,7 +151,7 @@ export function AITestChat() {
                   <div className={cn(
                     'px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap',
                     msg.role === 'user'
-                      ? 'bg-purple-600 text-white rounded-tr-sm'
+                      ? 'bg-purple-600 text-primary-foreground rounded-tr-sm'
                       : 'bg-white border text-gray-800 rounded-tl-sm shadow-sm',
                   )}>
                     {msg.text}
@@ -237,7 +237,7 @@ export function AITestChat() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading}
-              className="p-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2.5 bg-purple-600 text-primary-foreground rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             </button>

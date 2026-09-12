@@ -74,7 +74,7 @@ const TIER_NAMES: Record<number, string> = {
 function QualityBadge({ rating }: { rating: string }) {
   if (rating === "GREEN")
     return (
-      <Badge className="bg-green-600 text-white">
+      <Badge className="bg-green-600 text-primary-foreground">
         <CheckCircle2 className="mr-1 h-3 w-3" /> GREEN
       </Badge>
     )
@@ -86,7 +86,7 @@ function QualityBadge({ rating }: { rating: string }) {
     )
   if (rating === "RED")
     return (
-      <Badge className="bg-red-600 text-white">
+      <Badge className="bg-red-600 text-primary-foreground">
         <XCircle className="mr-1 h-3 w-3" /> RED
       </Badge>
     )
@@ -339,7 +339,7 @@ export function BanAvoidanceDashboard({ accountId }: { accountId: string }) {
                         {w.marketing_paused ? (
                           <Badge variant="destructive">Paused</Badge>
                         ) : (
-                          <Badge className="bg-green-600 text-white">
+                          <Badge className="bg-green-600 text-primary-foreground">
                             Active
                           </Badge>
                         )}

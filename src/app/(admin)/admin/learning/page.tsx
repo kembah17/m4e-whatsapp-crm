@@ -61,8 +61,8 @@ const INDUSTRIES = [
 const confidenceConfig: Record<string, { color: string; bg: string; label: string }> = {
   high: { color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", label: "HIGH" },
   medium: { color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20", label: "MEDIUM" },
-  low: { color: "text-slate-400", bg: "bg-slate-500/10 border-slate-500/20", label: "LOW" },
-  insufficient: { color: "text-slate-500", bg: "bg-slate-500/5 border-slate-500/10", label: "NO DATA" },
+  low: { color: "text-muted-foreground", bg: "bg-muted/50 border-border/20", label: "LOW" },
+  insufficient: { color: "text-muted-foreground", bg: "bg-muted/50 border-border/10", label: "NO DATA" },
 }
 
 const outcomeConfig: Record<string, { color: string; icon: typeof CheckCircle; label: string }> = {
@@ -70,7 +70,7 @@ const outcomeConfig: Record<string, { color: string; icon: typeof CheckCircle; l
   negative: { color: "text-red-400", icon: XCircle, label: "Negative" },
   mixed: { color: "text-yellow-400", icon: AlertTriangle, label: "Mixed" },
   too_early: { color: "text-blue-400", icon: Clock, label: "Too Early" },
-  insufficient_data: { color: "text-slate-400", icon: Clock, label: "No Data" },
+  insufficient_data: { color: "text-muted-foreground", icon: Clock, label: "No Data" },
 }
 
 // ---------------------------------------------------------------------------
@@ -194,11 +194,11 @@ export default function AdminLearningPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Brain className="h-7 w-7 text-[#D4AF37]" />
             Adaptive Learning
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Cross-client insights that improve funnel performance over time
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function AdminLearningPage() {
             <select
               value={industry}
               onChange={e => setIndustry(e.target.value)}
-              className="appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 pr-8 text-sm text-white focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
+              className="appearance-none rounded-lg border border-border bg-muted px-4 py-2 pr-8 text-sm text-foreground focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]"
             >
               {INDUSTRIES.map(ind => (
                 <option key={ind.value} value={ind.value}>
@@ -217,13 +217,13 @@ export default function AdminLearningPage() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </div>
 
           <button
             onClick={fetchLearnings}
             disabled={loading}
-            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg border border-border bg-muted px-4 py-2 text-sm text-foreground hover:bg-accent disabled:opacity-50"
           >
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
             Refresh
@@ -250,10 +250,10 @@ export default function AdminLearningPage() {
 
       {/* No data */}
       {!loading && learnings.length === 0 && (
-        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-12 text-center">
-          <Brain className="mx-auto h-12 w-12 text-slate-600" />
-          <h3 className="mt-4 text-lg font-medium text-white">No learnings yet</h3>
-          <p className="mt-2 text-sm text-slate-400">
+        <div className="rounded-xl border border-border/50 bg-muted/50 p-12 text-center">
+          <Brain className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-medium text-foreground">No learnings yet</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
             Learnings appear when clients in the{" "}
             <span className="text-[#D4AF37]">
               {INDUSTRIES.find(i => i.value === industry)?.label}
@@ -266,7 +266,7 @@ export default function AdminLearningPage() {
       {/* Recommended Preset Updates (HIGH confidence) */}
       {!loading && highConfidence.length > 0 && (
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
             <Sparkles className="h-5 w-5 text-emerald-400" />
             Recommended Preset Updates
           </h2>
@@ -286,7 +286,7 @@ export default function AdminLearningPage() {
       {/* Moderate Evidence */}
       {!loading && mediumConfidence.length > 0 && (
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
             <TrendingUp className="h-5 w-5 text-yellow-400" />
             Moderate Evidence
           </h2>
@@ -306,8 +306,8 @@ export default function AdminLearningPage() {
       {/* Early / Insufficient Data */}
       {!loading && lowConfidence.length > 0 && (
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-            <BarChart3 className="h-5 w-5 text-slate-400" />
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
             Needs More Data
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -324,16 +324,16 @@ export default function AdminLearningPage() {
       {/* Change History */}
       {!loading && changes.length > 0 && (
         <section>
-          <h2 className="mb-4 text-lg font-semibold text-white">Change History</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-700/50">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Change History</h2>
+          <div className="overflow-x-auto rounded-xl border border-border/50">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-700/50 bg-slate-800/50">
-                  <th className="px-4 py-3 text-left font-medium text-slate-400">Parameter</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-400">Change</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-400">Date</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-400">Outcome</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-400">Action</th>
+                <tr className="border-b border-border/50 bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Parameter</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Change</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Outcome</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -344,16 +344,16 @@ export default function AdminLearningPage() {
                   const OutcomeIcon = outcome.icon
 
                   return (
-                    <tr key={change.id} className="border-b border-slate-700/30">
-                      <td className="px-4 py-3 font-medium text-white">
+                    <tr key={change.id} className="border-b border-border/30">
+                      <td className="px-4 py-3 font-medium text-foreground">
                         {change.parameter_name}
                       </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        <span className="text-slate-500">{change.old_value ?? "(none)"}</span>
-                        <ArrowRight className="mx-1 inline h-3 w-3 text-slate-600" />
-                        <span className="text-white">{change.new_value ?? "(none)"}</span>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        <span className="text-muted-foreground">{change.old_value ?? "(none)"}</span>
+                        <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
+                        <span className="text-foreground">{change.new_value ?? "(none)"}</span>
                       </td>
-                      <td className="px-4 py-3 text-slate-400">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {new Date(change.changed_at).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
@@ -367,7 +367,7 @@ export default function AdminLearningPage() {
                           <button
                             onClick={() => handleEvaluate(change.id)}
                             disabled={evaluating === change.id}
-                            className="rounded-md bg-slate-700 px-3 py-1 text-xs text-white hover:bg-slate-600 disabled:opacity-50"
+                            className="rounded-md bg-accent px-3 py-1 text-xs text-foreground hover:bg-accent disabled:opacity-50"
                           >
                             {evaluating === change.id ? "Evaluating..." : "Evaluate"}
                           </button>
@@ -384,12 +384,12 @@ export default function AdminLearningPage() {
 
       {/* Cross-Industry Insights */}
       {!loading && learnings.length > 0 && (
-        <section className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-6">
-          <h2 className="mb-3 text-lg font-semibold text-white">Cross-Industry Insights</h2>
-          <p className="text-sm text-slate-400">
+        <section className="rounded-xl border border-border/50 bg-muted/30 p-6">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">Cross-Industry Insights</h2>
+          <p className="text-sm text-muted-foreground">
             Patterns that appear across multiple industries will be highlighted here
             as more data is collected. Currently tracking{" "}
-            <span className="font-medium text-white">{learnings.length}</span> parameter
+            <span className="font-medium text-foreground">{learnings.length}</span> parameter
             variations across the{" "}
             <span className="text-[#D4AF37]">
               {INDUSTRIES.find(i => i.value === industry)?.label}
@@ -442,14 +442,14 @@ function LearningCard({
   const conf = confidenceConfig[learning.confidence]
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-5">
+    <div className="rounded-xl border border-border/50 bg-muted/50 p-5">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-medium text-white">{learning.parameter}</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            <span className="text-slate-500">{learning.old_value || "(default)"}</span>
-            <ArrowRight className="mx-1 inline h-3 w-3 text-slate-600" />
-            <span className="font-medium text-white">{learning.new_value}</span>
+          <h3 className="font-medium text-foreground">{learning.parameter}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            <span className="text-muted-foreground">{learning.old_value || "(default)"}</span>
+            <ArrowRight className="mx-1 inline h-3 w-3 text-muted-foreground" />
+            <span className="font-medium text-foreground">{learning.new_value}</span>
           </p>
         </div>
         <span
@@ -465,8 +465,8 @@ function LearningCard({
 
       {/* Evidence */}
       <div className="mt-4 flex items-center gap-4 text-sm">
-        <span className="text-slate-400">
-          <span className="font-medium text-white">{learning.clients_tested}</span> clients tested
+        <span className="text-muted-foreground">
+          <span className="font-medium text-foreground">{learning.clients_tested}</span> clients tested
         </span>
         <span className="text-emerald-400">
           {learning.positive_outcomes} positive
@@ -486,7 +486,7 @@ function LearningCard({
       )}
 
       {/* Recommendation */}
-      <p className="mt-3 text-sm text-slate-300">{learning.recommendation}</p>
+      <p className="mt-3 text-sm text-muted-foreground">{learning.recommendation}</p>
 
       {/* Actions */}
       {learning.confidence === "high" && (
@@ -494,7 +494,7 @@ function LearningCard({
           <button
             onClick={onApply}
             disabled={applying}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-emerald-500 disabled:opacity-50"
           >
             {applying ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
@@ -503,7 +503,7 @@ function LearningCard({
             )}
             Apply to All Clients
           </button>
-          <button className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
+          <button className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-accent">
             Dismiss
           </button>
         </div>
@@ -516,9 +516,9 @@ function LearningCardCompact({ learning }: { learning: Learning }) {
   const conf = confidenceConfig[learning.confidence]
 
   return (
-    <div className="rounded-xl border border-slate-700/30 bg-slate-800/30 p-4">
+    <div className="rounded-xl border border-border/30 bg-muted/30 p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white">{learning.parameter}</h3>
+        <h3 className="text-sm font-medium text-foreground">{learning.parameter}</h3>
         <span
           className={cn(
             "rounded-full border px-2 py-0.5 text-[10px] font-medium",
@@ -529,12 +529,12 @@ function LearningCardCompact({ learning }: { learning: Learning }) {
           {conf.label}
         </span>
       </div>
-      <p className="mt-1 text-xs text-slate-400">
+      <p className="mt-1 text-xs text-muted-foreground">
         {learning.old_value || "(default)"}
-        <ArrowRight className="mx-1 inline h-2.5 w-2.5 text-slate-600" />
+        <ArrowRight className="mx-1 inline h-2.5 w-2.5 text-muted-foreground" />
         {learning.new_value}
       </p>
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-muted-foreground">
         {learning.clients_tested} client{learning.clients_tested !== 1 ? "s" : ""} tested
       </p>
     </div>
@@ -544,16 +544,16 @@ function LearningCardCompact({ learning }: { learning: Learning }) {
 function MiniStat({
   label,
   value,
-  color = "text-white",
+  color = "text-foreground",
 }: {
   label: string
   value: string | number
   color?: string
 }) {
   return (
-    <div className="rounded-lg border border-slate-700/30 bg-slate-800/50 p-3 text-center">
+    <div className="rounded-lg border border-border/30 bg-muted/50 p-3 text-center">
       <p className={cn("text-xl font-bold", color)}>{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{label}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{label}</p>
     </div>
   )
 }

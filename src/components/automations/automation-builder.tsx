@@ -1246,7 +1246,7 @@ function StepEditor({
               value={(cfg.subject as string) ?? ""}
               onChange={(e) => set({ subject: e.target.value })}
               placeholder="e.g. Your appointment is confirmed"
-              className="bg-slate-800 text-white"
+              className="bg-muted text-foreground"
             />
           </FieldBlock>
           <FieldBlock label="HTML Body">
@@ -1254,7 +1254,7 @@ function StepEditor({
               value={(cfg.html_body as string) ?? ""}
               onChange={(e) => set({ html_body: e.target.value })}
               placeholder="<p>Hello {{contact_name}},</p>..."
-              className="min-h-32 bg-slate-800 font-mono text-xs text-white"
+              className="min-h-32 bg-muted font-mono text-xs text-foreground"
             />
           </FieldBlock>
           <FieldBlock label="Plain Text (optional)">
@@ -1262,7 +1262,7 @@ function StepEditor({
               value={(cfg.text_body as string) ?? ""}
               onChange={(e) => set({ text_body: e.target.value })}
               placeholder="Hello {{contact_name}},..."
-              className="min-h-16 bg-slate-800 text-xs text-white"
+              className="min-h-16 bg-muted text-xs text-foreground"
             />
           </FieldBlock>
         </>

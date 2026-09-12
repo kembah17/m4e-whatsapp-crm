@@ -71,38 +71,38 @@ export function TrustScoreSettings() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   const weightField = (label: string, key: keyof TrustScoreConfig, desc: string) => (
     <div>
-      <Label className="text-zinc-300">{label}</Label>
+      <Label className="text-muted-foreground">{label}</Label>
       <Input
         type="number"
         min={0}
         max={100}
         value={config[key]}
         onChange={(e) => setConfig({ ...config, [key]: Number(e.target.value) })}
-        className="bg-zinc-800 border-zinc-700 text-white w-24"
+        className="bg-muted border-border text-foreground w-24"
       />
-      <p className="text-xs text-zinc-500 mt-1">{desc}</p>
+      <p className="text-xs text-muted-foreground mt-1">{desc}</p>
     </div>
   );
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-[#C9A84C]" /> Trust Score Configuration
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Configure how customer trust scores are calculated. Weights must sum to 100.
         </p>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardHeader>
-          <CardTitle className="text-white text-sm">Score Weights (must total 100)</CardTitle>
+          <CardTitle className="text-foreground text-sm">Score Weights (must total 100)</CardTitle>
           <div className={`text-sm font-medium ${totalWeight === 100 ? "text-green-400" : "text-red-400"}`}>
             Current total: {totalWeight}/100
           </div>
@@ -116,34 +116,34 @@ export function TrustScoreSettings() {
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardHeader>
-          <CardTitle className="text-white text-sm">Thresholds</CardTitle>
+          <CardTitle className="text-foreground text-sm">Thresholds</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label className="text-zinc-300">High Trust Threshold</Label>
+            <Label className="text-muted-foreground">High Trust Threshold</Label>
             <Input
               type="number"
               min={0}
               max={100}
               value={config.high_trust_threshold}
               onChange={(e) => setConfig({ ...config, high_trust_threshold: Number(e.target.value) })}
-              className="bg-zinc-800 border-zinc-700 text-white w-24"
+              className="bg-muted border-border text-foreground w-24"
             />
-            <p className="text-xs text-zinc-500 mt-1">Score above this = green (trusted)</p>
+            <p className="text-xs text-muted-foreground mt-1">Score above this = green (trusted)</p>
           </div>
           <div>
-            <Label className="text-zinc-300">Low Trust Threshold</Label>
+            <Label className="text-muted-foreground">Low Trust Threshold</Label>
             <Input
               type="number"
               min={0}
               max={100}
               value={config.low_trust_threshold}
               onChange={(e) => setConfig({ ...config, low_trust_threshold: Number(e.target.value) })}
-              className="bg-zinc-800 border-zinc-700 text-white w-24"
+              className="bg-muted border-border text-foreground w-24"
             />
-            <p className="text-xs text-zinc-500 mt-1">Score below this = red (risky)</p>
+            <p className="text-xs text-muted-foreground mt-1">Score below this = red (risky)</p>
           </div>
         </CardContent>
       </Card>
@@ -153,7 +153,7 @@ export function TrustScoreSettings() {
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
           Save Trust Score Settings
         </Button>
-        <div className="flex items-center gap-1 text-xs text-zinc-500">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Info className="h-3 w-3" /> Changes apply to future score calculations
         </div>
       </div>

@@ -6,7 +6,7 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 import { cn } from "@/lib/utils"
 
 // Root: primary token when checked (responds to the active color theme),
-// slate when unchecked.
+// muted when unchecked.
 function Switch({
   className,
   ...props

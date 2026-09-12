@@ -422,7 +422,7 @@ export default function InfrastructurePage() {
             className={cn(
               archival.enabled
                 ? "border-emerald-500/30 text-emerald-400"
-                : "border-zinc-500/30 text-zinc-400",
+                : "border-border text-muted-foreground",
             )}
           >
             {archival.enabled ? "Enabled" : "Disabled"}

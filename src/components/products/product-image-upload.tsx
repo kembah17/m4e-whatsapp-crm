@@ -132,7 +132,7 @@ export function ProductImageUpload({
     return (
       <div className="space-y-1.5">
         <Label>Product Image</Label>
-        <div className="relative group rounded-lg border border-slate-700 overflow-hidden bg-slate-800/50">
+        <div className="relative group rounded-lg border border-border overflow-hidden bg-muted/50">
           <div className="relative w-full h-40 flex items-center justify-center">
             <Image
               src={value}
@@ -146,7 +146,7 @@ export function ProductImageUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute top-2 right-2 p-1 rounded-full bg-slate-900/80 text-slate-400 hover:text-red-400 hover:bg-slate-900 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 p-1 rounded-full bg-card/80 text-muted-foreground hover:text-red-400 hover:bg-card opacity-0 group-hover:opacity-100 transition-opacity"
               title="Remove image"
             >
               <X className="h-4 w-4" />
@@ -173,7 +173,7 @@ export function ProductImageUpload({
           relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors cursor-pointer
           ${dragOver
             ? "border-primary bg-primary/5"
-            : "border-slate-700 hover:border-slate-600 bg-slate-800/30"
+            : "border-border hover:border-border bg-muted/30"
           }
           ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         `}
@@ -203,18 +203,18 @@ export function ProductImageUpload({
         {uploading ? (
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-xs text-slate-400">Uploading...</p>
+            <p className="text-xs text-muted-foreground">Uploading...</p>
           </>
         ) : (
           <>
-            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-slate-700/50">
-              <Upload className="h-5 w-5 text-slate-400" />
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/50">
+              <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-muted-foreground">
                 Drop image here, click to browse, or paste
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 PNG, JPG, WebP, GIF — max 5 MB
               </p>
             </div>
@@ -230,7 +230,7 @@ export function ProductImageUpload({
             e.stopPropagation();
             setShowUrlInput(true);
           }}
-          className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-muted-foreground transition-colors"
           disabled={disabled}
         >
           <LinkIcon className="h-3 w-3" />
@@ -242,7 +242,7 @@ export function ProductImageUpload({
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="https://example.com/image.jpg"
-            className="h-7 text-xs bg-slate-800/50 border-slate-700"
+            className="h-7 text-xs bg-muted/50 border-border"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();

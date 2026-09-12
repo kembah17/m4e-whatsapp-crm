@@ -203,7 +203,7 @@ export function Step2Template({
         {/* Selected indicator */}
         {isSelected && (
           <div className="absolute -top-2 -right-2 z-10">
-            <div className="bg-emerald-500 text-white rounded-full p-1 shadow-md">
+            <div className="bg-emerald-500 text-primary-foreground rounded-full p-1 shadow-md">
               <CheckCircle2 className="h-4 w-4" />
             </div>
           </div>

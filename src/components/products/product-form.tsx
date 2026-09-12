@@ -293,16 +293,16 @@ export function ProductForm({
         <span className="truncate">
           {label || 'Suggestion'}: {displayValue}
         </span>
-        <span className="text-slate-600">({Math.round(conf * 100)}%)</span>
+        <span className="text-muted-foreground">({Math.round(conf * 100)}%)</span>
       </button>
     );
   }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto bg-slate-900 border-slate-800">
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto bg-card border-border">
         <SheetHeader>
-          <SheetTitle className="text-white">
+          <SheetTitle className="text-foreground">
             {product ? 'Edit Product' : 'New Product'}
           </SheetTitle>
         </SheetHeader>
@@ -316,7 +316,7 @@ export function ProductForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Premium Hair Treatment"
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
           </div>
 
@@ -332,7 +332,7 @@ export function ProductForm({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
             <div className="space-y-1.5">
@@ -345,7 +345,7 @@ export function ProductForm({
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
                 placeholder="0.00"
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
           </div>
@@ -354,7 +354,7 @@ export function ProductForm({
           <div className="space-y-1.5">
             <Label>Status</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as ProductStatus)}>
-              <SelectTrigger className="bg-slate-800/50 border-slate-700">
+              <SelectTrigger className="bg-muted/50 border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -373,7 +373,7 @@ export function ProductForm({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder={suggestions.category || 'e.g. Hair Services'}
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
             <SuggestionHint field="category" label="Category" />
           </div>
@@ -387,7 +387,7 @@ export function ProductForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder={suggestions.description || 'Describe your product or service...'}
               rows={3}
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
             <SuggestionHint field="description" label="Description" />
           </div>
@@ -402,7 +402,7 @@ export function ProductForm({
               placeholder={suggestions.short_pitch || 'A brief compelling pitch (max 160 chars)...'}
               rows={2}
               maxLength={160}
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
             <SuggestionHint field="short_pitch" label="Pitch" />
           </div>
@@ -422,17 +422,17 @@ export function ProductForm({
               value={sku}
               onChange={(e) => setSku(e.target.value)}
               placeholder="Optional"
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
           </div>
 
-          <Separator className="bg-slate-800" />
+          <Separator className="bg-muted" />
 
           {/* Lead Magnet */}
           <div className="flex items-center justify-between">
             <div>
               <Label>Lead Magnet Eligible</Label>
-              <p className="text-xs text-slate-500">Can be offered as a free/low-cost lead magnet</p>
+              <p className="text-xs text-muted-foreground">Can be offered as a free/low-cost lead magnet</p>
             </div>
             <Switch
               checked={leadMagnetEligible}
@@ -451,7 +451,7 @@ export function ProductForm({
                   type="date"
                   value={seasonalStart}
                   onChange={(e) => setSeasonalStart(e.target.value)}
-                  className="bg-slate-800/50 border-slate-700"
+                  className="bg-muted/50 border-border"
                 />
               </div>
               <div className="space-y-1.5">
@@ -461,7 +461,7 @@ export function ProductForm({
                   type="date"
                   value={seasonalEnd}
                   onChange={(e) => setSeasonalEnd(e.target.value)}
-                  className="bg-slate-800/50 border-slate-700"
+                  className="bg-muted/50 border-border"
                 />
               </div>
             </div>
@@ -475,18 +475,18 @@ export function ProductForm({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder={suggestions.tags?.join(', ') || 'Comma-separated tags...'}
-              className="bg-slate-800/50 border-slate-700"
+              className="bg-muted/50 border-border"
             />
             <SuggestionHint field="tags" label="Tags" />
 
-          <Separator className="bg-slate-800" />
+          <Separator className="bg-muted" />
 
           {/* Inventory Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <Label>Track Inventory</Label>
-                <p className="text-xs text-slate-500">Enable stock tracking for this product</p>
+                <p className="text-xs text-muted-foreground">Enable stock tracking for this product</p>
               </div>
               <Switch
                 checked={trackInventory}
@@ -495,11 +495,11 @@ export function ProductForm({
             </div>
 
             {trackInventory && (
-              <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-800/30 p-4">
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
                 <div className="space-y-1.5">
                   <Label>Unit of Measure</Label>
                   <Select value={unitOfMeasure} onValueChange={(v) => setUnitOfMeasure(v ?? "pieces")}>
-                    <SelectTrigger className="bg-slate-800/50 border-slate-700">
+                    <SelectTrigger className="bg-muted/50 border-border">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -512,7 +512,7 @@ export function ProductForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Stock levels, suppliers, and reorder points are managed in the Inventory section.
                 </p>
               </div>
@@ -520,7 +520,7 @@ export function ProductForm({
           </div>
           </div>
 
-          <Separator className="bg-slate-800" />
+          <Separator className="bg-muted" />
 
           {/* Actions */}
           <div className="flex items-center gap-2">

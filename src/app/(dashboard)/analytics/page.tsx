@@ -45,7 +45,7 @@ function TrendBadge({ value }: { value?: number }) {
       variant="outline"
       className={`text-xs ${
         isNeutral
-          ? "text-zinc-400 border-zinc-700"
+          ? "text-muted-foreground border-border"
           : isPositive
           ? "text-green-400 border-green-500/30 bg-green-500/10"
           : "text-red-400 border-red-500/30 bg-red-500/10"
@@ -65,18 +65,18 @@ function TrendBadge({ value }: { value?: number }) {
 
 function StatCard({ card }: { card: MetricCard }) {
   return (
-    <Card className="bg-zinc-900/50 border-zinc-800">
+    <Card className="bg-card/50 border-border">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-zinc-400">{card.label}</p>
-            <p className="text-2xl font-bold text-white">{card.value}</p>
+            <p className="text-sm text-muted-foreground">{card.label}</p>
+            <p className="text-2xl font-bold text-foreground">{card.value}</p>
             {card.changeLabel && (
-              <p className="text-xs text-zinc-500">{card.changeLabel}</p>
+              <p className="text-xs text-muted-foreground">{card.changeLabel}</p>
             )}
           </div>
           <div className="flex flex-col items-end gap-2">
-            <div className="p-2 rounded-lg bg-zinc-800/50">{card.icon}</div>
+            <div className="p-2 rounded-lg bg-muted/50">{card.icon}</div>
             {card.change !== undefined && <TrendBadge value={card.change} />}
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function AnalyticsPage() {
   const tierDist = opsData?.loyalty.tier_distribution || {};
   const tierColors: Record<string, string> = {
     bronze: "bg-orange-600",
-    silver: "bg-zinc-400",
+    silver: "bg-muted-foreground",
     gold: "bg-[#C9A84C]",
     platinum: "bg-purple-500",
   };
@@ -226,16 +226,16 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Analytics</h1>
-        <p className="text-zinc-400 mt-1">Track your marketing and operational performance.</p>
+        <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+        <p className="text-muted-foreground mt-1">Track your marketing and operational performance.</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-zinc-900 border border-zinc-800">
-          <TabsTrigger value="operations" className="data-[state=active]:bg-zinc-800">
+        <TabsList className="bg-card border border-border">
+          <TabsTrigger value="operations" className="data-[state=active]:bg-muted">
             Operations
           </TabsTrigger>
-          <TabsTrigger value="marketing" className="data-[state=active]:bg-zinc-800">
+          <TabsTrigger value="marketing" className="data-[state=active]:bg-muted">
             Marketing
           </TabsTrigger>
         </TabsList>
@@ -243,7 +243,7 @@ export default function AnalyticsPage() {
         <TabsContent value="operations" className="mt-6 space-y-6">
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <>
@@ -255,23 +255,23 @@ export default function AnalyticsPage() {
 
               {/* Loyalty Tier Distribution */}
               {Object.keys(tierDist).length > 0 && (
-                <Card className="bg-zinc-900/50 border-zinc-800">
+                <Card className="bg-card/50 border-border">
                   <CardHeader>
-                    <CardTitle className="text-white text-sm">Loyalty Tier Distribution</CardTitle>
+                    <CardTitle className="text-foreground text-sm">Loyalty Tier Distribution</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {Object.entries(tierDist).map(([tier, count]) => (
                         <div key={tier} className="space-y-1">
                           <div className="flex justify-between text-sm">
-                            <span className="text-zinc-300 capitalize">{tier}</span>
-                            <span className="text-zinc-400">
+                            <span className="text-muted-foreground capitalize">{tier}</span>
+                            <span className="text-muted-foreground">
                               {count as number} ({(((count as number) / totalMembers) * 100).toFixed(0)}%)
                             </span>
                           </div>
-                          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${tierColors[tier] || "bg-zinc-600"}`}
+                              className={`h-full rounded-full ${tierColors[tier] || "bg-muted-foreground/60"}`}
                               style={{ width: `${((count as number) / totalMembers) * 100}%` }}
                             />
                           </div>
@@ -283,20 +283,20 @@ export default function AnalyticsPage() {
               )}
 
               {/* Debt Aging placeholder */}
-              <Card className="bg-zinc-900/50 border-zinc-800">
+              <Card className="bg-card/50 border-border">
                 <CardHeader>
-                  <CardTitle className="text-white text-sm">Debt Aging Summary</CardTitle>
+                  <CardTitle className="text-foreground text-sm">Debt Aging Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-4 gap-4 text-center">
                     {["0-30 days", "31-60 days", "61-90 days", "90+ days"].map((range) => (
-                      <div key={range} className="p-3 rounded-lg bg-zinc-800/50">
-                        <p className="text-xs text-zinc-500">{range}</p>
-                        <p className="text-lg font-bold text-white mt-1">-</p>
+                      <div key={range} className="p-3 rounded-lg bg-muted/50">
+                        <p className="text-xs text-muted-foreground">{range}</p>
+                        <p className="text-lg font-bold text-foreground mt-1">-</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-zinc-500 mt-3 text-center">
+                  <p className="text-xs text-muted-foreground mt-3 text-center">
                     Detailed aging data available after recording debt entries.
                   </p>
                 </CardContent>
@@ -312,24 +312,24 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white text-sm">Campaign Performance</CardTitle>
+              <CardTitle className="text-foreground text-sm">Campaign Performance</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Detailed campaign analytics are available on individual campaign pages.
                 Visit the Campaigns section to view per-campaign metrics.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white text-sm">Engagement Trends</CardTitle>
+              <CardTitle className="text-foreground text-sm">Engagement Trends</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Message engagement trends, response rates, and customer interaction
                 patterns will populate as you send more campaigns.
               </p>

@@ -253,7 +253,7 @@ export function PipelineSettings({
                 <Button
                   onClick={handleDeletePipeline}
                   disabled={deleting}
-                  className="bg-red-600 text-white hover:bg-red-700"
+                  className="bg-red-600 text-primary-foreground hover:bg-red-700"
                 >
                   {deleting ? "Deleting..." : "Delete Pipeline"}
                 </Button>

@@ -319,7 +319,7 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
           <button
             onClick={() => { setShowForm(true); setEditingId(null); setForm(EMPTY_FORM) }}
             disabled={readOnly}
-            className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 px-3 py-2 text-sm bg-purple-600 text-primary-foreground rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" /> Add Entry
           </button>
@@ -444,7 +444,7 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
             <button
               onClick={handleSave}
               disabled={saving || readOnly}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-primary-foreground rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
               {saving ? 'Saving...' : editingId ? 'Update' : 'Add Entry'}
@@ -482,7 +482,7 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
             <button
               onClick={handleBulkImport}
               disabled={readOnly || bulkImporting || !bulkJson.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-primary-foreground rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
               {bulkImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               {bulkImporting ? 'Importing...' : 'Import'}
@@ -747,7 +747,7 @@ export function KnowledgeBaseManager({ readOnly = false }: KnowledgeBaseManagerP
               <button
                 onClick={handleSeedKB}
                 disabled={seeding || !seedForm.business_name.trim()}
-                className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500 text-primary-foreground rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 {seeding ? 'Generating...' : 'Generate Entries'}

@@ -23,7 +23,7 @@ interface UsageLimits {
 }
 
 const TIER_COLORS: Record<string, string> = {
-  starter: "bg-zinc-800/50 text-zinc-400 border-zinc-700",
+  starter: "bg-muted/50 text-muted-foreground border-border",
   professional: "bg-blue-500/10 text-blue-400 border-blue-500/30",
   business: "bg-[#C9A84C]/10 text-[#C9A84C] border-[#C9A84C]/30",
   enterprise: "bg-purple-500/10 text-purple-400 border-purple-500/30",
@@ -51,7 +51,7 @@ export function TierAccessPanel() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   const tierGroups: Record<FeatureTier, FeatureItem[]> = {
@@ -68,8 +68,8 @@ export function TierAccessPanel() {
     return (
       <div key={label}>
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-zinc-300">{label}</span>
-          <span className={isHigh ? "text-red-400" : "text-zinc-400"}>
+          <span className="text-muted-foreground">{label}</span>
+          <span className={isHigh ? "text-red-400" : "text-muted-foreground"}>
             {current.toLocaleString()} / {max >= 999999 ? "Unlimited" : max.toLocaleString()}
           </span>
         </div>
@@ -81,16 +81,16 @@ export function TierAccessPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Crown className="h-5 w-5 text-[#C9A84C]" /> Plan &amp; Features
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">Your current plan and feature access.</p>
+        <p className="text-sm text-muted-foreground mt-1">Your current plan and feature access.</p>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardContent className="pt-6">
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400 text-sm">Current Plan:</span>
+            <span className="text-muted-foreground text-sm">Current Plan:</span>
             <Badge variant="outline" className={`text-sm px-3 py-1 ${TIER_COLORS[currentTier] || ""}`}>
               <Crown className="h-4 w-4 mr-1" />
               {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}
@@ -100,8 +100,8 @@ export function TierAccessPanel() {
       </Card>
 
       {limits && (
-        <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardHeader><CardTitle className="text-white text-sm">Usage Limits</CardTitle></CardHeader>
+        <Card className="bg-card/50 border-border">
+          <CardHeader><CardTitle className="text-foreground text-sm">Usage Limits</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {usageBar("Contacts", limits.contacts.current, limits.contacts.max)}
             {usageBar("Broadcasts (this month)", limits.broadcasts.current, limits.broadcasts.max)}
@@ -114,9 +114,9 @@ export function TierAccessPanel() {
 
       {(["starter", "professional", "business", "enterprise"] as FeatureTier[]).map((tier) => (
         tierGroups[tier].length > 0 && (
-          <Card key={tier} className="bg-zinc-900/50 border-zinc-800">
+          <Card key={tier} className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white text-sm flex items-center gap-2">
+              <CardTitle className="text-foreground text-sm flex items-center gap-2">
                 <Badge variant="outline" className={TIER_COLORS[tier]}>
                   {tier.charAt(0).toUpperCase() + tier.slice(1)}
                 </Badge>
@@ -130,9 +130,9 @@ export function TierAccessPanel() {
                     {f.accessible ? (
                       <Check className="h-4 w-4 text-green-400 shrink-0" />
                     ) : (
-                      <X className="h-4 w-4 text-zinc-600 shrink-0" />
+                      <X className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
-                    <span className={f.accessible ? "text-zinc-200" : "text-zinc-500"}>
+                    <span className={f.accessible ? "text-foreground" : "text-muted-foreground"}>
                       {f.label}
                     </span>
                   </div>

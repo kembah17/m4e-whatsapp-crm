@@ -325,7 +325,7 @@ export function Step4Customize({
                         className={cn(
                           "flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors duration-200",
                           isActive
-                            ? "bg-emerald-600 text-white"
+                            ? "bg-emerald-600 text-primary-foreground"
                             : "bg-gray-100 text-gray-600"
                         )}
                       >
@@ -437,7 +437,7 @@ export function Step4Customize({
                       <Building2 className="h-4 w-4 text-gray-600" />
                     </div>
                     <div>
-                      <p className="text-white text-sm font-semibold leading-tight">
+                      <p className="text-foreground text-sm font-semibold leading-tight">
                         Your Business
                       </p>
                       <p className="text-emerald-200 text-[10px]">online</p>
@@ -509,7 +509,7 @@ export function Step4Customize({
                       <p className="text-gray-400 text-xs">Type a message</p>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-[#075e54] flex items-center justify-center">
-                      <Type className="h-4 w-4 text-white" />
+                      <Type className="h-4 w-4 text-foreground" />
                     </div>
                   </div>
                 </div>
@@ -526,7 +526,7 @@ export function Step4Customize({
                     className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
                       index === activeMessageIndex
-                        ? "bg-emerald-600 text-white shadow-md"
+                        ? "bg-emerald-600 text-primary-foreground shadow-md"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     )}
                   >

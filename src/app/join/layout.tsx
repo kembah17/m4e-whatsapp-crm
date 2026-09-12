@@ -11,7 +11,7 @@
 // avoids both.
 //
 // Styling matches the login / signup pages — centered card on a
-// slate-950 background — so the join experience feels like a
+// card background — so the join experience feels like a
 // natural step in the auth funnel rather than a foreign page.
 //
 // Referrer-Policy: no-referrer

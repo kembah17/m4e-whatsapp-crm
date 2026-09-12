@@ -50,12 +50,12 @@ export default function ForgotPasswordPage() {
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-xl text-white font-heading">
+            <CardTitle className="text-xl text-foreground font-heading">
               Check your email
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-muted-foreground">
               We&apos;ve sent a password reset link to{" "}
-              <span className="text-white">{email}</span>. Please check your
+              <span className="text-foreground">{email}</span>. Please check your
               inbox.
             </CardDescription>
           </CardHeader>
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
             <Link href="/login">
               <Button
                 variant="outline"
-                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 Back to sign in
               </Button>
@@ -89,11 +89,11 @@ export default function ForgotPasswordPage() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-white font-heading">Business Growth Engine</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardTitle className="text-xl text-foreground font-heading">Business Growth Engine</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Applying Real-Time Customer Intelligence to Your Entire Business!
           </CardDescription>
-          <p className="mt-2 text-sm font-medium text-slate-300">Reset password</p>
+          <p className="mt-2 text-sm font-medium text-muted-foreground">Reset password</p>
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
         <CardContent>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-slate-300">
+              <Label htmlFor="email" className="text-muted-foreground">
                 Email
               </Label>
               <Input
@@ -115,7 +115,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
@@ -130,7 +130,7 @@ export default function ForgotPasswordPage() {
 
           <Link
             href="/login"
-            className="mt-6 flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-300"
+            className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-muted-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to sign in

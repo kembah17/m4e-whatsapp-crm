@@ -26,7 +26,7 @@ const STATUS_OPTIONS = [
 ]
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-zinc-500/10 text-zinc-400",
+  draft: "bg-muted/50 text-muted-foreground",
   active: "bg-emerald-500/10 text-emerald-500",
   paused: "bg-amber-500/10 text-amber-500",
   completed: "bg-blue-500/10 text-blue-400",

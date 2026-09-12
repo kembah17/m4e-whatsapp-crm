@@ -89,12 +89,12 @@ function SignupPageInner() {
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-xl text-white font-heading">
+            <CardTitle className="text-xl text-foreground font-heading">
               Check your email
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-muted-foreground">
               We&apos;ve sent a confirmation link to{" "}
-              <span className="text-white">{email}</span>. Please check your
+              <span className="text-foreground">{email}</span>. Please check your
               inbox and click the link to verify your account.
             </CardDescription>
           </CardHeader>
@@ -109,7 +109,7 @@ function SignupPageInner() {
             >
               <Button
                 variant="outline"
-                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 Back to sign in
               </Button>
@@ -134,16 +134,16 @@ function SignupPageInner() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-white font-heading">
+          <CardTitle className="text-xl text-foreground font-heading">
             {inviteToken ? "Create account & join" : "Business Growth Engine"}
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-muted-foreground">
             {inviteToken
               ? "Verify your email, then accept the invitation to join your team."
               : "Applying Real-Time Customer Intelligence to Your Entire Business!"}
           </CardDescription>
           {!inviteToken && (
-            <p className="mt-2 text-sm font-medium text-slate-300">Create account</p>
+            <p className="mt-2 text-sm font-medium text-muted-foreground">Create account</p>
           )}
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
@@ -156,7 +156,7 @@ function SignupPageInner() {
             )}
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="fullName" className="text-slate-300">
+              <Label htmlFor="fullName" className="text-muted-foreground">
                 Full name
               </Label>
               <Input
@@ -166,12 +166,12 @@ function SignupPageInner() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-slate-300">
+              <Label htmlFor="email" className="text-muted-foreground">
                 Email
               </Label>
               <Input
@@ -181,12 +181,12 @@ function SignupPageInner() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password" className="text-muted-foreground">
                 Password
               </Label>
               <div className="relative">
@@ -197,12 +197,12 @@ function SignupPageInner() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                  className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -214,7 +214,7 @@ function SignupPageInner() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="confirmPassword" className="text-slate-300">
+              <Label htmlFor="confirmPassword" className="text-muted-foreground">
                 Confirm password
               </Label>
               <div className="relative">
@@ -225,12 +225,12 @@ function SignupPageInner() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                  className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -250,7 +250,7 @@ function SignupPageInner() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href={

@@ -138,7 +138,7 @@ const STATUS_OPTIONS: { label: string; value: ConversationStatus; color: string 
 /**
  * WhatsApp-style doodle background applied to the chat area (both the
  * active thread and the empty state). The SVG tile lives at
- * `/public/inbox-doodle.svg`; the slate-950 colour sits underneath so
+ * `/public/inbox-doodle.svg`; the card colour sits underneath so
  * the doodles read as a subtle pattern rather than a stark grid.
  *
  * Defined once at module scope so the two render paths can't drift —

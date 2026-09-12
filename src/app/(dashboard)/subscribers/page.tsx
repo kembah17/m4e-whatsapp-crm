@@ -135,7 +135,7 @@ export default function SubscribersPage() {
       watch: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
       at_risk: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
       critical: 'bg-red-500/10 text-red-400 border-red-500/20',
-      unscored: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
+      unscored: 'bg-muted/50 text-muted-foreground border-border',
     }
     const icons: Record<string, React.ReactNode> = {
       healthy: <Heart className="w-3 h-3" />,
@@ -154,7 +154,7 @@ export default function SubscribersPage() {
 
   const getTierBadge = (tier: string) => {
     const styles: Record<string, string> = {
-      starter: 'bg-neutral-500/10 text-neutral-300',
+      starter: 'bg-muted/50 text-muted-foreground',
       professional: 'bg-blue-500/10 text-blue-400',
       business: 'bg-purple-500/10 text-purple-400',
       enterprise: 'bg-amber-500/10 text-amber-400',
@@ -177,7 +177,7 @@ export default function SubscribersPage() {
     switch (trend) {
       case 'improving': return <TrendingUp className="w-3 h-3 text-emerald-400" />
       case 'declining': return <TrendingDown className="w-3 h-3 text-red-400" />
-      default: return <Minus className="w-3 h-3 text-neutral-500" />
+      default: return <Minus className="w-3 h-3 text-muted-foreground" />
     }
   }
 
@@ -185,11 +185,11 @@ export default function SubscribersPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-800 rounded w-64" />
+          <div className="h-8 bg-muted rounded w-64" />
           <div className="grid grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-24 bg-neutral-800 rounded-lg" />)}
+            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-24 bg-muted rounded-lg" />)}
           </div>
-          <div className="h-96 bg-neutral-800 rounded-lg" />
+          <div className="h-96 bg-muted rounded-lg" />
         </div>
       </div>
     )
@@ -200,13 +200,13 @@ export default function SubscribersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Subscriber Command Centre</h1>
-          <p className="text-neutral-400 mt-1">Monitor all platform subscribers, health scores, and revenue</p>
+          <h1 className="text-2xl font-bold text-foreground">Subscriber Command Centre</h1>
+          <p className="text-muted-foreground mt-1">Monitor all platform subscribers, health scores, and revenue</p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-accent rounded-lg text-sm text-muted-foreground transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -251,10 +251,10 @@ export default function SubscribersPage() {
 
       {/* Risk Distribution */}
       {summary && summary.total > 0 && (
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-4">
+        <div className="bg-card rounded-xl border border-border p-4">
           <div className="flex items-center gap-6">
-            <span className="text-sm text-neutral-400">Risk Distribution:</span>
-            <div className="flex-1 flex items-center gap-1 h-4 rounded-full overflow-hidden bg-neutral-800">
+            <span className="text-sm text-muted-foreground">Risk Distribution:</span>
+            <div className="flex-1 flex items-center gap-1 h-4 rounded-full overflow-hidden bg-muted">
               {summary.healthy > 0 && (
                 <div className="h-full bg-emerald-500 transition-all" style={{ width: `${(summary.healthy / summary.total) * 100}%` }} title={`Healthy: ${summary.healthy}`} />
               )}
@@ -268,7 +268,7 @@ export default function SubscribersPage() {
                 <div className="h-full bg-red-500 transition-all" style={{ width: `${(summary.critical / summary.total) * 100}%` }} title={`Critical: ${summary.critical}`} />
               )}
               {summary.unscored > 0 && (
-                <div className="h-full bg-neutral-600 transition-all" style={{ width: `${(summary.unscored / summary.total) * 100}%` }} title={`Unscored: ${summary.unscored}`} />
+                <div className="h-full bg-muted-foreground/60 transition-all" style={{ width: `${(summary.unscored / summary.total) * 100}%` }} title={`Unscored: ${summary.unscored}`} />
               )}
             </div>
             <div className="flex items-center gap-3 text-xs">
@@ -276,7 +276,7 @@ export default function SubscribersPage() {
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" />{summary.watch}</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />{summary.at_risk}</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" />{summary.critical}</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-neutral-600" />{summary.unscored}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/60" />{summary.unscored}</span>
             </div>
           </div>
         </div>
@@ -285,20 +285,20 @@ export default function SubscribersPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search by business name or industry..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500"
+            className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
           />
         </div>
 
         <select
           value={riskFilter}
           onChange={e => setRiskFilter(e.target.value as RiskFilter)}
-          className="px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:outline-none focus:border-primary-500"
+          className="px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Risk Levels</option>
           <option value="healthy">Healthy</option>
@@ -311,7 +311,7 @@ export default function SubscribersPage() {
         <select
           value={tierFilter}
           onChange={e => setTierFilter(e.target.value as TierFilter)}
-          className="px-3 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:outline-none focus:border-primary-500"
+          className="px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground focus:outline-none focus:border-primary"
         >
           <option value="">All Tiers</option>
           <option value="starter">Starter</option>
@@ -322,25 +322,25 @@ export default function SubscribersPage() {
       </div>
 
       {/* Subscriber Table */}
-      <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-neutral-800">
-                <th className="text-left px-4 py-3 text-xs font-medium text-neutral-400 uppercase">Business</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-neutral-400 uppercase">Tier</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-neutral-400 uppercase cursor-pointer hover:text-white" onClick={() => handleSort('health_score')}>
+              <tr className="border-b border-border">
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Business</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Tier</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer hover:text-foreground" onClick={() => handleSort('health_score')}>
                   <span className="flex items-center gap-1">Health {sortField === 'health_score' ? (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3" />}</span>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-neutral-400 uppercase">Risk</th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-neutral-400 uppercase cursor-pointer hover:text-white" onClick={() => handleSort('contacts')}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Risk</th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer hover:text-foreground" onClick={() => handleSort('contacts')}>
                   <span className="flex items-center justify-end gap-1">Contacts {sortField === 'contacts' ? (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3" />}</span>
                 </th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-neutral-400 uppercase cursor-pointer hover:text-white" onClick={() => handleSort('mrr')}>
+                <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer hover:text-foreground" onClick={() => handleSort('mrr')}>
                   <span className="flex items-center justify-end gap-1">MRR {sortField === 'mrr' ? (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3" />}</span>
                 </th>
-                <th className="text-center px-4 py-3 text-xs font-medium text-neutral-400 uppercase">Actions</th>
-                <th className="text-center px-4 py-3 text-xs font-medium text-neutral-400 uppercase cursor-pointer hover:text-white" onClick={() => handleSort('created')}>
+                <th className="text-center px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                <th className="text-center px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer hover:text-foreground" onClick={() => handleSort('created')}>
                   <span className="flex items-center justify-center gap-1">Joined {sortField === 'created' ? (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ArrowUpDown className="w-3 h-3" />}</span>
                 </th>
               </tr>
@@ -348,7 +348,7 @@ export default function SubscribersPage() {
             <tbody>
               {filteredSubscribers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-neutral-500">
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                     <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No subscribers found</p>
                     <p className="text-xs mt-1">Subscribers will appear here once accounts are created</p>
@@ -359,27 +359,27 @@ export default function SubscribersPage() {
                   <>
                     <tr
                       key={sub.accountId}
-                      className="border-b border-neutral-800/50 hover:bg-neutral-800/30 cursor-pointer transition-colors"
+                      className="border-b border-border/50 hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={() => setExpandedRow(expandedRow === sub.accountId ? null : sub.accountId)}
                     >
                       <td className="px-4 py-3">
                         <div>
-                          <div className="text-sm font-medium text-white">{sub.businessName}</div>
-                          <div className="text-xs text-neutral-500">{sub.industry} &middot; {sub.businessSize}</div>
+                          <div className="text-sm font-medium text-foreground">{sub.businessName}</div>
+                          <div className="text-xs text-muted-foreground">{sub.industry} &middot; {sub.businessSize}</div>
                         </div>
                       </td>
                       <td className="px-4 py-3">{getTierBadge(sub.tier)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-bold ${sub.healthScore !== null ? (sub.healthScore >= 75 ? 'text-emerald-400' : sub.healthScore >= 50 ? 'text-amber-400' : sub.healthScore >= 25 ? 'text-orange-400' : 'text-red-400') : 'text-neutral-500'}`}>
+                          <span className={`text-sm font-bold ${sub.healthScore !== null ? (sub.healthScore >= 75 ? 'text-emerald-400' : sub.healthScore >= 50 ? 'text-amber-400' : sub.healthScore >= 25 ? 'text-orange-400' : 'text-red-400') : 'text-muted-foreground'}`}>
                             {sub.healthScore !== null ? sub.healthScore : '—'}
                           </span>
                           {getTrendIcon(sub.trend)}
                         </div>
                       </td>
                       <td className="px-4 py-3">{getRiskBadge(sub.riskLevel)}</td>
-                      <td className="px-4 py-3 text-right text-sm text-neutral-300">{sub.contacts.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-sm text-neutral-300">{formatCurrency(sub.mrr)}</td>
+                      <td className="px-4 py-3 text-right text-sm text-muted-foreground">{sub.contacts.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-sm text-muted-foreground">{formatCurrency(sub.mrr)}</td>
                       <td className="px-4 py-3 text-center">
                         {sub.interventions.pending > 0 ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-500/10 text-red-400 border border-red-500/20">
@@ -387,78 +387,78 @@ export default function SubscribersPage() {
                             {sub.interventions.pending}
                           </span>
                         ) : (
-                          <span className="text-xs text-neutral-600">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center text-xs text-neutral-500">
+                      <td className="px-4 py-3 text-center text-xs text-muted-foreground">
                         {new Date(sub.createdAt).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', year: '2-digit' })}
                       </td>
                     </tr>
 
                     {/* Expanded Detail Row */}
                     {expandedRow === sub.accountId && (
-                      <tr key={`${sub.accountId}-detail`} className="bg-neutral-800/20">
+                      <tr key={`${sub.accountId}-detail`} className="bg-muted/20">
                         <td colSpan={8} className="px-6 py-4">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Component Scores */}
                             <div>
-                              <h4 className="text-xs font-medium text-neutral-400 uppercase mb-3">Health Components</h4>
+                              <h4 className="text-xs font-medium text-muted-foreground uppercase mb-3">Health Components</h4>
                               {sub.componentScores ? (
                                 <div className="space-y-2">
                                   {Object.entries(sub.componentScores).map(([key, value]) => (
                                     <div key={key} className="flex items-center gap-2">
-                                      <span className="text-xs text-neutral-400 w-28 truncate capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                      <div className="flex-1 h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                                      <span className="text-xs text-muted-foreground w-28 truncate capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                      <div className="flex-1 h-1.5 bg-accent rounded-full overflow-hidden">
                                         <div
                                           className={`h-full rounded-full ${(value as number) >= 75 ? 'bg-emerald-500' : (value as number) >= 50 ? 'bg-amber-500' : (value as number) >= 25 ? 'bg-orange-500' : 'bg-red-500'}`}
                                           style={{ width: `${value}%` }}
                                         />
                                       </div>
-                                      <span className="text-xs font-mono text-neutral-300 w-8 text-right">{value as number}</span>
+                                      <span className="text-xs font-mono text-muted-foreground w-8 text-right">{value as number}</span>
                                     </div>
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-xs text-neutral-500">No health data yet</p>
+                                <p className="text-xs text-muted-foreground">No health data yet</p>
                               )}
                             </div>
 
                             {/* Account Details */}
                             <div>
-                              <h4 className="text-xs font-medium text-neutral-400 uppercase mb-3">Account Details</h4>
+                              <h4 className="text-xs font-medium text-muted-foreground uppercase mb-3">Account Details</h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-500">Status</span>
-                                  <span className={`font-medium ${sub.status === 'active' ? 'text-emerald-400' : 'text-neutral-400'}`}>{sub.status}</span>
+                                  <span className="text-muted-foreground">Status</span>
+                                  <span className={`font-medium ${sub.status === 'active' ? 'text-emerald-400' : 'text-muted-foreground'}`}>{sub.status}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-500">Onboarding</span>
+                                  <span className="text-muted-foreground">Onboarding</span>
                                   <span className={sub.onboardingComplete ? 'text-emerald-400' : 'text-amber-400'}>{sub.onboardingComplete ? 'Complete' : 'In Progress'}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-500">Last Scored</span>
-                                  <span className="text-neutral-300">{sub.lastScored ? new Date(sub.lastScored).toLocaleDateString() : 'Never'}</span>
+                                  <span className="text-muted-foreground">Last Scored</span>
+                                  <span className="text-muted-foreground">{sub.lastScored ? new Date(sub.lastScored).toLocaleDateString() : 'Never'}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-neutral-500">Interventions (30d)</span>
-                                  <span className="text-neutral-300">{sub.interventions.total} total, {sub.interventions.pending} pending</span>
+                                  <span className="text-muted-foreground">Interventions (30d)</span>
+                                  <span className="text-muted-foreground">{sub.interventions.total} total, {sub.interventions.pending} pending</span>
                                 </div>
                               </div>
                             </div>
 
                             {/* Quick Actions */}
                             <div>
-                              <h4 className="text-xs font-medium text-neutral-400 uppercase mb-3">Quick Actions</h4>
+                              <h4 className="text-xs font-medium text-muted-foreground uppercase mb-3">Quick Actions</h4>
                               <div className="space-y-2">
-                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors">
+                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-muted hover:bg-accent rounded-lg text-sm text-muted-foreground transition-colors">
                                   <MessageSquare className="w-4 h-4" />
                                   Send Check-in Message
                                 </button>
-                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors">
+                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-muted hover:bg-accent rounded-lg text-sm text-muted-foreground transition-colors">
                                   <BarChart3 className="w-4 h-4" />
                                   View Full Report
                                 </button>
-                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors">
+                                <button className="w-full flex items-center gap-2 px-3 py-2 bg-muted hover:bg-accent rounded-lg text-sm text-muted-foreground transition-colors">
                                   <Calendar className="w-4 h-4" />
                                   Schedule Review Call
                                 </button>
@@ -502,10 +502,10 @@ export default function SubscribersPage() {
 
 function SummaryCard({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) {
   return (
-    <div className="bg-neutral-900 rounded-lg border border-neutral-800 p-4">
-      <div className="flex items-center gap-2 mb-2">{icon}<span className="text-xs text-neutral-400">{label}</span></div>
-      <div className="text-xl font-bold text-white">{value}</div>
-      <div className="text-xs text-neutral-500 mt-1">{detail}</div>
+    <div className="bg-card rounded-lg border border-border p-4">
+      <div className="flex items-center gap-2 mb-2">{icon}<span className="text-xs text-muted-foreground">{label}</span></div>
+      <div className="text-xl font-bold text-foreground">{value}</div>
+      <div className="text-xs text-muted-foreground mt-1">{detail}</div>
     </div>
   )
 }

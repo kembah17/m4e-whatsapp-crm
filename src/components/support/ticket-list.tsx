@@ -22,10 +22,10 @@ interface TicketListProps {
 }
 
 const priorityConfig: Record<TicketPriority, { label: string; color: string }> = {
-  critical: { label: 'Critical', color: 'bg-red-500 text-white' },
-  high: { label: 'High', color: 'bg-orange-500 text-white' },
-  normal: { label: 'Normal', color: 'bg-blue-500 text-white' },
-  low: { label: 'Low', color: 'bg-gray-400 text-white' },
+  critical: { label: 'Critical', color: 'bg-red-500 text-primary-foreground' },
+  high: { label: 'High', color: 'bg-orange-500 text-primary-foreground' },
+  normal: { label: 'Normal', color: 'bg-blue-500 text-primary-foreground' },
+  low: { label: 'Low', color: 'bg-gray-400 text-foreground' },
 }
 
 const statusConfig: Record<TicketStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {

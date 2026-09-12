@@ -246,7 +246,7 @@ export function ContactMergeTool() {
             {!showConfirm ? (
               <button
                 onClick={() => setShowConfirm(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-400 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-orange-400 transition-colors"
               >
                 <Merge className="h-4 w-4" />
                 Merge Contacts
@@ -264,7 +264,7 @@ export function ContactMergeTool() {
                   <button
                     onClick={handleMerge}
                     disabled={merging}
-                    className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-400 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-red-400 transition-colors"
                   >
                     {merging ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                     Confirm Merge

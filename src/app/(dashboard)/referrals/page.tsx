@@ -45,7 +45,7 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   contacted: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   converted: "bg-green-500/20 text-green-400 border-green-500/30",
-  expired: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+  expired: "bg-muted/50 text-muted-foreground border-border",
   rewarded: "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
@@ -233,8 +233,8 @@ export default function ReferralsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Referral Programme</h1>
-          <p className="text-zinc-400 text-sm">Track and reward customer referrals</p>
+          <h1 className="text-2xl font-bold text-foreground">Referral Programme</h1>
+          <p className="text-muted-foreground text-sm">Track and reward customer referrals</p>
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
@@ -246,46 +246,46 @@ export default function ReferralsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-blue-400" />
               <div>
-                <p className="text-xs text-zinc-400">Total Referrals</p>
-                <p className="text-xl font-bold text-white">{stats?.total || 0}</p>
+                <p className="text-xs text-muted-foreground">Total Referrals</p>
+                <p className="text-xl font-bold text-foreground">{stats?.total || 0}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-green-400" />
               <div>
-                <p className="text-xs text-zinc-400">Converted</p>
-                <p className="text-xl font-bold text-white">{stats?.converted || 0}</p>
+                <p className="text-xs text-muted-foreground">Converted</p>
+                <p className="text-xl font-bold text-foreground">{stats?.converted || 0}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-yellow-400" />
               <div>
-                <p className="text-xs text-zinc-400">Pending</p>
-                <p className="text-xl font-bold text-white">{stats?.pending || 0}</p>
+                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-xl font-bold text-foreground">{stats?.pending || 0}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-purple-400" />
               <div>
-                <p className="text-xs text-zinc-400">Conversion Rate</p>
-                <p className="text-xl font-bold text-white">{(stats?.conversion_rate || 0).toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                <p className="text-xl font-bold text-foreground">{(stats?.conversion_rate || 0).toFixed(1)}%</p>
               </div>
             </div>
           </CardContent>
@@ -294,7 +294,7 @@ export default function ReferralsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-zinc-900/50 border border-zinc-800">
+        <TabsList className="bg-card/50 border border-border">
           <TabsTrigger value="overview">Referrals</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -304,7 +304,7 @@ export default function ReferralsPage() {
         <TabsContent value="overview" className="space-y-4">
           <div className="flex gap-3 items-center">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-40 bg-zinc-900/50 border-zinc-700 text-white">
+              <SelectTrigger className="w-40 bg-card/50 border-border text-foreground">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -316,17 +316,17 @@ export default function ReferralsPage() {
                 <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-zinc-500 ml-auto">
+            <span className="text-sm text-muted-foreground ml-auto">
               {referrals.length} referral{referrals.length !== 1 ? "s" : ""}
             </span>
           </div>
 
           {referrals.length === 0 ? (
-            <Card className="bg-zinc-900/50 border-zinc-800">
+            <Card className="bg-card/50 border-border">
               <CardContent className="py-12 text-center">
-                <UserPlus className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-zinc-300 mb-2">No Referrals Yet</h3>
-                <p className="text-zinc-500 mb-4">Start tracking customer referrals</p>
+                <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">No Referrals Yet</h3>
+                <p className="text-muted-foreground mb-4">Start tracking customer referrals</p>
                 <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
                   <UserPlus className="h-4 w-4 mr-2" /> Record First Referral
                 </Button>
@@ -336,15 +336,15 @@ export default function ReferralsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Referrer</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Referred</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Code</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Channel</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Status</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Reward</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Date</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Actions</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Referrer</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Referred</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Code</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Channel</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Status</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Reward</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Date</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -354,9 +354,9 @@ export default function ReferralsPage() {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const referred = ref.referred as any;
                     return (
-                      <tr key={ref.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                        <td className="py-3 px-4 text-sm text-white">{referrer?.name || "Unknown"}</td>
-                        <td className="py-3 px-4 text-sm text-zinc-300">{referred?.name || "—"}</td>
+                      <tr key={ref.id} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="py-3 px-4 text-sm text-foreground">{referrer?.name || "Unknown"}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{referred?.name || "—"}</td>
                         <td className="py-3 px-4">
                           {ref.referral_code && (
                             <button
@@ -367,13 +367,13 @@ export default function ReferralsPage() {
                             </button>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-400 capitalize">{ref.channel}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground capitalize">{ref.channel}</td>
                         <td className="py-3 px-4">
                           <Badge variant="outline" className={STATUS_COLORS[ref.status] || ""}>
                             {ref.status}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-300">
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
                           {ref.reward_issued ? (
                             <span className="text-green-400">
                               <Gift className="h-3 w-3 inline mr-1" />
@@ -381,7 +381,7 @@ export default function ReferralsPage() {
                             </span>
                           ) : "—"}
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-400">
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
                           {new Date(ref.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-4">
@@ -407,30 +407,30 @@ export default function ReferralsPage() {
 
         {/* Leaderboard */}
         <TabsContent value="leaderboard">
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-[#C9A84C]" /> Top Referrers
               </CardTitle>
             </CardHeader>
             <CardContent>
               {topReferrers.length === 0 ? (
-                <p className="text-zinc-500 text-center py-8">No referrers yet</p>
+                <p className="text-muted-foreground text-center py-8">No referrers yet</p>
               ) : (
                 <div className="space-y-3">
                   {topReferrers.map((referrer, idx) => (
-                    <div key={referrer.contact_id} className="flex items-center gap-4 p-3 bg-zinc-800/30 rounded-lg">
+                    <div key={referrer.contact_id} className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg">
                       <span className={`text-lg font-bold w-8 text-center ${
-                        idx === 0 ? "text-[#C9A84C]" : idx === 1 ? "text-zinc-300" : idx === 2 ? "text-orange-400" : "text-zinc-500"
+                        idx === 0 ? "text-[#C9A84C]" : idx === 1 ? "text-muted-foreground" : idx === 2 ? "text-orange-400" : "text-muted-foreground"
                       }`}>
                         #{idx + 1}
                       </span>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{referrer.name}</p>
-                        <p className="text-xs text-zinc-400">{referrer.phone}</p>
+                        <p className="text-sm font-medium text-foreground">{referrer.name}</p>
+                        <p className="text-xs text-muted-foreground">{referrer.phone}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-white">{referrer.referral_count} referrals</p>
+                        <p className="text-sm font-medium text-foreground">{referrer.referral_count} referrals</p>
                         <p className="text-xs text-green-400">{referrer.converted_count} converted</p>
                       </div>
                     </div>
@@ -443,15 +443,15 @@ export default function ReferralsPage() {
 
         {/* Settings */}
         <TabsContent value="settings">
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white">Referral Programme Settings</CardTitle>
+              <CardTitle className="text-foreground">Referral Programme Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-white">Programme Active</Label>
-                  <p className="text-xs text-zinc-400">Enable or disable the referral programme</p>
+                  <Label className="text-foreground">Programme Active</Label>
+                  <p className="text-xs text-muted-foreground">Enable or disable the referral programme</p>
                 </div>
                 <Switch
                   checked={configForm.is_active}
@@ -461,12 +461,12 @@ export default function ReferralsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-zinc-300">Reward Type</Label>
+                  <Label className="text-muted-foreground">Reward Type</Label>
                   <Select
                     value={configForm.reward_type}
                     onValueChange={(v) => setConfigForm({ ...configForm, reward_type: v })}
                   >
-                    <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                    <SelectTrigger className="bg-muted border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -479,21 +479,21 @@ export default function ReferralsPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-zinc-300">Reward Value</Label>
+                  <Label className="text-muted-foreground">Reward Value</Label>
                   <Input
                     type="number"
                     value={configForm.reward_value}
                     onChange={(e) => setConfigForm({ ...configForm, reward_value: Number(e.target.value) })}
-                    className="bg-zinc-800 border-zinc-700 text-white"
+                    className="bg-muted border-border text-foreground"
                   />
                 </div>
                 <div>
-                  <Label className="text-zinc-300">Max Referrals/Month</Label>
+                  <Label className="text-muted-foreground">Max Referrals/Month</Label>
                   <Input
                     type="number"
                     value={configForm.max_referrals_per_month}
                     onChange={(e) => setConfigForm({ ...configForm, max_referrals_per_month: Number(e.target.value) })}
-                    className="bg-zinc-800 border-zinc-700 text-white"
+                    className="bg-muted border-border text-foreground"
                   />
                 </div>
                 <div className="flex items-center gap-3">
@@ -502,41 +502,41 @@ export default function ReferralsPage() {
                     onCheckedChange={(v) => setConfigForm({ ...configForm, require_purchase: v })}
                   />
                   <div>
-                    <Label className="text-zinc-300">Require Purchase</Label>
-                    <p className="text-xs text-zinc-500">Referred must purchase to trigger reward</p>
+                    <Label className="text-muted-foreground">Require Purchase</Label>
+                    <p className="text-xs text-muted-foreground">Referred must purchase to trigger reward</p>
                   </div>
                 </div>
               </div>
 
               {configForm.require_purchase && (
                 <div>
-                  <Label className="text-zinc-300">Minimum Purchase Amount (NGN)</Label>
+                  <Label className="text-muted-foreground">Minimum Purchase Amount (NGN)</Label>
                   <Input
                     type="number"
                     value={configForm.min_purchase_amount}
                     onChange={(e) => setConfigForm({ ...configForm, min_purchase_amount: Number(e.target.value) })}
-                    className="bg-zinc-800 border-zinc-700 text-white w-48"
+                    className="bg-muted border-border text-foreground w-48"
                   />
                 </div>
               )}
 
               <div>
-                <Label className="text-zinc-300">Referral Message Template</Label>
+                <Label className="text-muted-foreground">Referral Message Template</Label>
                 <Textarea
                   value={configForm.referral_message_template}
                   onChange={(e) => setConfigForm({ ...configForm, referral_message_template: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-muted border-border text-foreground"
                   rows={3}
                 />
-                <p className="text-xs text-zinc-500 mt-1">Variables: {'{business_name}'}, {'{referral_code}'}, {'{reward_value}'}</p>
+                <p className="text-xs text-muted-foreground mt-1">Variables: {'{business_name}'}, {'{referral_code}'}, {'{reward_value}'}</p>
               </div>
 
               <div>
-                <Label className="text-zinc-300">Thank You Message</Label>
+                <Label className="text-muted-foreground">Thank You Message</Label>
                 <Textarea
                   value={configForm.thank_you_message}
                   onChange={(e) => setConfigForm({ ...configForm, thank_you_message: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-muted border-border text-foreground"
                   rows={2}
                 />
               </div>
@@ -556,36 +556,36 @@ export default function ReferralsPage() {
 
       {/* Create Referral Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Record Referral</DialogTitle>
+            <DialogTitle className="text-foreground">Record Referral</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-zinc-300">Referrer Contact ID *</Label>
+              <Label className="text-muted-foreground">Referrer Contact ID *</Label>
               <Input
                 value={createForm.referrer_contact_id}
                 onChange={(e) => setCreateForm({ ...createForm, referrer_contact_id: e.target.value })}
                 placeholder="Contact ID of the person who referred"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
               />
             </div>
             <div>
-              <Label className="text-zinc-300">Referred Contact ID</Label>
+              <Label className="text-muted-foreground">Referred Contact ID</Label>
               <Input
                 value={createForm.referred_contact_id}
                 onChange={(e) => setCreateForm({ ...createForm, referred_contact_id: e.target.value })}
                 placeholder="Contact ID of the referred person (optional)"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
               />
             </div>
             <div>
-              <Label className="text-zinc-300">Channel</Label>
+              <Label className="text-muted-foreground">Channel</Label>
               <Select
                 value={createForm.channel}
                 onValueChange={(v) => setCreateForm({ ...createForm, channel: v })}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -598,17 +598,17 @@ export default function ReferralsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">Notes</Label>
+              <Label className="text-muted-foreground">Notes</Label>
               <Textarea
                 value={createForm.notes}
                 onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
                 rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-zinc-700 text-zinc-300">
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-border text-muted-foreground">
               Cancel
             </Button>
             <Button onClick={handleCreate} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">

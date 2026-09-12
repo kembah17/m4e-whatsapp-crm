@@ -159,10 +159,10 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
               <Shield className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-xl text-white font-heading">
+          <CardTitle className="text-xl text-foreground font-heading">
             Two-Factor Authentication
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-muted-foreground">
             {useRecovery
               ? "Enter one of your recovery codes"
               : "Enter the 6-digit code from your authenticator app"}
@@ -183,7 +183,7 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
             {!useRecovery ? (
               /* TOTP Code Input */
               <div className="flex flex-col gap-3">
-                <Label htmlFor="mfa-code" className="text-slate-300">
+                <Label htmlFor="mfa-code" className="text-muted-foreground">
                   Authentication Code
                 </Label>
                 <Input
@@ -199,15 +199,15 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
                     setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                   }
                   onKeyDown={handleKeyDown}
-                  className="border-slate-700 bg-slate-800 text-center font-mono text-2xl tracking-[0.3em] text-white placeholder:text-slate-600 focus-visible:border-primary focus-visible:ring-primary/20"
+                  className="border-border bg-muted text-center font-mono text-2xl tracking-[0.3em] text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
                   autoFocus
                   autoComplete="one-time-code"
                 />
 
                 {/* Countdown timer */}
-                <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <div
-                    className="h-1 w-16 overflow-hidden rounded-full bg-slate-700"
+                    className="h-1 w-16 overflow-hidden rounded-full bg-accent"
                     role="progressbar"
                     aria-valuenow={secondsLeft}
                     aria-valuemin={0}
@@ -237,7 +237,7 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
             ) : (
               /* Recovery Code Input */
               <div className="flex flex-col gap-3">
-                <Label htmlFor="recovery-code" className="text-slate-300">
+                <Label htmlFor="recovery-code" className="text-muted-foreground">
                   Recovery Code
                 </Label>
                 <Input
@@ -248,10 +248,10 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDown}
-                  className="border-slate-700 bg-slate-800 text-center font-mono text-lg tracking-wider text-white placeholder:text-slate-600 focus-visible:border-primary focus-visible:ring-primary/20"
+                  className="border-border bg-muted text-center font-mono text-lg tracking-wider text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
                   autoFocus
                 />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Recovery codes are in the format XXXX-XXXX
                 </p>
 
@@ -292,7 +292,7 @@ export function MfaChallenge({ onVerified, onCancel }: MfaChallengeProps) {
               <button
                 type="button"
                 onClick={onCancel}
-                className="text-sm text-slate-500 hover:text-slate-400"
+                className="text-sm text-muted-foreground hover:text-muted-foreground"
               >
                 Back to login
               </button>

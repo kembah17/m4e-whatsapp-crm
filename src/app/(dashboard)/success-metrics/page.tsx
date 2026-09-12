@@ -103,7 +103,7 @@ export default function SuccessMetricsPage() {
       case 'watch': return 'text-amber-400'
       case 'at_risk': return 'text-orange-400'
       case 'critical': return 'text-red-400'
-      default: return 'text-neutral-400'
+      default: return 'text-muted-foreground'
     }
   }
 
@@ -113,7 +113,7 @@ export default function SuccessMetricsPage() {
       case 'watch': return 'bg-amber-500/10 border-amber-500/20'
       case 'at_risk': return 'bg-orange-500/10 border-orange-500/20'
       case 'critical': return 'bg-red-500/10 border-red-500/20'
-      default: return 'bg-neutral-500/10 border-neutral-500/20'
+      default: return 'bg-muted/50 border-border'
     }
   }
 
@@ -123,7 +123,7 @@ export default function SuccessMetricsPage() {
       case 'watch': return <AlertTriangle className="w-5 h-5 text-amber-400" />
       case 'at_risk': return <AlertCircle className="w-5 h-5 text-orange-400" />
       case 'critical': return <XCircle className="w-5 h-5 text-red-400" />
-      default: return <Activity className="w-5 h-5 text-neutral-400" />
+      default: return <Activity className="w-5 h-5 text-muted-foreground" />
     }
   }
 
@@ -131,7 +131,7 @@ export default function SuccessMetricsPage() {
     switch (trend) {
       case 'improving': return <TrendingUp className="w-4 h-4 text-emerald-400" />
       case 'declining': return <TrendingDown className="w-4 h-4 text-red-400" />
-      default: return <Minus className="w-4 h-4 text-neutral-400" />
+      default: return <Minus className="w-4 h-4 text-muted-foreground" />
     }
   }
 
@@ -146,11 +146,11 @@ export default function SuccessMetricsPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-800 rounded w-64" />
+          <div className="h-8 bg-muted rounded w-64" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => <div key={i} className="h-32 bg-neutral-800 rounded-lg" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-32 bg-muted rounded-lg" />)}
           </div>
-          <div className="h-64 bg-neutral-800 rounded-lg" />
+          <div className="h-64 bg-muted rounded-lg" />
         </div>
       </div>
     )
@@ -161,13 +161,13 @@ export default function SuccessMetricsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Success Metrics</h1>
-          <p className="text-neutral-400 mt-1">Track your platform health and business growth</p>
+          <h1 className="text-2xl font-bold text-foreground">Success Metrics</h1>
+          <p className="text-muted-foreground mt-1">Track your platform health and business growth</p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm text-neutral-300 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-accent rounded-lg text-sm text-muted-foreground transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -179,7 +179,7 @@ export default function SuccessMetricsPage() {
         <div className={`rounded-xl border p-6 ${getRiskBg(healthScore.riskLevel)}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="text-5xl font-bold text-white">{healthScore.overallScore}</div>
+              <div className="text-5xl font-bold text-foreground">{healthScore.overallScore}</div>
               <div>
                 <div className="flex items-center gap-2">
                   {getRiskIcon(healthScore.riskLevel)}
@@ -187,13 +187,13 @@ export default function SuccessMetricsPage() {
                     {healthScore.riskLevel.replace('_', ' ')}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 mt-1 text-sm text-neutral-400">
+                <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                   {getTrendIcon(healthScore.trend)}
                   <span className="capitalize">{healthScore.trend}</span> over last 30 days
                 </div>
               </div>
             </div>
-            <div className="text-right text-sm text-neutral-400">
+            <div className="text-right text-sm text-muted-foreground">
               <div>Health Score</div>
               <div>out of 100</div>
             </div>
@@ -229,8 +229,8 @@ export default function SuccessMetricsPage() {
 
       {/* Component Scores */}
       {healthScore && (
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Score Breakdown</h2>
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Score Breakdown</h2>
           <div className="space-y-4">
             <ScoreBar label="Login Frequency" score={healthScore.components.login} weight={25} detail={healthScore.metrics.daysSinceLogin !== null ? `Last login: ${healthScore.metrics.daysSinceLogin} days ago` : 'No login recorded'} />
             <ScoreBar label="Feature Usage" score={healthScore.components.featureBreadth} weight={20} detail={`${healthScore.metrics.featuresUsed30d} of ${healthScore.metrics.totalFeaturesAvailable} features used`} />
@@ -244,8 +244,8 @@ export default function SuccessMetricsPage() {
 
       {/* Activity Timeline */}
       {activity && activity.dailyActivity.length > 0 && (
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Activity (Last 30 Days)</h2>
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Activity (Last 30 Days)</h2>
           <div className="flex items-end gap-1 h-32">
             {activity.dailyActivity.map((day, i) => {
               const maxCount = Math.max(...activity.dailyActivity.map(d => d.count))
@@ -260,7 +260,7 @@ export default function SuccessMetricsPage() {
               )
             })}
           </div>
-          <div className="flex justify-between mt-2 text-xs text-neutral-500">
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
             <span>{activity.dailyActivity[0]?.date}</span>
             <span>{activity.dailyActivity[activity.dailyActivity.length - 1]?.date}</span>
           </div>
@@ -268,8 +268,8 @@ export default function SuccessMetricsPage() {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Improve Your Score</h2>
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Improve Your Score</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {healthScore && healthScore.components.contactEngagement < 50 && (
             <ActionCard
@@ -311,9 +311,9 @@ export default function SuccessMetricsPage() {
 
 function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-neutral-900 rounded-lg border border-neutral-800 p-4">
-      <div className="flex items-center gap-2 mb-2">{icon}<span className="text-sm text-neutral-400">{label}</span></div>
-      <div className="text-2xl font-bold text-white">{value}</div>
+    <div className="bg-card rounded-lg border border-border p-4">
+      <div className="flex items-center gap-2 mb-2">{icon}<span className="text-sm text-muted-foreground">{label}</span></div>
+      <div className="text-2xl font-bold text-foreground">{value}</div>
     </div>
   )
 }
@@ -330,28 +330,28 @@ function ScoreBar({ label, score, weight, detail }: { label: string; score: numb
     <div>
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-neutral-200">{label}</span>
-          <span className="text-xs text-neutral-500">({weight}% weight)</span>
+          <span className="text-sm font-medium text-muted-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground">({weight}% weight)</span>
         </div>
-        <span className="text-sm font-bold text-white">{score}/100</span>
+        <span className="text-sm font-bold text-foreground">{score}/100</span>
       </div>
-      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-500 ${getColor(score)}`} style={{ width: `${score}%` }} />
       </div>
-      <p className="text-xs text-neutral-500 mt-1">{detail}</p>
+      <p className="text-xs text-muted-foreground mt-1">{detail}</p>
     </div>
   )
 }
 
 function ActionCard({ icon, title, description, href }: { icon: React.ReactNode; title: string; description: string; href: string }) {
   return (
-    <a href={href} className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg border border-neutral-700/50 transition-colors group">
+    <a href={href} className="flex items-center gap-3 p-3 bg-muted/50 hover:bg-muted rounded-lg border border-border/50 transition-colors group">
       <div className="p-2 bg-primary-500/10 rounded-lg text-primary-400">{icon}</div>
       <div className="flex-1">
-        <div className="text-sm font-medium text-white group-hover:text-primary-400 transition-colors">{title}</div>
-        <div className="text-xs text-neutral-500">{description}</div>
+        <div className="text-sm font-medium text-foreground group-hover:text-primary-400 transition-colors">{title}</div>
+        <div className="text-xs text-muted-foreground">{description}</div>
       </div>
-      <ArrowUpRight className="w-4 h-4 text-neutral-600 group-hover:text-primary-400 transition-colors" />
+      <ArrowUpRight className="w-4 h-4 text-muted-foreground group-hover:text-primary-400 transition-colors" />
     </a>
   )
 }

@@ -61,7 +61,7 @@ interface InvoiceSummary {
 }
 
 const STATUS_CONFIG: Record<InvoiceStatus, { label: string; color: string }> = {
-  draft: { label: "Draft", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+  draft: { label: "Draft", color: "bg-muted/50 text-muted-foreground border-border" },
   sent: { label: "Sent", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
   viewed: { label: "Viewed", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
   accepted: { label: "Accepted", color: "bg-green-500/20 text-green-400 border-green-500/30" },
@@ -69,7 +69,7 @@ const STATUS_CONFIG: Record<InvoiceStatus, { label: string; color: string }> = {
   paid: { label: "Paid", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
   partial: { label: "Partial", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
   overdue: { label: "Overdue", color: "bg-red-500/20 text-red-400 border-red-500/30" },
-  cancelled: { label: "Cancelled", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+  cancelled: { label: "Cancelled", color: "bg-muted/50 text-muted-foreground border-border" },
   expired: { label: "Expired", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
 };
 
@@ -330,8 +330,8 @@ export default function InvoicesPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Invoices & Quotations</h1>
-          <p className="text-zinc-400 text-sm">Create and manage invoices, quotations, and receipts</p>
+          <h1 className="text-2xl font-bold text-foreground">Invoices & Quotations</h1>
+          <p className="text-muted-foreground text-sm">Create and manage invoices, quotations, and receipts</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
           <Plus className="h-4 w-4 mr-2" /> Create Document
@@ -340,20 +340,20 @@ export default function InvoicesPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Unpaid</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unpaid</CardTitle>
             <DollarSign className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               {formatCurrency(summary?.unpaid_total ?? 0, currency)}
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Overdue</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
@@ -362,9 +362,9 @@ export default function InvoicesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
             <FileText className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
@@ -373,13 +373,13 @@ export default function InvoicesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
             <Clock className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{summary?.pending_count ?? 0}</div>
+            <div className="text-2xl font-bold text-foreground">{summary?.pending_count ?? 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -387,7 +387,7 @@ export default function InvoicesPage() {
       {/* Tabs + Search */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <TabsList className="bg-zinc-800">
+          <TabsList className="bg-muted">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="invoice">Invoices</TabsTrigger>
             <TabsTrigger value="quotation">Quotations</TabsTrigger>
@@ -396,40 +396,40 @@ export default function InvoicesPage() {
             <TabsTrigger value="credit_note">Credit Notes</TabsTrigger>
           </TabsList>
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by doc number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-zinc-900/50 border-zinc-700 text-white"
+              className="pl-10 bg-card/50 border-border text-foreground"
             />
           </div>
         </div>
 
         <TabsContent value={activeTab} className="mt-4">
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white">Documents</CardTitle>
-              <CardDescription className="text-zinc-400">{total} total</CardDescription>
+              <CardTitle className="text-foreground">Documents</CardTitle>
+              <CardDescription className="text-muted-foreground">{total} total</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-zinc-800">
-                    <TableHead className="text-zinc-400">Doc #</TableHead>
-                    <TableHead className="text-zinc-400">Type</TableHead>
-                    <TableHead className="text-zinc-400">Customer</TableHead>
-                    <TableHead className="text-zinc-400 text-right">Total</TableHead>
-                    <TableHead className="text-zinc-400 text-right">Balance</TableHead>
-                    <TableHead className="text-zinc-400">Date</TableHead>
-                    <TableHead className="text-zinc-400">Status</TableHead>
-                    <TableHead className="text-zinc-400">Actions</TableHead>
+                  <TableRow className="border-border">
+                    <TableHead className="text-muted-foreground">Doc #</TableHead>
+                    <TableHead className="text-muted-foreground">Type</TableHead>
+                    <TableHead className="text-muted-foreground">Customer</TableHead>
+                    <TableHead className="text-muted-foreground text-right">Total</TableHead>
+                    <TableHead className="text-muted-foreground text-right">Balance</TableHead>
+                    <TableHead className="text-muted-foreground">Date</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {invoices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-zinc-500 py-8">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                         No documents found. Create one to get started.
                       </TableCell>
                     </TableRow>
@@ -439,25 +439,25 @@ export default function InvoicesPage() {
                       const statusCfg = STATUS_CONFIG[inv.status] || STATUS_CONFIG.draft;
                       const balance = inv.total - inv.amount_paid;
                       return (
-                        <TableRow key={inv.id} className="border-zinc-800">
-                          <TableCell className="text-white font-mono text-sm">
+                        <TableRow key={inv.id} className="border-border">
+                          <TableCell className="text-foreground font-mono text-sm">
                             {inv.doc_number}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-zinc-300 border-zinc-600">
+                            <Badge variant="outline" className="text-muted-foreground border-border">
                               {DOC_TYPE_LABELS[inv.doc_type] || inv.doc_type}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-zinc-300">
+                          <TableCell className="text-muted-foreground">
                             {contact?.name || "Unknown"}
                           </TableCell>
-                          <TableCell className="text-white text-right font-medium">
+                          <TableCell className="text-foreground text-right font-medium">
                             {formatCurrency(inv.total, currency)}
                           </TableCell>
                           <TableCell className={`text-right ${balance > 0 ? "text-yellow-400" : "text-green-400"}`}>
                             {formatCurrency(balance, currency)}
                           </TableCell>
-                          <TableCell className="text-zinc-300">
+                          <TableCell className="text-muted-foreground">
                             {new Date(inv.issue_date).toLocaleDateString("en-NG", {
                               day: "numeric", month: "short", year: "numeric",
                             })}
@@ -504,7 +504,7 @@ export default function InvoicesPage() {
 
       {/* Create Invoice Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create {DOC_TYPE_LABELS[createForm.doc_type]}</DialogTitle>
           </DialogHeader>
@@ -512,9 +512,9 @@ export default function InvoicesPage() {
             {/* Header Fields */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <Label className="text-zinc-300">Document Type</Label>
+                <Label className="text-muted-foreground">Document Type</Label>
                 <Select value={createForm.doc_type} onValueChange={(v) => setCreateForm((p) => ({ ...p, doc_type: v as DocType }))}>
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -525,9 +525,9 @@ export default function InvoicesPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-zinc-300">Customer *</Label>
+                <Label className="text-muted-foreground">Customer *</Label>
                 <Select value={createForm.contact_id} onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}>
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
@@ -540,21 +540,21 @@ export default function InvoicesPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-zinc-300">Issue Date</Label>
+                <Label className="text-muted-foreground">Issue Date</Label>
                 <Input
                   type="date"
                   value={createForm.issue_date}
                   onChange={(e) => setCreateForm((p) => ({ ...p, issue_date: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Due Date</Label>
+                <Label className="text-muted-foreground">Due Date</Label>
                 <Input
                   type="date"
                   value={createForm.due_date}
                   onChange={(e) => setCreateForm((p) => ({ ...p, due_date: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             </div>
@@ -562,8 +562,8 @@ export default function InvoicesPage() {
             {/* Line Items */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-zinc-300 text-base">Line Items</Label>
-                <Button size="sm" variant="outline" onClick={addLineItem} className="border-zinc-600 text-zinc-300">
+                <Label className="text-muted-foreground text-base">Line Items</Label>
+                <Button size="sm" variant="outline" onClick={addLineItem} className="border-border text-muted-foreground">
                   <Plus className="h-3 w-3 mr-1" /> Add Item
                 </Button>
               </div>
@@ -571,12 +571,12 @@ export default function InvoicesPage() {
                 {lineItems.map((item, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-3 items-end">
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">Product</Label>}
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">Product</Label>}
                       <Select
                         value={item.product_id || "manual"}
                         onValueChange={(v) => v !== "manual" && selectProduct(idx, v)}
                       >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-xs">
+                        <SelectTrigger className="bg-muted border-border text-xs">
                           <SelectValue placeholder="Pick" />
                         </SelectTrigger>
                         <SelectContent>
@@ -588,41 +588,41 @@ export default function InvoicesPage() {
                       </Select>
                     </div>
                     <div className="col-span-4">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">Description</Label>}
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">Description</Label>}
                       <Input
                         value={item.description}
                         onChange={(e) => updateLineItem(idx, "description", e.target.value)}
                         placeholder="Item description"
-                        className="bg-zinc-800 border-zinc-700 text-sm"
+                        className="bg-muted border-border text-sm"
                       />
                     </div>
                     <div className="col-span-1">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">Qty</Label>}
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">Qty</Label>}
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateLineItem(idx, "quantity", parseInt(e.target.value, 10) || 0)}
                         min="1"
-                        className="bg-zinc-800 border-zinc-700 text-sm"
+                        className="bg-muted border-border text-sm"
                       />
                     </div>
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">Unit Price</Label>}
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">Unit Price</Label>}
                       <Input
                         type="number"
                         value={item.unit_price}
                         onChange={(e) => updateLineItem(idx, "unit_price", parseFloat(e.target.value) || 0)}
-                        className="bg-zinc-800 border-zinc-700 text-sm"
+                        className="bg-muted border-border text-sm"
                       />
                     </div>
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">Total</Label>}
-                      <div className="h-9 flex items-center px-3 bg-zinc-800/50 border border-zinc-700 rounded-md text-sm text-white">
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">Total</Label>}
+                      <div className="h-9 flex items-center px-3 bg-muted/50 border border-border rounded-md text-sm text-foreground">
                         {formatCurrency(item.total, currency)}
                       </div>
                     </div>
                     <div className="col-span-1">
-                      {idx === 0 && <Label className="text-xs text-zinc-500">&nbsp;</Label>}
+                      {idx === 0 && <Label className="text-xs text-muted-foreground">&nbsp;</Label>}
                       <Button
                         size="sm"
                         variant="ghost"
@@ -642,13 +642,13 @@ export default function InvoicesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div>
-                  <Label className="text-zinc-300">Discount</Label>
+                  <Label className="text-muted-foreground">Discount</Label>
                   <div className="flex gap-2">
                     <Select
                       value={createForm.discount_type}
                       onValueChange={(v) => setCreateForm((p) => ({ ...p, discount_type: v as DiscountType }))}
                     >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-700 w-32">
+                      <SelectTrigger className="bg-muted border-border w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -662,38 +662,38 @@ export default function InvoicesPage() {
                         type="number"
                         value={createForm.discount_value}
                         onChange={(e) => setCreateForm((p) => ({ ...p, discount_value: e.target.value }))}
-                        className="bg-zinc-800 border-zinc-700 flex-1"
+                        className="bg-muted border-border flex-1"
                       />
                     )}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-zinc-300">Tax Rate (%)</Label>
+                  <Label className="text-muted-foreground">Tax Rate (%)</Label>
                   <Input
                     type="number"
                     value={createForm.tax_rate}
                     onChange={(e) => setCreateForm((p) => ({ ...p, tax_rate: e.target.value }))}
-                    className="bg-zinc-800 border-zinc-700"
+                    className="bg-muted border-border"
                   />
                 </div>
               </div>
-              <div className="bg-zinc-800 rounded-lg p-4 space-y-2">
+              <div className="bg-muted rounded-lg p-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-400">Subtotal</span>
-                  <span className="text-white">{formatCurrency(subtotal, currency)}</span>
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-foreground">{formatCurrency(subtotal, currency)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">Discount</span>
+                    <span className="text-muted-foreground">Discount</span>
                     <span className="text-red-400">-{formatCurrency(discountAmount, currency)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-400">Tax ({createForm.tax_rate}%)</span>
-                  <span className="text-white">{formatCurrency(taxAmount, currency)}</span>
+                  <span className="text-muted-foreground">Tax ({createForm.tax_rate}%)</span>
+                  <span className="text-foreground">{formatCurrency(taxAmount, currency)}</span>
                 </div>
-                <div className="border-t border-zinc-700 pt-2 flex justify-between">
-                  <span className="text-white font-medium">Total</span>
+                <div className="border-t border-border pt-2 flex justify-between">
+                  <span className="text-foreground font-medium">Total</span>
                   <span className="text-[#C9A84C] font-bold text-lg">
                     {formatCurrency(grandTotal, currency)}
                   </span>
@@ -704,28 +704,28 @@ export default function InvoicesPage() {
             {/* Notes & Terms */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Notes</Label>
+                <Label className="text-muted-foreground">Notes</Label>
                 <Textarea
                   value={createForm.notes}
                   onChange={(e) => setCreateForm((p) => ({ ...p, notes: e.target.value }))}
                   placeholder="Notes to customer..."
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                   rows={3}
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Terms & Conditions</Label>
+                <Label className="text-muted-foreground">Terms & Conditions</Label>
                 <Textarea
                   value={createForm.terms}
                   onChange={(e) => setCreateForm((p) => ({ ...p, terms: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                   rows={3}
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowCreateModal(false); resetCreateForm(); }} className="border-zinc-700">
+            <Button variant="outline" onClick={() => { setShowCreateModal(false); resetCreateForm(); }} className="border-border">
               Cancel
             </Button>
             <Button onClick={handleCreateInvoice} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">

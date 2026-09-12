@@ -61,42 +61,42 @@ export function ReferralSettingsPanel() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <UserPlus className="h-5 w-5 text-[#C9A84C]" /> Referral Programme Settings
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">Configure how your referral programme works.</p>
+        <p className="text-sm text-muted-foreground mt-1">Configure how your referral programme works.</p>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-white">Programme Active</Label>
+            <Label className="text-foreground">Programme Active</Label>
             <Switch checked={config.is_active} onCheckedChange={(v) => setConfig({ ...config, is_active: v })} />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-white">Auto-generate Referral Codes</Label>
+            <Label className="text-foreground">Auto-generate Referral Codes</Label>
             <Switch checked={config.auto_generate_codes} onCheckedChange={(v) => setConfig({ ...config, auto_generate_codes: v })} />
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-white">Require Purchase to Convert</Label>
+            <Label className="text-foreground">Require Purchase to Convert</Label>
             <Switch checked={config.require_purchase_to_convert} onCheckedChange={(v) => setConfig({ ...config, require_purchase_to_convert: v })} />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Reward Configuration</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Reward Configuration</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label className="text-zinc-300">Reward Type</Label>
+            <Label className="text-muted-foreground">Reward Type</Label>
             <Select value={config.reward_type} onValueChange={(v) => setConfig({ ...config, reward_type: v })}>
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-muted border-border text-foreground"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="discount">Discount (%)</SelectItem>
                 <SelectItem value="fixed_amount">Fixed Amount (NGN)</SelectItem>
@@ -107,43 +107,43 @@ export function ReferralSettingsPanel() {
             </Select>
           </div>
           <div>
-            <Label className="text-zinc-300">Reward Value</Label>
-            <Input type="number" value={config.reward_value} onChange={(e) => setConfig({ ...config, reward_value: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" />
+            <Label className="text-muted-foreground">Reward Value</Label>
+            <Input type="number" value={config.reward_value} onChange={(e) => setConfig({ ...config, reward_value: Number(e.target.value) })} className="bg-muted border-border text-foreground" />
           </div>
           <div className="md:col-span-2">
-            <Label className="text-zinc-300">Reward Description</Label>
-            <Input value={config.reward_description} onChange={(e) => setConfig({ ...config, reward_description: e.target.value })} className="bg-zinc-800 border-zinc-700 text-white" />
+            <Label className="text-muted-foreground">Reward Description</Label>
+            <Input value={config.reward_description} onChange={(e) => setConfig({ ...config, reward_description: e.target.value })} className="bg-muted border-border text-foreground" />
           </div>
           <div>
-            <Label className="text-zinc-300">Min Purchase for Reward (NGN)</Label>
-            <Input type="number" value={config.min_purchase_for_reward} onChange={(e) => setConfig({ ...config, min_purchase_for_reward: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" />
-            <p className="text-xs text-zinc-500 mt-1">0 = no minimum</p>
+            <Label className="text-muted-foreground">Min Purchase for Reward (NGN)</Label>
+            <Input type="number" value={config.min_purchase_for_reward} onChange={(e) => setConfig({ ...config, min_purchase_for_reward: Number(e.target.value) })} className="bg-muted border-border text-foreground" />
+            <p className="text-xs text-muted-foreground mt-1">0 = no minimum</p>
           </div>
           <div>
-            <Label className="text-zinc-300">Max Referrals per Contact</Label>
-            <Input type="number" value={config.max_referrals_per_contact} onChange={(e) => setConfig({ ...config, max_referrals_per_contact: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" />
-            <p className="text-xs text-zinc-500 mt-1">0 = unlimited</p>
+            <Label className="text-muted-foreground">Max Referrals per Contact</Label>
+            <Input type="number" value={config.max_referrals_per_contact} onChange={(e) => setConfig({ ...config, max_referrals_per_contact: Number(e.target.value) })} className="bg-muted border-border text-foreground" />
+            <p className="text-xs text-muted-foreground mt-1">0 = unlimited</p>
           </div>
           <div>
-            <Label className="text-zinc-300">Referral Expiry (days)</Label>
-            <Input type="number" value={config.referral_expiry_days} onChange={(e) => setConfig({ ...config, referral_expiry_days: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" />
-            <p className="text-xs text-zinc-500 mt-1">0 = never expires</p>
+            <Label className="text-muted-foreground">Referral Expiry (days)</Label>
+            <Input type="number" value={config.referral_expiry_days} onChange={(e) => setConfig({ ...config, referral_expiry_days: Number(e.target.value) })} className="bg-muted border-border text-foreground" />
+            <p className="text-xs text-muted-foreground mt-1">0 = never expires</p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Message Templates</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Message Templates</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Welcome Message (to referred contact)</Label>
-            <Textarea value={config.welcome_message_template} onChange={(e) => setConfig({ ...config, welcome_message_template: e.target.value })} className="bg-zinc-800 border-zinc-700 text-white" rows={2} />
-            <p className="text-xs text-zinc-500 mt-1">Variables: {'{referrer_name}'}, {'{referral_code}'}</p>
+            <Label className="text-muted-foreground">Welcome Message (to referred contact)</Label>
+            <Textarea value={config.welcome_message_template} onChange={(e) => setConfig({ ...config, welcome_message_template: e.target.value })} className="bg-muted border-border text-foreground" rows={2} />
+            <p className="text-xs text-muted-foreground mt-1">Variables: {'{referrer_name}'}, {'{referral_code}'}</p>
           </div>
           <div>
-            <Label className="text-zinc-300">Reward Message (to referrer)</Label>
-            <Textarea value={config.reward_message_template} onChange={(e) => setConfig({ ...config, reward_message_template: e.target.value })} className="bg-zinc-800 border-zinc-700 text-white" rows={2} />
-            <p className="text-xs text-zinc-500 mt-1">Variables: {'{referred_name}'}, {'{reward_description}'}, {'{reward_value}'}</p>
+            <Label className="text-muted-foreground">Reward Message (to referrer)</Label>
+            <Textarea value={config.reward_message_template} onChange={(e) => setConfig({ ...config, reward_message_template: e.target.value })} className="bg-muted border-border text-foreground" rows={2} />
+            <p className="text-xs text-muted-foreground mt-1">Variables: {'{referred_name}'}, {'{reward_description}'}, {'{reward_value}'}</p>
           </div>
         </CardContent>
       </Card>

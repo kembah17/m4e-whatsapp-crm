@@ -428,7 +428,7 @@ export function AISettingsForm({ readOnly = false }: AISettingsFormProps) {
         <button
           onClick={handleSave}
           disabled={saving || readOnly}
-          className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-primary-foreground rounded-lg font-medium text-sm hover:bg-purple-700 disabled:opacity-50 transition-colors"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {saving ? 'Saving...' : 'Save Settings'}

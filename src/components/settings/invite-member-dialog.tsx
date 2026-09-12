@@ -225,7 +225,7 @@ export function InviteMemberDialog({
               </div>
 
               {/* Higher-contrast amber than the original 10% / amber-200.
-                  Reviewed against slate-900 to meet WCAG AAA for body
+                  Reviewed against card background to meet WCAG AAA for body
                   text (target ratio 7:1). Border bumped to /50, bg to
                   /15, foreground promoted to amber-100 for the strong
                   intro, amber-200 for the body. */}

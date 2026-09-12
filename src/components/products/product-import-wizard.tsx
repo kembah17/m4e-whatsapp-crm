@@ -213,13 +213,13 @@ export function ProductImportWizard({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="bg-slate-900 border-slate-800 max-w-4xl max-h-[85vh] flex flex-col">
+      <DialogContent className="bg-card border-border max-w-4xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
+          <DialogTitle className="text-foreground flex items-center gap-2">
             <Package className="h-5 w-5" />
             Import Products
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-muted-foreground">
             {step === "upload" && "Upload a CSV file with your product catalog"}
             {step === "preview" && `${products.length} products found — select which to import`}
             {step === "importing" && "Importing products..."}
@@ -238,7 +238,7 @@ export function ProductImportWizard({
                 onClick={() => fileRef.current?.click()}
                 className={`
                   flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 cursor-pointer transition-colors
-                  ${dragOver ? "border-primary bg-primary/5" : "border-slate-700 hover:border-slate-600"}
+                  ${dragOver ? "border-primary bg-primary/5" : "border-border hover:border-border"}
                 `}
               >
                 <input
@@ -255,16 +255,16 @@ export function ProductImportWizard({
                 {parsing ? (
                   <>
                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                    <p className="text-sm text-slate-400">Parsing file...</p>
+                    <p className="text-sm text-muted-foreground">Parsing file...</p>
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center justify-center h-14 w-14 rounded-full bg-slate-800">
-                      <Upload className="h-7 w-7 text-slate-400" />
+                    <div className="flex items-center justify-center h-14 w-14 rounded-full bg-muted">
+                      <Upload className="h-7 w-7 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-slate-300">Drop your CSV file here or click to browse</p>
-                      <p className="text-xs text-slate-500 mt-1">CSV format, max 500 products, max 5 MB</p>
+                      <p className="text-sm text-muted-foreground">Drop your CSV file here or click to browse</p>
+                      <p className="text-xs text-muted-foreground mt-1">CSV format, max 500 products, max 5 MB</p>
                     </div>
                   </>
                 )}
@@ -282,15 +282,15 @@ export function ProductImportWizard({
                 </Button>
               </div>
 
-              <div className="rounded-lg bg-slate-800/50 border border-slate-700 p-4">
-                <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+              <div className="rounded-lg bg-muted/50 border border-border p-4">
+                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                   <FileSpreadsheet className="h-4 w-4 text-primary" />
                   CSV Format Guide
                 </h4>
-                <div className="text-xs text-slate-400 space-y-1">
-                  <p><strong className="text-slate-300">Required:</strong> name</p>
-                  <p><strong className="text-slate-300">Recommended:</strong> price, category, description, image_url</p>
-                  <p><strong className="text-slate-300">Optional:</strong> sku, cost, short_pitch, status, unit_of_measure, tags</p>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p><strong className="text-muted-foreground">Required:</strong> name</p>
+                  <p><strong className="text-muted-foreground">Recommended:</strong> price, category, description, image_url</p>
+                  <p><strong className="text-muted-foreground">Optional:</strong> sku, cost, short_pitch, status, unit_of_measure, tags</p>
                   <p className="mt-2">Tags should be separated by semicolons (;) or pipes (|)</p>
                   <p>Image URLs must start with http:// or https://</p>
                 </div>
@@ -315,29 +315,29 @@ export function ProductImportWizard({
                 </div>
               )}
 
-              <div className="rounded-lg border border-slate-700 overflow-auto max-h-[45vh]">
+              <div className="rounded-lg border border-border overflow-auto max-h-[45vh]">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
+                    <TableRow className="border-border hover:bg-transparent">
                       <TableHead className="w-[40px]">
                         <Checkbox
                           checked={selected.size === products.length}
                           onCheckedChange={toggleAll}
                         />
                       </TableHead>
-                      <TableHead className="text-slate-400 w-[40px]">Img</TableHead>
-                      <TableHead className="text-slate-400">Name</TableHead>
-                      <TableHead className="text-slate-400">Price</TableHead>
-                      <TableHead className="text-slate-400">Category</TableHead>
-                      <TableHead className="text-slate-400">SKU</TableHead>
-                      <TableHead className="text-slate-400">Stock</TableHead>
+                      <TableHead className="text-muted-foreground w-[40px]">Img</TableHead>
+                      <TableHead className="text-muted-foreground">Name</TableHead>
+                      <TableHead className="text-muted-foreground">Price</TableHead>
+                      <TableHead className="text-muted-foreground">Category</TableHead>
+                      <TableHead className="text-muted-foreground">SKU</TableHead>
+                      <TableHead className="text-muted-foreground">Stock</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {products.map((p, i) => (
                       <TableRow
                         key={i}
-                        className={`border-slate-800 ${!selected.has(i) ? "opacity-40" : ""}`}
+                        className={`border-border ${!selected.has(i) ? "opacity-40" : ""}`}
                       >
                         <TableCell>
                           <Checkbox
@@ -347,31 +347,31 @@ export function ProductImportWizard({
                         </TableCell>
                         <TableCell>
                           {p.image_url ? (
-                            <div className="h-8 w-8 rounded bg-slate-800 overflow-hidden">
+                            <div className="h-8 w-8 rounded bg-muted overflow-hidden">
                               <img src={p.image_url} alt="" className="h-full w-full object-cover" />
                             </div>
                           ) : (
-                            <div className="h-8 w-8 rounded bg-slate-800 flex items-center justify-center">
-                              <ImageIcon className="h-3 w-3 text-slate-600" />
+                            <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                              <ImageIcon className="h-3 w-3 text-muted-foreground" />
                             </div>
                           )}
                         </TableCell>
                         <TableCell>
-                          <p className="text-sm text-white truncate max-w-[200px]">{p.name}</p>
+                          <p className="text-sm text-foreground truncate max-w-[200px]">{p.name}</p>
                           {p.short_pitch && (
-                            <p className="text-[10px] text-slate-500 truncate max-w-[200px]">{p.short_pitch}</p>
+                            <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{p.short_pitch}</p>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-white">
+                        <TableCell className="text-sm text-foreground">
                           {formatCurrency(p.price, defaultCurrency)}
                         </TableCell>
-                        <TableCell className="text-xs text-slate-400">
+                        <TableCell className="text-xs text-muted-foreground">
                           {p.category || "—"}
                         </TableCell>
-                        <TableCell className="text-xs text-slate-400">
+                        <TableCell className="text-xs text-muted-foreground">
                           {p.sku || "—"}
                         </TableCell>
-                        <TableCell className="text-xs text-slate-400">
+                        <TableCell className="text-xs text-muted-foreground">
                           {p.track_inventory ? "Tracked" : "—"}
                         </TableCell>
                       </TableRow>
@@ -386,7 +386,7 @@ export function ProductImportWizard({
           {step === "importing" && (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Importing {selected.size} products...
               </p>
             </div>
@@ -399,10 +399,10 @@ export function ProductImportWizard({
                 <CheckCircle2 className="h-8 w-8 text-emerald-400" />
               </div>
               <div className="text-center">
-                <p className="text-lg font-medium text-white">
+                <p className="text-lg font-medium text-foreground">
                   {importResult.imported} products imported
                 </p>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Your product catalog has been updated
                 </p>
               </div>
@@ -410,7 +410,7 @@ export function ProductImportWizard({
           )}
         </div>
 
-        <DialogFooter className="border-t border-slate-800 pt-3">
+        <DialogFooter className="border-t border-border pt-3">
           {step === "upload" && (
             <Button variant="outline" onClick={handleClose}>Cancel</Button>
           )}

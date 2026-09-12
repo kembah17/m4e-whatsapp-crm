@@ -154,7 +154,7 @@ export function AdminCohortAnalytics() {
                         <div className="h-6 flex-1 rounded bg-muted">
                           <div
                             className={cn(
-                              "flex h-full items-center rounded px-2 text-xs font-medium text-white transition-all",
+                              "flex h-full items-center rounded px-2 text-xs font-medium text-foreground transition-all",
                               retColor,
                             )}
                             style={{

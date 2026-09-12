@@ -31,7 +31,7 @@ function businessUseBadge(level: ChannelInfo['businessUse']) {
     case 'medium':
       return <Badge className="bg-amber-500/15 text-amber-500 border-amber-500/30 text-[10px]">Medium</Badge>;
     case 'low':
-      return <Badge className="bg-zinc-500/15 text-zinc-400 border-zinc-500/30 text-[10px]">Low</Badge>;
+      return <Badge className="bg-muted-foreground/15 text-muted-foreground border-border text-[10px]">Low</Badge>;
   }
 }
 
@@ -95,7 +95,7 @@ function ChannelRow({ channel, isRecommended }: { channel: ChannelInfo; isRecomm
         {channel.apiAvailable ? (
           <Check className="mx-auto h-4 w-4 text-emerald-500" />
         ) : (
-          <X className="mx-auto h-4 w-4 text-zinc-500" />
+          <X className="mx-auto h-4 w-4 text-muted-foreground" />
         )}
       </div>
 
@@ -295,7 +295,7 @@ export function ChannelMatrix() {
               <Check className="h-3 w-3 text-emerald-500" /> API Available
             </span>
             <span className="flex items-center gap-1.5">
-              <X className="h-3 w-3 text-zinc-500" /> No API
+              <X className="h-3 w-3 text-muted-foreground" /> No API
             </span>
           </div>
         </CardContent>

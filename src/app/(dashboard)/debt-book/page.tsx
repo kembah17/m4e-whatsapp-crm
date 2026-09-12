@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<DebtStatus, { label: string; color: string }> = {
   partial: { label: "Partial", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
   paid: { label: "Paid", color: "bg-green-500/20 text-green-400 border-green-500/30" },
   overdue: { label: "Overdue", color: "bg-red-500/20 text-red-400 border-red-500/30" },
-  written_off: { label: "Written Off", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+  written_off: { label: "Written Off", color: "bg-muted/50 text-muted-foreground border-border" },
   disputed: { label: "Disputed", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
 };
 
@@ -229,8 +229,8 @@ export default function DebtBookPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Debt Book</h1>
-          <p className="text-zinc-400 text-sm">Track credit sales and collect payments</p>
+          <h1 className="text-2xl font-bold text-foreground">Debt Book</h1>
+          <p className="text-muted-foreground text-sm">Track credit sales and collect payments</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
           <Plus className="h-4 w-4 mr-2" /> Record Sale on Credit
@@ -239,50 +239,50 @@ export default function DebtBookPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Total Outstanding</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Outstanding</CardTitle>
             <DollarSign className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               {formatCurrency(summary?.total_outstanding ?? 0, currency)}
             </div>
-            <p className="text-xs text-zinc-500">{summary?.entries_count ?? 0} entries</p>
+            <p className="text-xs text-muted-foreground">{summary?.entries_count ?? 0} entries</p>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Total Overdue</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Overdue</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-400">
               {formatCurrency(summary?.total_overdue ?? 0, currency)}
             </div>
-            <p className="text-xs text-zinc-500">{summary?.overdue_count ?? 0} overdue</p>
+            <p className="text-xs text-muted-foreground">{summary?.overdue_count ?? 0} overdue</p>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Collection Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Collection Rate</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-400">
               {summary?.collection_rate ?? 0}%
             </div>
-            <p className="text-xs text-zinc-500">of total debt collected</p>
+            <p className="text-xs text-muted-foreground">of total debt collected</p>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Active Entries</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Entries</CardTitle>
             <BookOpen className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{total}</div>
-            <p className="text-xs text-zinc-500">debt records</p>
+            <div className="text-2xl font-bold text-foreground">{total}</div>
+            <p className="text-xs text-muted-foreground">debt records</p>
           </CardContent>
         </Card>
       </div>
@@ -290,16 +290,16 @@ export default function DebtBookPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-zinc-900/50 border-zinc-700 text-white"
+            className="pl-10 bg-card/50 border-border text-foreground"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px] bg-zinc-900/50 border-zinc-700 text-white">
+          <SelectTrigger className="w-[180px] bg-card/50 border-border text-foreground">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
@@ -313,31 +313,31 @@ export default function DebtBookPage() {
       </div>
 
       {/* Debt Entries Table */}
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardHeader>
-          <CardTitle className="text-white">Debt Entries</CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardTitle className="text-foreground">Debt Entries</CardTitle>
+          <CardDescription className="text-muted-foreground">
             {total} total entries
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-800">
-                <TableHead className="text-zinc-400">Customer</TableHead>
-                <TableHead className="text-zinc-400">Description</TableHead>
-                <TableHead className="text-zinc-400 text-right">Amount</TableHead>
-                <TableHead className="text-zinc-400 text-right">Paid</TableHead>
-                <TableHead className="text-zinc-400 text-right">Outstanding</TableHead>
-                <TableHead className="text-zinc-400">Due Date</TableHead>
-                <TableHead className="text-zinc-400">Status</TableHead>
-                <TableHead className="text-zinc-400">Actions</TableHead>
+              <TableRow className="border-border">
+                <TableHead className="text-muted-foreground">Customer</TableHead>
+                <TableHead className="text-muted-foreground">Description</TableHead>
+                <TableHead className="text-muted-foreground text-right">Amount</TableHead>
+                <TableHead className="text-muted-foreground text-right">Paid</TableHead>
+                <TableHead className="text-muted-foreground text-right">Outstanding</TableHead>
+                <TableHead className="text-muted-foreground">Due Date</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-zinc-500 py-8">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                     No debt entries found. Record a credit sale to get started.
                   </TableCell>
                 </TableRow>
@@ -346,14 +346,14 @@ export default function DebtBookPage() {
                   const contact = entry.contact as Record<string, string> | undefined;
                   const statusCfg = STATUS_CONFIG[entry.status] || STATUS_CONFIG.outstanding;
                   return (
-                    <TableRow key={entry.id} className="border-zinc-800">
-                      <TableCell className="text-white font-medium">
+                    <TableRow key={entry.id} className="border-border">
+                      <TableCell className="text-foreground font-medium">
                         {contact?.name || "Unknown"}
                       </TableCell>
-                      <TableCell className="text-zinc-300 max-w-[200px] truncate">
+                      <TableCell className="text-muted-foreground max-w-[200px] truncate">
                         {entry.description}
                       </TableCell>
-                      <TableCell className="text-white text-right">
+                      <TableCell className="text-foreground text-right">
                         {formatCurrency(entry.original_amount, currency)}
                       </TableCell>
                       <TableCell className="text-green-400 text-right">
@@ -362,7 +362,7 @@ export default function DebtBookPage() {
                       <TableCell className="text-yellow-400 text-right font-medium">
                         {formatCurrency(getOutstanding(entry), currency)}
                       </TableCell>
-                      <TableCell className="text-zinc-300">
+                      <TableCell className="text-muted-foreground">
                         {entry.due_date
                           ? new Date(entry.due_date).toLocaleDateString("en-NG", {
                               day: "numeric", month: "short", year: "numeric",
@@ -406,15 +406,15 @@ export default function DebtBookPage() {
 
       {/* Create Debt Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Sale on Credit</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-zinc-300">Customer *</Label>
+              <Label className="text-muted-foreground">Customer *</Label>
               <Select value={createForm.contact_id} onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                <SelectTrigger className="bg-muted border-border">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
                 <SelectContent>
@@ -427,39 +427,39 @@ export default function DebtBookPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">Description *</Label>
+              <Label className="text-muted-foreground">Description *</Label>
               <Input
                 value={createForm.description}
                 onChange={(e) => setCreateForm((p) => ({ ...p, description: e.target.value }))}
                 placeholder="e.g. 5 bags of rice"
-                className="bg-zinc-800 border-zinc-700"
+                className="bg-muted border-border"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Amount ({currency}) *</Label>
+                <Label className="text-muted-foreground">Amount ({currency}) *</Label>
                 <Input
                   type="number"
                   value={createForm.original_amount}
                   onChange={(e) => setCreateForm((p) => ({ ...p, original_amount: e.target.value }))}
                   placeholder="0.00"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Due Date</Label>
+                <Label className="text-muted-foreground">Due Date</Label>
                 <Input
                   type="date"
                   value={createForm.due_date}
                   onChange={(e) => setCreateForm((p) => ({ ...p, due_date: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             </div>
             <div>
-              <Label className="text-zinc-300">Entry Type</Label>
+              <Label className="text-muted-foreground">Entry Type</Label>
               <Select value={createForm.entry_type} onValueChange={(v) => setCreateForm((p) => ({ ...p, entry_type: v }))}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                <SelectTrigger className="bg-muted border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -472,37 +472,37 @@ export default function DebtBookPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Reminder Every (days)</Label>
+                <Label className="text-muted-foreground">Reminder Every (days)</Label>
                 <Input
                   type="number"
                   value={createForm.reminder_frequency_days}
                   onChange={(e) => setCreateForm((p) => ({ ...p, reminder_frequency_days: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Max Reminders</Label>
+                <Label className="text-muted-foreground">Max Reminders</Label>
                 <Input
                   type="number"
                   value={createForm.max_reminders}
                   onChange={(e) => setCreateForm((p) => ({ ...p, max_reminders: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             </div>
             <div>
-              <Label className="text-zinc-300">Notes</Label>
+              <Label className="text-muted-foreground">Notes</Label>
               <Textarea
                 value={createForm.notes}
                 onChange={(e) => setCreateForm((p) => ({ ...p, notes: e.target.value }))}
                 placeholder="Additional notes..."
-                className="bg-zinc-800 border-zinc-700"
+                className="bg-muted border-border"
                 rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-border">
               Cancel
             </Button>
             <Button onClick={handleCreateDebt} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
@@ -515,34 +515,34 @@ export default function DebtBookPage() {
 
       {/* Record Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle>Record Payment</DialogTitle>
           </DialogHeader>
           {selectedEntry && (
             <div className="space-y-4">
-              <div className="bg-zinc-800 rounded-lg p-3">
-                <p className="text-sm text-zinc-400">Outstanding Balance</p>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-sm text-muted-foreground">Outstanding Balance</p>
                 <p className="text-xl font-bold text-yellow-400">
                   {formatCurrency(getOutstanding(selectedEntry), currency)}
                 </p>
               </div>
               <div>
-                <Label className="text-zinc-300">Payment Amount ({currency}) *</Label>
+                <Label className="text-muted-foreground">Payment Amount ({currency}) *</Label>
                 <Input
                   type="number"
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Payment Method</Label>
+                <Label className="text-muted-foreground">Payment Method</Label>
                 <Select
                   value={paymentForm.payment_method}
                   onValueChange={(v) => setPaymentForm((p) => ({ ...p, payment_method: v as PaymentMethod }))}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -553,31 +553,31 @@ export default function DebtBookPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-zinc-300">Reference / Receipt No.</Label>
+                <Label className="text-muted-foreground">Reference / Receipt No.</Label>
                 <Input
                   value={paymentForm.payment_reference}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, payment_reference: e.target.value }))}
                   placeholder="e.g. TRF-12345"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Notes</Label>
+                <Label className="text-muted-foreground">Notes</Label>
                 <Textarea
                   value={paymentForm.notes}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, notes: e.target.value }))}
                   placeholder="Payment notes..."
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                   rows={2}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="border-border">
               Cancel
             </Button>
-            <Button onClick={handleRecordPayment} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button onClick={handleRecordPayment} disabled={saving} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Record Payment
             </Button>

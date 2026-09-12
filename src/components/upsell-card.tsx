@@ -147,10 +147,10 @@ export function UpsellCard({
 
   if (compact) {
     return (
-      <div className={`flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 ${className}`}>
-        <Lock className="h-4 w-4 text-zinc-500 shrink-0" />
+      <div className={`flex items-center gap-3 rounded-lg border border-border bg-card/50 p-3 ${className}`}>
+        <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-zinc-300">
+          <p className="text-sm text-muted-foreground">
             <span className="font-medium">{featureInfo.title}</span> requires the{" "}
             <Badge variant="outline" className={`${tier.color} text-xs`}>
               <TierIcon className="h-3 w-3 mr-1" />
@@ -169,11 +169,11 @@ export function UpsellCard({
   }
 
   return (
-    <Card className={`bg-zinc-900/50 border-zinc-800 relative overflow-hidden ${className}`}>
+    <Card className={`bg-card/50 border-border relative overflow-hidden ${className}`}>
       {/* Dismiss button */}
       <button
         onClick={() => setDismissed(true)}
-        className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
+        className="absolute top-3 right-3 text-muted-foreground hover:text-muted-foreground transition-colors z-10"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />
@@ -188,7 +188,7 @@ export function UpsellCard({
             <Lock className="h-5 w-5 text-[#C9A84C]" />
           </div>
           <div>
-            <CardTitle className="text-lg text-white">{featureInfo.title}</CardTitle>
+            <CardTitle className="text-lg text-foreground">{featureInfo.title}</CardTitle>
             <Badge variant="outline" className={`${tier.color} text-xs mt-1`}>
               <TierIcon className="h-3 w-3 mr-1" />
               {tier.label} Plan &middot; {tier.price}
@@ -198,7 +198,7 @@ export function UpsellCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <p className="text-sm text-zinc-400">{featureInfo.description}</p>
+        <p className="text-sm text-muted-foreground">{featureInfo.description}</p>
 
         <div className="flex items-center gap-3">
           <Link href="/platform" className="flex-1">
@@ -209,7 +209,7 @@ export function UpsellCard({
           </Link>
         </div>
 
-        <p className="text-xs text-zinc-500 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           Upgrade anytime. All plans include a 14-day free trial.
         </p>
       </CardContent>

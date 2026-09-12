@@ -107,7 +107,7 @@ function ChangeIndicator({ pct }: { pct: number }) {
     )
   }
   return (
-    <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-400">
+    <span className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground">
       <Minus className="h-3.5 w-3.5" /> 0%
     </span>
   )
@@ -172,8 +172,8 @@ export default function ReportDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Funnel Report</h1>
-            <p className="text-sm text-slate-400">
+            <h1 className="text-2xl font-bold text-foreground">Funnel Report</h1>
+            <p className="text-sm text-muted-foreground">
               {report.period_start} to {report.period_end}
               <Badge variant="outline" className="ml-2 capitalize">{report.report_type}</Badge>
             </p>
@@ -187,23 +187,23 @@ export default function ReportDetailPage() {
       {/* Executive Summary */}
       <Card className="border-indigo-500/20 bg-[#1e1b4b]/40">
         <CardContent className="pt-6">
-          <p className="text-slate-200 leading-relaxed text-lg">{data.executive_summary}</p>
+          <p className="text-foreground leading-relaxed text-lg">{data.executive_summary}</p>
         </CardContent>
       </Card>
 
       {/* 5-Stage Scorecard */}
       <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Funnel Scorecard</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-3">Funnel Scorecard</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {STAGE_CONFIG.map(({ key, label, icon: Icon, color, bg }) => {
             const item = data.scorecard[key]
             return (
-              <Card key={key} className={cn("border-slate-700/50", bg)}>
+              <Card key={key} className={cn("border-border/50", bg)}>
                 <CardContent className="pt-4 pb-3 px-4 text-center">
                   <Icon className={cn("h-5 w-5 mx-auto mb-1", color)} />
-                  <p className="text-xs text-slate-400 mb-1">{label}</p>
-                  <p className="text-2xl font-bold text-white">{item.value.toLocaleString()}</p>
-                  <p className="text-xs text-slate-500 mb-1">{item.label}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                  <p className="text-2xl font-bold text-foreground">{item.value.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
                   <ChangeIndicator pct={item.change_pct} />
                 </CardContent>
               </Card>
@@ -213,31 +213,31 @@ export default function ReportDetailPage() {
       </div>
 
       {/* Money In vs Money Out */}
-      <Card className="border-slate-700/50">
+      <Card className="border-border/50">
         <CardHeader>
-          <CardTitle className="text-white text-lg">Money In vs Money Out</CardTitle>
+          <CardTitle className="text-foreground text-lg">Money In vs Money Out</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-slate-400 mb-1">Ad Spend</p>
+              <p className="text-xs text-muted-foreground mb-1">Ad Spend</p>
               <p className="text-xl font-bold text-red-400">{formatNaira(data.financials.ad_spend)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Revenue</p>
+              <p className="text-xs text-muted-foreground mb-1">Revenue</p>
               <p className="text-xl font-bold text-green-400">{formatNaira(data.financials.revenue)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">ROI</p>
+              <p className="text-xs text-muted-foreground mb-1">ROI</p>
               <p className="text-xl font-bold text-indigo-400">{data.financials.roi_multiple}x</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Cost per Customer</p>
-              <p className="text-xl font-bold text-slate-200">{formatNaira(data.financials.cost_per_customer)}</p>
+              <p className="text-xs text-muted-foreground mb-1">Cost per Customer</p>
+              <p className="text-xl font-bold text-foreground">{formatNaira(data.financials.cost_per_customer)}</p>
             </div>
           </div>
           {data.financials.avg_order_value > 0 && (
-            <p className="text-sm text-slate-400 mt-3">
+            <p className="text-sm text-muted-foreground mt-3">
               Average order value: {formatNaira(data.financials.avg_order_value)}
             </p>
           )}
@@ -255,7 +255,7 @@ export default function ReportDetailPage() {
           <CardContent>
             <ul className="space-y-2">
               {data.what_worked.map((item, i) => (
-                <li key={i} className="text-sm text-slate-300 flex gap-2">
+                <li key={i} className="text-sm text-muted-foreground flex gap-2">
                   <span className="text-green-400 mt-0.5 shrink-0">+</span>
                   {item}
                 </li>
@@ -273,7 +273,7 @@ export default function ReportDetailPage() {
           <CardContent>
             <ul className="space-y-2">
               {data.needs_attention.map((item, i) => (
-                <li key={i} className="text-sm text-slate-300 flex gap-2">
+                <li key={i} className="text-sm text-muted-foreground flex gap-2">
                   <span className="text-yellow-400 mt-0.5 shrink-0">!</span>
                   {item}
                 </li>
@@ -291,7 +291,7 @@ export default function ReportDetailPage() {
           <CardContent>
             <ul className="space-y-2">
               {data.recommendations.map((item, i) => (
-                <li key={i} className="text-sm text-slate-300 flex gap-2">
+                <li key={i} className="text-sm text-muted-foreground flex gap-2">
                   <span className="text-blue-400 mt-0.5 shrink-0">{i + 1}.</span>
                   {item}
                 </li>
@@ -312,20 +312,20 @@ export default function ReportDetailPage() {
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-slate-400">Customers Synced</p>
-                <p className="text-lg font-bold text-white">{data.lookalike_update.customers_synced}</p>
+                <p className="text-xs text-muted-foreground">Customers Synced</p>
+                <p className="text-lg font-bold text-foreground">{data.lookalike_update.customers_synced}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Audience Reach</p>
-                <p className="text-lg font-bold text-white">{data.lookalike_update.audience_reach.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Audience Reach</p>
+                <p className="text-lg font-bold text-foreground">{data.lookalike_update.audience_reach.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Lookalike Leads</p>
-                <p className="text-lg font-bold text-white">{data.lookalike_update.lookalike_leads}</p>
+                <p className="text-xs text-muted-foreground">Lookalike Leads</p>
+                <p className="text-lg font-bold text-foreground">{data.lookalike_update.lookalike_leads}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Match Rate</p>
-                <p className="text-lg font-bold text-white">{data.lookalike_update.lookalike_pct}%</p>
+                <p className="text-xs text-muted-foreground">Match Rate</p>
+                <p className="text-lg font-bold text-foreground">{data.lookalike_update.lookalike_pct}%</p>
               </div>
             </div>
           </CardContent>
@@ -333,10 +333,10 @@ export default function ReportDetailPage() {
       )}
 
       {/* Next Report Date */}
-      <Separator className="border-slate-700/50" />
-      <div className="flex items-center justify-center gap-2 text-slate-400 text-sm">
+      <Separator className="border-border/50" />
+      <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
         <Calendar className="h-4 w-4" />
-        Next report: <span className="text-white font-medium">{data.next_report_date}</span>
+        Next report: <span className="text-foreground font-medium">{data.next_report_date}</span>
       </div>
     </div>
   )

@@ -213,20 +213,20 @@ export function EmailConfig() {
     <div className="grid gap-6 lg:grid-cols-[1fr_380px] mt-4">
       <div className="space-y-6">
         {/* Connection Status */}
-        <Alert className="bg-slate-900 border-slate-700">
+        <Alert className="bg-card border-border">
           <div className="flex items-center gap-2">
             {connectionStatus === "connected" ? (
               <CheckCircle2 className="size-4 text-primary" />
             ) : (
               <XCircle className="size-4 text-red-500" />
             )}
-            <AlertTitle className="text-white mb-0">
+            <AlertTitle className="text-foreground mb-0">
               {connectionStatus === "connected"
                 ? `Connected${accountName ? ` \u2014 ${accountName}` : ""}`
                 : "Not Connected"}
             </AlertTitle>
           </div>
-          <AlertDescription className="text-slate-400">
+          <AlertDescription className="text-muted-foreground">
             {connectionStatus === "connected"
               ? "Your Brevo API key is valid. Emails can be sent via automations."
               : statusMessage || "Configure your Brevo API credentials below to enable email sending."}
@@ -234,16 +234,16 @@ export function EmailConfig() {
         </Alert>
 
         {/* API Credentials */}
-        <Card className="bg-slate-900 border-slate-700 ring-0 ring-transparent">
+        <Card className="bg-card border-border ring-0 ring-transparent">
           <CardHeader>
-            <CardTitle className="text-white">Brevo Email Configuration</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className="text-foreground">Brevo Email Configuration</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Enter your Brevo (formerly Sendinblue) API credentials for transactional email.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Brevo API Key</Label>
+              <Label className="text-muted-foreground">Brevo API Key</Label>
               <div className="relative">
                 <Input
                   type={showKey ? "text" : "password"}
@@ -259,43 +259,43 @@ export function EmailConfig() {
                       setKeyEdited(true);
                     }
                   }}
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pr-10"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
               {hasConfig && !keyEdited && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Key is hidden for security. Re-enter it to update configuration.
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-slate-300">Sender Name</Label>
+              <Label className="text-muted-foreground">Sender Name</Label>
               <Input
                 placeholder="e.g. Marketing4Effect"
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-slate-300">Sender Email</Label>
+              <Label className="text-muted-foreground">Sender Email</Label>
               <Input
                 type="email"
                 placeholder="e.g. hello@marketing4effect.com"
                 value={senderEmail}
                 onChange={(e) => setSenderEmail(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Must be a verified sender in your Brevo account.
               </p>
             </div>
@@ -319,7 +319,7 @@ export function EmailConfig() {
             variant="outline"
             onClick={handleTestConnection}
             disabled={testing || !hasConfig}
-            className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             {testing ? (
               <><Loader2 className="size-4 animate-spin" /> Testing...</>
@@ -346,22 +346,22 @@ export function EmailConfig() {
 
       {/* Setup Instructions Sidebar */}
       <div>
-        <Card className="bg-slate-900 border-slate-700 ring-0 ring-transparent">
+        <Card className="bg-card border-border ring-0 ring-transparent">
           <CardHeader>
-            <CardTitle className="text-white text-base">Setup Instructions</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className="text-foreground text-base">Setup Instructions</CardTitle>
+            <CardDescription className="text-muted-foreground">
               How to get your Brevo API key.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-400">
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Sign up at <strong className="text-slate-200">brevo.com</strong> (free tier: 300 emails/day)</li>
-              <li>Go to <strong className="text-slate-200">Settings \u2192 SMTP &amp; API \u2192 API Keys</strong></li>
-              <li>Click <strong className="text-slate-200">Generate a new API key</strong></li>
-              <li>Copy the key (starts with <code className="text-slate-300">xkeysib-</code>)</li>
-              <li>Verify your sender email in <strong className="text-slate-200">Settings \u2192 Senders &amp; IPs</strong></li>
+              <li>Sign up at <strong className="text-foreground">brevo.com</strong> (free tier: 300 emails/day)</li>
+              <li>Go to <strong className="text-foreground">Settings \u2192 SMTP &amp; API \u2192 API Keys</strong></li>
+              <li>Click <strong className="text-foreground">Generate a new API key</strong></li>
+              <li>Copy the key (starts with <code className="text-muted-foreground">xkeysib-</code>)</li>
+              <li>Verify your sender email in <strong className="text-foreground">Settings \u2192 Senders &amp; IPs</strong></li>
             </ol>
-            <div className="pt-3 border-t border-slate-700">
+            <div className="pt-3 border-t border-border">
               <a
                 href="https://developers.brevo.com/docs/getting-started"
                 target="_blank"

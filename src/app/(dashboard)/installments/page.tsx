@@ -41,7 +41,7 @@ const PLAN_STATUS_CONFIG: Record<InstallmentPlanStatus, { label: string; color: 
   active: { label: "Active", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
   completed: { label: "Completed", color: "bg-green-500/20 text-green-400 border-green-500/30" },
   defaulted: { label: "Defaulted", color: "bg-red-500/20 text-red-400 border-red-500/30" },
-  cancelled: { label: "Cancelled", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+  cancelled: { label: "Cancelled", color: "bg-muted/50 text-muted-foreground border-border" },
   paused: { label: "Paused", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
 };
 
@@ -243,8 +243,8 @@ export default function InstallmentsPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Installment Plans</h1>
-          <p className="text-zinc-400 text-sm">Manage payment plans and track installments</p>
+          <h1 className="text-2xl font-bold text-foreground">Installment Plans</h1>
+          <p className="text-muted-foreground text-sm">Manage payment plans and track installments</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
           <Plus className="h-4 w-4 mr-2" /> Create Plan
@@ -253,36 +253,36 @@ export default function InstallmentsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Active Plans</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Plans</CardTitle>
             <CalendarClock className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{activePlans}</div>
-            <p className="text-xs text-zinc-500">{total} total plans</p>
+            <div className="text-2xl font-bold text-foreground">{activePlans}</div>
+            <p className="text-xs text-muted-foreground">{total} total plans</p>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Expected Collections</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Expected Collections</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               {formatCurrency(totalExpected, currency)}
             </div>
-            <p className="text-xs text-zinc-500">remaining from active plans</p>
+            <p className="text-xs text-muted-foreground">remaining from active plans</p>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Overdue</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-400">{overdueCount}</div>
-            <p className="text-xs text-zinc-500">plans with overdue installments</p>
+            <p className="text-xs text-muted-foreground">plans with overdue installments</p>
           </CardContent>
         </Card>
       </div>
@@ -290,7 +290,7 @@ export default function InstallmentsPage() {
       {/* Filter */}
       <div className="flex gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px] bg-zinc-900/50 border-zinc-700 text-white">
+          <SelectTrigger className="w-[180px] bg-card/50 border-border text-foreground">
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
           <SelectContent>
@@ -303,28 +303,28 @@ export default function InstallmentsPage() {
       </div>
 
       {/* Plans Table */}
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardHeader>
-          <CardTitle className="text-white">Installment Plans</CardTitle>
-          <CardDescription className="text-zinc-400">{total} total plans</CardDescription>
+          <CardTitle className="text-foreground">Installment Plans</CardTitle>
+          <CardDescription className="text-muted-foreground">{total} total plans</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-800">
-                <TableHead className="text-zinc-400">Customer</TableHead>
-                <TableHead className="text-zinc-400">Plan</TableHead>
-                <TableHead className="text-zinc-400 text-right">Total</TableHead>
-                <TableHead className="text-zinc-400">Progress</TableHead>
-                <TableHead className="text-zinc-400">Next Due</TableHead>
-                <TableHead className="text-zinc-400">Status</TableHead>
-                <TableHead className="text-zinc-400">Actions</TableHead>
+              <TableRow className="border-border">
+                <TableHead className="text-muted-foreground">Customer</TableHead>
+                <TableHead className="text-muted-foreground">Plan</TableHead>
+                <TableHead className="text-muted-foreground text-right">Total</TableHead>
+                <TableHead className="text-muted-foreground">Progress</TableHead>
+                <TableHead className="text-muted-foreground">Next Due</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {plans.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-zinc-500 py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No installment plans found. Create one to get started.
                   </TableCell>
                 </TableRow>
@@ -334,24 +334,24 @@ export default function InstallmentsPage() {
                   const statusCfg = PLAN_STATUS_CONFIG[plan.status] || PLAN_STATUS_CONFIG.active;
                   const progress = getProgressPercent(plan);
                   return (
-                    <TableRow key={plan.id} className="border-zinc-800">
-                      <TableCell className="text-white font-medium">
+                    <TableRow key={plan.id} className="border-border">
+                      <TableCell className="text-foreground font-medium">
                         {contact?.name || "Unknown"}
                       </TableCell>
-                      <TableCell className="text-zinc-300">{plan.plan_name}</TableCell>
-                      <TableCell className="text-white text-right">
+                      <TableCell className="text-muted-foreground">{plan.plan_name}</TableCell>
+                      <TableCell className="text-foreground text-right">
                         {formatCurrency(plan.total_amount, currency)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 min-w-[120px]">
                           <Progress value={progress} className="h-2 flex-1" />
-                          <span className="text-xs text-zinc-400 w-10 text-right">{progress}%</span>
+                          <span className="text-xs text-muted-foreground w-10 text-right">{progress}%</span>
                         </div>
-                        <p className="text-xs text-zinc-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {plan.installments_paid}/{plan.number_of_installments} paid
                         </p>
                       </TableCell>
-                      <TableCell className="text-zinc-300">
+                      <TableCell className="text-muted-foreground">
                         {plan.next_due_date
                           ? new Date(plan.next_due_date).toLocaleDateString("en-NG", {
                               day: "numeric", month: "short",
@@ -367,7 +367,7 @@ export default function InstallmentsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+                          className="border-border text-muted-foreground hover:bg-muted"
                           onClick={() => fetchPlanDetail(plan.id)}
                         >
                           <Eye className="h-3 w-3 mr-1" /> View
@@ -384,15 +384,15 @@ export default function InstallmentsPage() {
 
       {/* Create Plan Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Installment Plan</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-zinc-300">Customer *</Label>
+              <Label className="text-muted-foreground">Customer *</Label>
               <Select value={createForm.contact_id} onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                <SelectTrigger className="bg-muted border-border">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
                 <SelectContent>
@@ -405,50 +405,50 @@ export default function InstallmentsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">Plan Name *</Label>
+              <Label className="text-muted-foreground">Plan Name *</Label>
               <Input
                 value={createForm.plan_name}
                 onChange={(e) => setCreateForm((p) => ({ ...p, plan_name: e.target.value }))}
                 placeholder="e.g. Samsung TV - 6 months"
-                className="bg-zinc-800 border-zinc-700"
+                className="bg-muted border-border"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Total Amount ({currency}) *</Label>
+                <Label className="text-muted-foreground">Total Amount ({currency}) *</Label>
                 <Input
                   type="number"
                   value={createForm.total_amount}
                   onChange={(e) => setCreateForm((p) => ({ ...p, total_amount: e.target.value }))}
                   placeholder="0.00"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Down Payment ({currency})</Label>
+                <Label className="text-muted-foreground">Down Payment ({currency})</Label>
                 <Input
                   type="number"
                   value={createForm.down_payment}
                   onChange={(e) => setCreateForm((p) => ({ ...p, down_payment: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Number of Installments</Label>
+                <Label className="text-muted-foreground">Number of Installments</Label>
                 <Input
                   type="number"
                   value={createForm.number_of_installments}
                   onChange={(e) => setCreateForm((p) => ({ ...p, number_of_installments: e.target.value }))}
                   min="1"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Frequency</Label>
+                <Label className="text-muted-foreground">Frequency</Label>
                 <Select value={createForm.frequency} onValueChange={(v) => setCreateForm((p) => ({ ...p, frequency: v as InstallmentFrequency }))}>
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -461,18 +461,18 @@ export default function InstallmentsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-zinc-300">Grace Period (days)</Label>
+                <Label className="text-muted-foreground">Grace Period (days)</Label>
                 <Input
                   type="number"
                   value={createForm.grace_period_days}
                   onChange={(e) => setCreateForm((p) => ({ ...p, grace_period_days: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Late Fee Type</Label>
+                <Label className="text-muted-foreground">Late Fee Type</Label>
                 <Select value={createForm.late_fee_type} onValueChange={(v) => setCreateForm((p) => ({ ...p, late_fee_type: v as LateFeeType }))}>
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -485,32 +485,32 @@ export default function InstallmentsPage() {
             </div>
             {createForm.late_fee_type !== "none" && (
               <div>
-                <Label className="text-zinc-300">
+                <Label className="text-muted-foreground">
                   Late Fee {createForm.late_fee_type === "percentage" ? "(%)" : `(${currency})`}
                 </Label>
                 <Input
                   type="number"
                   value={createForm.late_fee_amount}
                   onChange={(e) => setCreateForm((p) => ({ ...p, late_fee_amount: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             )}
             <div>
-              <Label className="text-zinc-300">Notes</Label>
+              <Label className="text-muted-foreground">Notes</Label>
               <Textarea
                 value={createForm.notes}
                 onChange={(e) => setCreateForm((p) => ({ ...p, notes: e.target.value }))}
                 placeholder="Additional notes..."
-                className="bg-zinc-800 border-zinc-700"
+                className="bg-muted border-border"
                 rows={2}
               />
             </div>
             {/* Preview */}
             {createForm.total_amount && createForm.number_of_installments && (
-              <div className="bg-zinc-800 rounded-lg p-3">
-                <p className="text-sm text-zinc-400 mb-1">Plan Preview</p>
-                <p className="text-white">
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-sm text-muted-foreground mb-1">Plan Preview</p>
+                <p className="text-foreground">
                   {createForm.number_of_installments} payments of{" "}
                   <span className="text-[#C9A84C] font-bold">
                     {formatCurrency(
@@ -522,7 +522,7 @@ export default function InstallmentsPage() {
                   {" "}{createForm.frequency}
                 </p>
                 {parseFloat(createForm.down_payment || "0") > 0 && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     Down payment: {formatCurrency(parseFloat(createForm.down_payment), currency)}
                   </p>
                 )}
@@ -530,7 +530,7 @@ export default function InstallmentsPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="border-border">
               Cancel
             </Button>
             <Button onClick={handleCreatePlan} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
@@ -543,27 +543,27 @@ export default function InstallmentsPage() {
 
       {/* Plan Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedPlan?.plan_name || "Plan Details"}</DialogTitle>
           </DialogHeader>
           {selectedPlan && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-zinc-800 rounded-lg p-3">
-                  <p className="text-xs text-zinc-400">Total</p>
-                  <p className="text-lg font-bold text-white">
+                <div className="bg-muted rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-lg font-bold text-foreground">
                     {formatCurrency(selectedPlan.total_amount, currency)}
                   </p>
                 </div>
-                <div className="bg-zinc-800 rounded-lg p-3">
-                  <p className="text-xs text-zinc-400">Paid</p>
+                <div className="bg-muted rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Paid</p>
                   <p className="text-lg font-bold text-green-400">
                     {formatCurrency(selectedPlan.total_paid, currency)}
                   </p>
                 </div>
-                <div className="bg-zinc-800 rounded-lg p-3">
-                  <p className="text-xs text-zinc-400">Remaining</p>
+                <div className="bg-muted rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Remaining</p>
                   <p className="text-lg font-bold text-yellow-400">
                     {formatCurrency(selectedPlan.total_amount - selectedPlan.total_paid, currency)}
                   </p>
@@ -572,23 +572,23 @@ export default function InstallmentsPage() {
 
               <div>
                 <Progress value={getProgressPercent(selectedPlan)} className="h-3" />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {selectedPlan.installments_paid} of {selectedPlan.number_of_installments} installments paid
                 </p>
               </div>
 
               {/* Schedule Timeline */}
               <div>
-                <h3 className="text-sm font-medium text-zinc-300 mb-2">Payment Schedule</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Payment Schedule</h3>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-zinc-800">
-                      <TableHead className="text-zinc-400">#</TableHead>
-                      <TableHead className="text-zinc-400">Due Date</TableHead>
-                      <TableHead className="text-zinc-400 text-right">Amount</TableHead>
-                      <TableHead className="text-zinc-400 text-right">Paid</TableHead>
-                      <TableHead className="text-zinc-400">Status</TableHead>
-                      <TableHead className="text-zinc-400">Action</TableHead>
+                    <TableRow className="border-border">
+                      <TableHead className="text-muted-foreground">#</TableHead>
+                      <TableHead className="text-muted-foreground">Due Date</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Amount</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Paid</TableHead>
+                      <TableHead className="text-muted-foreground">Status</TableHead>
+                      <TableHead className="text-muted-foreground">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -597,16 +597,16 @@ export default function InstallmentsPage() {
                       const statusColor =
                         entry.status === "paid" ? "text-green-400" :
                         entry.status === "overdue" ? "text-red-400" :
-                        entry.status === "partial" ? "text-blue-400" : "text-zinc-400";
+                        entry.status === "partial" ? "text-blue-400" : "text-muted-foreground";
                       return (
-                        <TableRow key={entry.id} className="border-zinc-800">
-                          <TableCell className="text-zinc-300">{entry.installment_number}</TableCell>
-                          <TableCell className="text-zinc-300">
+                        <TableRow key={entry.id} className="border-border">
+                          <TableCell className="text-muted-foreground">{entry.installment_number}</TableCell>
+                          <TableCell className="text-muted-foreground">
                             {new Date(entry.due_date).toLocaleDateString("en-NG", {
                               day: "numeric", month: "short", year: "numeric",
                             })}
                           </TableCell>
-                          <TableCell className="text-white text-right">
+                          <TableCell className="text-foreground text-right">
                             {formatCurrency(entry.amount_due, currency)}
                           </TableCell>
                           <TableCell className="text-green-400 text-right">
@@ -651,14 +651,14 @@ export default function InstallmentsPage() {
 
       {/* Record Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle>Record Installment Payment</DialogTitle>
           </DialogHeader>
           {selectedScheduleEntry && (
             <div className="space-y-4">
-              <div className="bg-zinc-800 rounded-lg p-3">
-                <p className="text-sm text-zinc-400">
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-sm text-muted-foreground">
                   Installment #{selectedScheduleEntry.installment_number} - Due{" "}
                   {new Date(selectedScheduleEntry.due_date).toLocaleDateString("en-NG")}
                 </p>
@@ -667,25 +667,25 @@ export default function InstallmentsPage() {
                     selectedScheduleEntry.amount_due - (selectedScheduleEntry.amount_paid || 0),
                     currency,
                   )}{" "}
-                  <span className="text-sm text-zinc-500">remaining</span>
+                  <span className="text-sm text-muted-foreground">remaining</span>
                 </p>
               </div>
               <div>
-                <Label className="text-zinc-300">Payment Amount ({currency}) *</Label>
+                <Label className="text-muted-foreground">Payment Amount ({currency}) *</Label>
                 <Input
                   type="number"
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
               <div>
-                <Label className="text-zinc-300">Payment Method</Label>
+                <Label className="text-muted-foreground">Payment Method</Label>
                 <Select
                   value={paymentForm.payment_method}
                   onValueChange={(v) => setPaymentForm((p) => ({ ...p, payment_method: v }))}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700">
+                  <SelectTrigger className="bg-muted border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -699,21 +699,21 @@ export default function InstallmentsPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-zinc-300">Reference</Label>
+                <Label className="text-muted-foreground">Reference</Label>
                 <Input
                   value={paymentForm.payment_reference}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, payment_reference: e.target.value }))}
                   placeholder="e.g. TRF-12345"
-                  className="bg-zinc-800 border-zinc-700"
+                  className="bg-muted border-border"
                 />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="border-border">
               Cancel
             </Button>
-            <Button onClick={handleRecordPayment} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button onClick={handleRecordPayment} disabled={saving} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Record Payment
             </Button>

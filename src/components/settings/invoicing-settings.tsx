@@ -81,18 +81,18 @@ export function InvoicingSettings() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   const field = (label: string, key: keyof InvoiceConfig, type = "text", placeholder = "") => (
     <div>
-      <Label className="text-zinc-300">{label}</Label>
+      <Label className="text-muted-foreground">{label}</Label>
       <Input
         type={type}
         value={config[key] as string | number}
         onChange={(e) => setConfig({ ...config, [key]: type === "number" ? Number(e.target.value) : e.target.value })}
         placeholder={placeholder}
-        className="bg-zinc-800 border-zinc-700 text-white"
+        className="bg-muted border-border text-foreground"
       />
     </div>
   );
@@ -100,36 +100,36 @@ export function InvoicingSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <FileText className="h-5 w-5 text-[#C9A84C]" /> Invoice Settings
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Configure your business details for invoices, quotations, and receipts.
         </p>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Business Details</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Business Details</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {field("Business Name", "business_name", "text", "Your Company Ltd")}
           {field("Phone", "business_phone", "tel", "+234...")}
           {field("Email", "business_email", "email", "billing@company.com")}
           {field("Tax ID / TIN", "tax_id", "text", "Optional")}
           <div className="md:col-span-2">
-            <Label className="text-zinc-300">Business Address</Label>
+            <Label className="text-muted-foreground">Business Address</Label>
             <Textarea
               value={config.business_address}
               onChange={(e) => setConfig({ ...config, business_address: e.target.value })}
               placeholder="Full business address"
-              className="bg-zinc-800 border-zinc-700 text-white"
+              className="bg-muted border-border text-foreground"
               rows={2}
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Bank Details</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Bank Details</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {field("Bank Name", "bank_name", "text", "Zenith Bank")}
           {field("Account Name", "bank_account_name", "text", "Your Company Ltd")}
@@ -138,28 +138,28 @@ export function InvoicingSettings() {
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Defaults</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Defaults</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {field("Default Tax Rate (%)", "default_tax_rate", "number")}
           {field("Invoice Prefix", "invoice_prefix", "text", "INV")}
           {field("Quotation Prefix", "quotation_prefix", "text", "QUO")}
           {field("Receipt Prefix", "receipt_prefix", "text", "REC")}
           <div className="md:col-span-2">
-            <Label className="text-zinc-300">Default Payment Terms</Label>
+            <Label className="text-muted-foreground">Default Payment Terms</Label>
             <Textarea
               value={config.default_payment_terms}
               onChange={(e) => setConfig({ ...config, default_payment_terms: e.target.value })}
-              className="bg-zinc-800 border-zinc-700 text-white"
+              className="bg-muted border-border text-foreground"
               rows={2}
             />
           </div>
           <div className="md:col-span-2">
-            <Label className="text-zinc-300">Invoice Footer Note</Label>
+            <Label className="text-muted-foreground">Invoice Footer Note</Label>
             <Textarea
               value={config.invoice_footer_note}
               onChange={(e) => setConfig({ ...config, invoice_footer_note: e.target.value })}
-              className="bg-zinc-800 border-zinc-700 text-white"
+              className="bg-muted border-border text-foreground"
               rows={2}
             />
           </div>

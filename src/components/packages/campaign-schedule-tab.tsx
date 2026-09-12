@@ -381,7 +381,7 @@ export default function CampaignScheduleTab({
                           <span className={cn(
                             "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
                             isCurrentWeek
-                              ? "bg-accent-500 text-white"
+                              ? "bg-accent-500 text-primary-foreground"
                               : isPastWeek
                                 ? "bg-emerald-500/20 text-emerald-400"
                                 : "bg-muted text-muted-foreground"

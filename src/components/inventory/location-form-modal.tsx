@@ -113,30 +113,30 @@ export function LocationFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+      <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Location" : "Add Location"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Name *</Label>
+            <Label className="text-muted-foreground">Name *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="e.g. Main Warehouse"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Type *</Label>
+            <Label className="text-muted-foreground">Type *</Label>
             <Select
               value={form.locationType}
               onValueChange={(v) =>
                 setForm((p) => ({ ...p, locationType: v as LocationType }))
               }
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+              <SelectTrigger className="bg-muted border-border mt-1">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
@@ -150,14 +150,14 @@ export function LocationFormModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">Parent Location</Label>
+            <Label className="text-muted-foreground">Parent Location</Label>
             <Select
               value={form.parentId}
               onValueChange={(v) =>
                 setForm((p) => ({ ...p, parentId: v === "none" ? "" : v }))
               }
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+              <SelectTrigger className="bg-muted border-border mt-1">
                 <SelectValue placeholder="None (top level)" />
               </SelectTrigger>
               <SelectContent>
@@ -174,12 +174,12 @@ export function LocationFormModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">Address</Label>
+            <Label className="text-muted-foreground">Address</Label>
             <Textarea
               value={form.address}
               onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
               placeholder="Physical address (optional)"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
@@ -188,7 +188,7 @@ export function LocationFormModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700"
+            className="border-border"
           >
             Cancel
           </Button>

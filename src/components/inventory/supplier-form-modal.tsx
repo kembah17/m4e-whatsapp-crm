@@ -104,7 +104,7 @@ export function SupplierFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Supplier" : "Add Supplier"}
@@ -112,42 +112,42 @@ export function SupplierFormModal({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Company Name *</Label>
+            <Label className="text-muted-foreground">Company Name *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="e.g. ABC Distributors Ltd"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-zinc-300">Contact Person</Label>
+              <Label className="text-muted-foreground">Contact Person</Label>
               <Input
                 value={form.contactName}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, contactName: e.target.value }))
                 }
                 placeholder="Full name"
-                className="bg-zinc-800 border-zinc-700 mt-1"
+                className="bg-muted border-border mt-1"
               />
             </div>
             <div>
-              <Label className="text-zinc-300">Phone</Label>
+              <Label className="text-muted-foreground">Phone</Label>
               <Input
                 value={form.phone}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, phone: e.target.value }))
                 }
                 placeholder="+234..."
-                className="bg-zinc-800 border-zinc-700 mt-1"
+                className="bg-muted border-border mt-1"
               />
             </div>
           </div>
 
           <div>
-            <Label className="text-zinc-300">Email</Label>
+            <Label className="text-muted-foreground">Email</Label>
             <Input
               type="email"
               value={form.email}
@@ -155,44 +155,44 @@ export function SupplierFormModal({
                 setForm((p) => ({ ...p, email: e.target.value }))
               }
               placeholder="supplier@example.com"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Address</Label>
+            <Label className="text-muted-foreground">Address</Label>
             <Textarea
               value={form.address}
               onChange={(e) =>
                 setForm((p) => ({ ...p, address: e.target.value }))
               }
               placeholder="Business address"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Payment Terms</Label>
+            <Label className="text-muted-foreground">Payment Terms</Label>
             <Input
               value={form.paymentTerms}
               onChange={(e) =>
                 setForm((p) => ({ ...p, paymentTerms: e.target.value }))
               }
               placeholder="e.g. Net 30, COD, 50% upfront"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Notes</Label>
+            <Label className="text-muted-foreground">Notes</Label>
             <Textarea
               value={form.notes}
               onChange={(e) =>
                 setForm((p) => ({ ...p, notes: e.target.value }))
               }
               placeholder="Additional notes about this supplier"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
@@ -201,7 +201,7 @@ export function SupplierFormModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700"
+            className="border-border"
           >
             Cancel
           </Button>

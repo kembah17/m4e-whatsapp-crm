@@ -212,7 +212,7 @@ export function StockCountWizard({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-purple-400" />
@@ -222,7 +222,7 @@ export function StockCountWizard({
 
         {/* Progress */}
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-zinc-500">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>Step {step} of 3</span>
             <span>
               {step === 1
@@ -232,7 +232,7 @@ export function StockCountWizard({
                 : "Review & Finalize"}
             </span>
           </div>
-          <div className="w-full bg-zinc-800 rounded-full h-1">
+          <div className="w-full bg-muted rounded-full h-1">
             <div
               className="bg-purple-500 h-1 rounded-full transition-all"
               style={{ width: `${(step / 3) * 100}%` }}
@@ -243,14 +243,14 @@ export function StockCountWizard({
         {/* Step 1: Select Location */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Select the location to count. The system will load all products
               and their expected quantities at that location.
             </p>
             <div>
-              <Label className="text-zinc-300">Location *</Label>
+              <Label className="text-muted-foreground">Location *</Label>
               <Select value={locationId} onValueChange={setLocationId}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Select location to count" />
                 </SelectTrigger>
                 <SelectContent>
@@ -263,12 +263,12 @@ export function StockCountWizard({
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">Notes (optional)</Label>
+              <Label className="text-muted-foreground">Notes (optional)</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. Monthly stock count, End of quarter audit"
-                className="bg-zinc-800 border-zinc-700 mt-1"
+                className="bg-muted border-border mt-1"
                 rows={2}
               />
             </div>
@@ -279,16 +279,16 @@ export function StockCountWizard({
         {step === 2 && countData && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Enter the physical count for each product.
               </p>
-              <Badge variant="outline" className="border-zinc-600 text-zinc-400">
+              <Badge variant="outline" className="border-border text-muted-foreground">
                 {countedCount} / {items.length} counted
               </Badge>
             </div>
 
             {items.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No products found at this location.</p>
                 <p className="text-xs mt-1">
@@ -305,27 +305,27 @@ export function StockCountWizard({
                   return (
                     <div
                       key={item.id}
-                      className={`bg-zinc-800 rounded-lg p-3 border transition-colors ${
+                      className={`bg-muted rounded-lg p-3 border transition-colors ${
                         variance !== null && variance !== 0
                           ? variance > 0
                             ? "border-blue-500/50"
                             : "border-red-500/50"
                           : variance === 0
                           ? "border-green-500/50"
-                          : "border-zinc-700"
+                          : "border-border"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {item.product_name}
                           </p>
                           {item.product_sku && (
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-muted-foreground">
                               SKU: {item.product_sku}
                             </p>
                           )}
-                          <p className="text-xs text-zinc-400 mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             Expected: <span className="font-medium">{item.expected_quantity}</span>
                           </p>
                         </div>
@@ -341,7 +341,7 @@ export function StockCountWizard({
                               }))
                             }
                             placeholder="Count"
-                            className="bg-zinc-900 border-zinc-600 w-24 text-center"
+                            className="bg-card border-border w-24 text-center"
                           />
                           {variance !== null && (
                             <div
@@ -376,19 +376,19 @@ export function StockCountWizard({
         {/* Step 3: Review & Finalize */}
         {step === 3 && countData && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Review the count results. Finalizing will create stock adjustment
               entries for any variances.
             </p>
 
             {/* Summary */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700 text-center">
-                <p className="text-[10px] text-zinc-500 uppercase">Items Counted</p>
-                <p className="text-lg font-bold text-white">{countedCount}</p>
+              <div className="bg-muted rounded-lg p-3 border border-border text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Items Counted</p>
+                <p className="text-lg font-bold text-foreground">{countedCount}</p>
               </div>
-              <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700 text-center">
-                <p className="text-[10px] text-zinc-500 uppercase">Matches</p>
+              <div className="bg-muted rounded-lg p-3 border border-border text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Matches</p>
                 <p className="text-lg font-bold text-green-400">
                   {items.filter((i) => {
                     const c = parseInt(countedValues[i.id]);
@@ -396,8 +396,8 @@ export function StockCountWizard({
                   }).length}
                 </p>
               </div>
-              <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700 text-center">
-                <p className="text-[10px] text-zinc-500 uppercase">Variances</p>
+              <div className="bg-muted rounded-lg p-3 border border-border text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Variances</p>
                 <p className="text-lg font-bold text-amber-400">
                   {items.filter((i) => {
                     const c = parseInt(countedValues[i.id]);
@@ -426,13 +426,13 @@ export function StockCountWizard({
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between bg-zinc-800 rounded p-2 border border-zinc-700"
+                          className="flex items-center justify-between bg-muted rounded p-2 border border-border"
                         >
                           <div>
-                            <span className="text-sm text-white">
+                            <span className="text-sm text-foreground">
                               {item.product_name}
                             </span>
-                            <span className="text-xs text-zinc-500 ml-2">
+                            <span className="text-xs text-muted-foreground ml-2">
                               Expected: {item.expected_quantity} | Counted: {counted}
                             </span>
                           </div>
@@ -467,7 +467,7 @@ export function StockCountWizard({
             <Button
               variant="outline"
               onClick={() => setStep(step - 1)}
-              className="border-zinc-700"
+              className="border-border"
             >
               Back
             </Button>
@@ -477,14 +477,14 @@ export function StockCountWizard({
               <Button
                 variant="outline"
                 onClick={() => handleClose(false)}
-                className="border-zinc-700"
+                className="border-border"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateCount}
                 disabled={loading || !locationId}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
+                className="bg-purple-600 hover:bg-purple-700 text-primary-foreground"
               >
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Start Count
@@ -496,7 +496,7 @@ export function StockCountWizard({
             <Button
               onClick={handleSaveCounts}
               disabled={saving || countedCount === 0}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-purple-600 hover:bg-purple-700 text-primary-foreground"
             >
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save & Review
@@ -508,14 +508,14 @@ export function StockCountWizard({
               <Button
                 variant="outline"
                 onClick={() => setStep(2)}
-                className="border-zinc-700"
+                className="border-border"
               >
                 Back to Counting
               </Button>
               <Button
                 onClick={handleFinalize}
                 disabled={finalizing}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-primary-foreground"
               >
                 {finalizing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Finalize Count

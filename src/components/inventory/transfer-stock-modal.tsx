@@ -131,7 +131,7 @@ export function TransferStockModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+      <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowLeftRight className="h-5 w-5 text-blue-400" />
@@ -140,9 +140,9 @@ export function TransferStockModal({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Product *</Label>
+            <Label className="text-muted-foreground">Product *</Label>
             {loadingProducts ? (
-              <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
+              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading products...
               </div>
             ) : (
@@ -150,7 +150,7 @@ export function TransferStockModal({
                 value={form.productId}
                 onValueChange={(v) => setForm((p) => ({ ...p, productId: v }))}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Select product" />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,14 +166,14 @@ export function TransferStockModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-zinc-300">From Location *</Label>
+              <Label className="text-muted-foreground">From Location *</Label>
               <Select
                 value={form.fromLocationId}
                 onValueChange={(v) =>
                   setForm((p) => ({ ...p, fromLocationId: v }))
                 }
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Source" />
                 </SelectTrigger>
                 <SelectContent>
@@ -188,14 +188,14 @@ export function TransferStockModal({
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">To Location *</Label>
+              <Label className="text-muted-foreground">To Location *</Label>
               <Select
                 value={form.toLocationId}
                 onValueChange={(v) =>
                   setForm((p) => ({ ...p, toLocationId: v }))
                 }
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Destination" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +212,7 @@ export function TransferStockModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">Quantity *</Label>
+            <Label className="text-muted-foreground">Quantity *</Label>
             <Input
               type="number"
               min="1"
@@ -221,19 +221,19 @@ export function TransferStockModal({
                 setForm((p) => ({ ...p, quantity: e.target.value }))
               }
               placeholder="Enter quantity to transfer"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Notes</Label>
+            <Label className="text-muted-foreground">Notes</Label>
             <Textarea
               value={form.notes}
               onChange={(e) =>
                 setForm((p) => ({ ...p, notes: e.target.value }))
               }
               placeholder="e.g. Restocking store from warehouse"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
@@ -242,7 +242,7 @@ export function TransferStockModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700"
+            className="border-border"
           >
             Cancel
           </Button>
@@ -255,7 +255,7 @@ export function TransferStockModal({
               !form.toLocationId ||
               !form.quantity
             }
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-primary-foreground"
           >
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Transfer

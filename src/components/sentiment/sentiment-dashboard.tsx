@@ -111,7 +111,7 @@ export function SentimentDashboard() {
             <div className="flex h-8 overflow-hidden rounded-full bg-muted">
               {dist.positive > 0 && (
                 <div
-                  className="bg-green-500 transition-all flex items-center justify-center text-xs text-white font-medium"
+                  className="bg-green-500 transition-all flex items-center justify-center text-xs text-primary-foreground font-medium"
                   style={{ width: `${(dist.positive / total) * 100}%` }}
                 >
                   {Math.round((dist.positive / total) * 100)}%
@@ -119,7 +119,7 @@ export function SentimentDashboard() {
               )}
               {dist.neutral > 0 && (
                 <div
-                  className="bg-yellow-500 transition-all flex items-center justify-center text-xs text-white font-medium"
+                  className="bg-yellow-500 transition-all flex items-center justify-center text-xs text-primary-foreground font-medium"
                   style={{ width: `${(dist.neutral / total) * 100}%` }}
                 >
                   {Math.round((dist.neutral / total) * 100)}%
@@ -127,7 +127,7 @@ export function SentimentDashboard() {
               )}
               {dist.negative > 0 && (
                 <div
-                  className="bg-red-500 transition-all flex items-center justify-center text-xs text-white font-medium"
+                  className="bg-red-500 transition-all flex items-center justify-center text-xs text-primary-foreground font-medium"
                   style={{ width: `${(dist.negative / total) * 100}%` }}
                 >
                   {Math.round((dist.negative / total) * 100)}%
@@ -135,7 +135,7 @@ export function SentimentDashboard() {
               )}
               {dist.urgent > 0 && (
                 <div
-                  className="bg-red-700 transition-all flex items-center justify-center text-xs text-white font-medium"
+                  className="bg-red-700 transition-all flex items-center justify-center text-xs text-primary-foreground font-medium"
                   style={{ width: `${(dist.urgent / total) * 100}%` }}
                 >
                   {Math.round((dist.urgent / total) * 100)}%

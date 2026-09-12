@@ -259,7 +259,7 @@ export function AdminCampaignAnalytics({ days = 30 }: Props) {
                 return (
                   <div
                     key={ch}
-                    className={cn("transition-all", channelColors[ch] || "bg-zinc-500")}
+                    className={cn("transition-all", channelColors[ch] || "bg-muted-foreground")}
                     style={{ width: `${pct}%` }}
                     title={`${ch}: ${count} (${pct.toFixed(1)}%)`}
                   />
@@ -274,7 +274,7 @@ export function AdminCampaignAnalytics({ days = 30 }: Props) {
                   <div
                     className={cn(
                       "h-3 w-3 rounded-full",
-                      channelColors[ch] || "bg-zinc-500",
+                      channelColors[ch] || "bg-muted-foreground",
                     )}
                   />
                   <span className="text-xs capitalize text-muted-foreground">

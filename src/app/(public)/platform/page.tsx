@@ -286,20 +286,20 @@ function NavBar() {
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8962e] text-xs font-bold text-[#1a1a2e]">
             M4E
           </div>
-          <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-white">
+          <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-foreground">
             Business Growth Engine
           </span>
         </Link>
         <div className="flex items-center gap-3">
           <Link
             href="https://marketing4effect.vercel.app"
-            className="hidden text-sm text-white/60 transition-colors hover:text-white sm:block"
+            className="hidden text-sm text-foreground/60 transition-colors hover:text-foreground sm:block"
           >
             M4E Services
           </Link>
           <Link
             href="/login"
-            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
           >
             Log In
           </Link>
@@ -330,14 +330,14 @@ function HeroSection() {
           Built for Nigerian Businesses
         </div>
 
-        <h1 className="mx-auto max-w-4xl font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        <h1 className="mx-auto max-w-4xl font-[family-name:var(--font-display)] text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
           Turn Dormant Customers Into{" "}
           <span className="bg-gradient-to-r from-[#d4af37] to-[#f0d060] bg-clip-text text-transparent">
             Revenue
           </span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/60 sm:text-xl">
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground/60 sm:text-xl">
           The WhatsApp-first CRM that helps Nigerian businesses reactivate dormant
           customers, automate campaigns, and grow revenue with AI-powered tools
           that understand your market.
@@ -353,14 +353,14 @@ function HeroSection() {
           </Link>
           <Link
             href="#pricing"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-medium text-white transition-colors hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-white/5"
           >
             View Pricing
             <ChevronDown className="h-5 w-5" />
           </Link>
         </div>
 
-        <p className="mt-6 text-sm text-white/40">
+        <p className="mt-6 text-sm text-foreground/40">
           No credit card required &middot; 14-day full access &middot; Cancel anytime
         </p>
       </div>
@@ -373,10 +373,10 @@ function FeaturesSection() {
     <section className="border-t border-white/5 py-20 sm:py-28" id="features">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground sm:text-4xl">
             Everything You Need to Win Back Customers
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/50">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/50">
             17 integrated modules. 14 campaign templates. 1 powerful platform.
           </p>
         </div>
@@ -390,8 +390,8 @@ function FeaturesSection() {
               <div className="mb-4 inline-flex rounded-xl bg-[#d4af37]/10 p-3 text-[#d4af37] transition-colors group-hover:bg-[#d4af37]/20">
                 <f.icon className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold text-white">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/50">{f.desc}</p>
+              <h3 className="text-lg font-semibold text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/50">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -405,10 +405,10 @@ function PricingSection() {
     <section className="border-t border-white/5 py-20 sm:py-28" id="pricing">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground sm:text-4xl">
             Simple, Transparent Pricing
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/50">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/50">
             Choose the plan that fits your business. All plans include a 14-day trial.
           </p>
         </div>
@@ -439,16 +439,16 @@ function PricingSection() {
               )}
 
               <div>
-                <h3 className="text-xl font-bold text-white">{tier.name}</h3>
-                <p className="mt-2 text-sm text-white/50">{tier.desc}</p>
+                <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
+                <p className="mt-2 text-sm text-foreground/50">{tier.desc}</p>
               </div>
 
               <div className="mt-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">{tier.price}</span>
-                  <span className="text-white/40">/mo</span>
+                  <span className="text-4xl font-bold text-foreground">{tier.price}</span>
+                  <span className="text-foreground/40">/mo</span>
                 </div>
-                <p className="mt-1 text-sm text-white/30">
+                <p className="mt-1 text-sm text-foreground/30">
                   {tier.annual} (save 20%)
                 </p>
               </div>
@@ -461,7 +461,7 @@ function PricingSection() {
                     ) : (
                       <>
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#d4af37]" />
-                        <span className="text-white/70">{feat}</span>
+                        <span className="text-foreground/70">{feat}</span>
                       </>
                     )}
                   </li>
@@ -474,7 +474,7 @@ function PricingSection() {
                   className={`block w-full rounded-xl py-3 text-center text-sm font-bold transition-all ${
                     tier.highlighted
                       ? "bg-gradient-to-r from-[#d4af37] to-[#b8962e] text-[#1a1a2e] shadow-lg shadow-[#d4af37]/20 hover:shadow-xl"
-                      : "border border-white/20 text-white hover:bg-white/5"
+                      : "border border-white/20 text-foreground hover:bg-white/5"
                   }`}
                 >
                   {tier.cta}
@@ -492,10 +492,10 @@ function ComparisonSection() {
   return (
     <section className="border-t border-white/5 py-20 sm:py-28" id="compare">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+        <h2 className="text-center font-[family-name:var(--font-display)] text-3xl font-bold text-foreground sm:text-4xl">
           Feature Comparison
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-white/50">
+        <p className="mx-auto mt-4 max-w-xl text-center text-foreground/50">
           See exactly what&apos;s included in each plan.
         </p>
 
@@ -503,10 +503,10 @@ function ComparisonSection() {
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-white/10">
-                <th className="pb-4 pr-4 text-left font-medium text-white/40">Feature</th>
-                <th className="pb-4 px-4 text-center font-medium text-white/40">Starter</th>
+                <th className="pb-4 pr-4 text-left font-medium text-foreground/40">Feature</th>
+                <th className="pb-4 px-4 text-center font-medium text-foreground/40">Starter</th>
                 <th className="pb-4 px-4 text-center font-medium text-[#d4af37]">Professional</th>
-                <th className="pb-4 pl-4 text-center font-medium text-white/40">Business</th>
+                <th className="pb-4 pl-4 text-center font-medium text-foreground/40">Business</th>
               </tr>
             </thead>
             <tbody>
@@ -522,10 +522,10 @@ function ComparisonSection() {
                   </tr>
                 ) : (
                   <tr key={`row-${i}`} className="border-b border-white/5">
-                    <td className="py-3 pr-4 text-white/70">{row.feature}</td>
-                    <td className="py-3 px-4 text-center text-white/50">{row.starter}</td>
-                    <td className="py-3 px-4 text-center text-white/70">{row.professional}</td>
-                    <td className="py-3 pl-4 text-center text-white/70">{row.business}</td>
+                    <td className="py-3 pr-4 text-foreground/70">{row.feature}</td>
+                    <td className="py-3 px-4 text-center text-foreground/50">{row.starter}</td>
+                    <td className="py-3 px-4 text-center text-foreground/70">{row.professional}</td>
+                    <td className="py-3 pl-4 text-center text-foreground/70">{row.business}</td>
                   </tr>
                 ),
               )}
@@ -541,7 +541,7 @@ function FAQSection() {
   return (
     <section className="border-t border-white/5 py-20 sm:py-28" id="faq">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+        <h2 className="text-center font-[family-name:var(--font-display)] text-3xl font-bold text-foreground sm:text-4xl">
           Frequently Asked Questions
         </h2>
 
@@ -551,11 +551,11 @@ function FAQSection() {
               key={i}
               className="group rounded-2xl border border-white/10 bg-white/[0.02] transition-colors open:border-[#d4af37]/20 open:bg-[#d4af37]/[0.02]"
             >
-              <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-white marker:content-none [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
                 <span className="pr-4 font-medium">{faq.q}</span>
-                <ChevronDown className="h-5 w-5 shrink-0 text-white/40 transition-transform group-open:rotate-180" />
+                <ChevronDown className="h-5 w-5 shrink-0 text-foreground/40 transition-transform group-open:rotate-180" />
               </summary>
-              <div className="px-6 pb-5 text-sm leading-relaxed text-white/60">
+              <div className="px-6 pb-5 text-sm leading-relaxed text-foreground/60">
                 {faq.a}
               </div>
             </details>
@@ -570,10 +570,10 @@ function CTASection() {
   return (
     <section className="border-t border-white/5 py-20 sm:py-28">
       <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-foreground sm:text-4xl">
           Ready to Reactivate Your Customers?
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-white/50">
+        <p className="mx-auto mt-4 max-w-xl text-lg text-foreground/50">
           Join Nigerian businesses already using M4E to turn dormant customers into
           repeat buyers. Start your 14-day trial today.
         </p>
@@ -588,7 +588,7 @@ function CTASection() {
           </Link>
           <Link
             href="https://marketing4effect.vercel.app/#contact"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-medium text-white transition-colors hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-white/5"
           >
             Talk to Our Team
           </Link>
@@ -598,7 +598,7 @@ function CTASection() {
           <p className="text-sm font-medium text-[#d4af37]">
             \u2728 Prefer the full service experience?
           </p>
-          <p className="mt-2 text-sm text-white/50">
+          <p className="mt-2 text-sm text-foreground/50">
             Our marketing service packages (from \u20a62,000,000) include full CRM access
             PLUS expert strategy, campaign design, and hands-on management.{" "}
             <Link
@@ -623,18 +623,18 @@ function Footer() {
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8962e] text-[10px] font-bold text-[#1a1a2e]">
               M4E
             </div>
-            <span className="text-sm text-white/40">
+            <span className="text-sm text-foreground/40">
               \u00a9 {new Date().getFullYear()} Marketing4Effect. All rights reserved.
             </span>
           </div>
-          <div className="flex gap-6 text-sm text-white/40">
-            <Link href="https://marketing4effect.vercel.app" className="hover:text-white/60">
+          <div className="flex gap-6 text-sm text-foreground/40">
+            <Link href="https://marketing4effect.vercel.app" className="hover:text-foreground/60">
               Main Website
             </Link>
-            <Link href="/login" className="hover:text-white/60">
+            <Link href="/login" className="hover:text-foreground/60">
               Log In
             </Link>
-            <Link href="/signup" className="hover:text-white/60">
+            <Link href="/signup" className="hover:text-foreground/60">
               Sign Up
             </Link>
           </div>
@@ -650,7 +650,7 @@ function Footer() {
 
 export default function PlatformPage() {
   return (
-    <div className="min-h-screen bg-[oklch(0.13_0.01_260)] text-white">
+    <div className="min-h-screen bg-[oklch(0.13_0.01_260)] text-foreground">
       <NavBar />
       <HeroSection />
       <FeaturesSection />

@@ -129,14 +129,14 @@ const tierColors: Record<string, string> = {
   professional: 'text-purple-400',
   business: 'text-amber-400',
   enterprise: 'text-amber-400',
-  free: 'text-neutral-400',
+  free: 'text-muted-foreground',
 }
 
 const statusColors: Record<string, string> = {
   active: 'bg-green-500/20 text-green-400',
   trial: 'bg-blue-500/20 text-blue-400',
   suspended: 'bg-red-500/20 text-red-400',
-  cancelled: 'bg-neutral-500/20 text-neutral-400',
+  cancelled: 'bg-muted/50 text-muted-foreground',
 }
 
 export default function BillingPage() {
@@ -233,10 +233,10 @@ export default function BillingPage() {
     return (
       <div className="p-6 space-y-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-neutral-800 rounded w-48" />
-          <div className="h-48 bg-neutral-800 rounded" />
+          <div className="h-8 bg-muted rounded w-48" />
+          <div className="h-48 bg-muted rounded" />
           <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => <div key={i} className="h-64 bg-neutral-800 rounded" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-64 bg-muted rounded" />)}
           </div>
         </div>
       </div>
@@ -251,12 +251,12 @@ export default function BillingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Billing & Subscription</h1>
-          <p className="text-neutral-400 mt-1">Manage your plan, payments, and billing history</p>
+          <h1 className="text-2xl font-bold text-foreground">Billing & Subscription</h1>
+          <p className="text-muted-foreground mt-1">Manage your plan, payments, and billing history</p>
         </div>
         <button
           onClick={fetchBilling}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-400 hover:text-white border border-neutral-700 rounded-lg hover:border-neutral-600 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg hover:border-primary/30 transition-colors"
         >
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
@@ -294,20 +294,20 @@ export default function BillingPage() {
       )}
 
       {/* Current Plan Card */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl bg-neutral-800 ${tierColors[currentTier]}`}>
+            <div className={`p-3 rounded-xl bg-muted ${tierColors[currentTier]}`}>
               <TierIcon className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold text-white capitalize">{currentTier} Plan</h2>
+                <h2 className="text-xl font-bold text-foreground capitalize">{currentTier} Plan</h2>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[billing?.status || 'active']}`}>
                   {billing?.status || 'active'}
                 </span>
               </div>
-              <p className="text-neutral-400 text-sm mt-1">{billing?.message}</p>
+              <p className="text-muted-foreground text-sm mt-1">{billing?.message}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -315,7 +315,7 @@ export default function BillingPage() {
               <button
                 onClick={handleManageSubscription}
                 disabled={actionLoading === 'manage'}
-                className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-muted hover:bg-accent text-foreground rounded-lg transition-colors disabled:opacity-50"
               >
                 <ExternalLink className="w-4 h-4" />
                 {actionLoading === 'manage' ? 'Loading...' : 'Manage Subscription'}
@@ -326,27 +326,27 @@ export default function BillingPage() {
 
         {/* Billing details */}
         {billing?.lastPaymentAt && (
-          <div className="mt-4 pt-4 border-t border-neutral-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-neutral-500 uppercase tracking-wider">Last Payment</p>
-              <p className="text-sm text-white mt-1">{formatDate(billing.lastPaymentAt)}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Last Payment</p>
+              <p className="text-sm text-foreground mt-1">{formatDate(billing.lastPaymentAt)}</p>
             </div>
             {subscription?.current_period_end && (
               <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider">Next Billing</p>
-                <p className="text-sm text-white mt-1">{formatDate(subscription.current_period_end)}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Next Billing</p>
+                <p className="text-sm text-foreground mt-1">{formatDate(subscription.current_period_end)}</p>
               </div>
             )}
             {subscription && (
               <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider">Billing Cycle</p>
-                <p className="text-sm text-white mt-1 capitalize">{subscription.interval}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Billing Cycle</p>
+                <p className="text-sm text-foreground mt-1 capitalize">{subscription.interval}</p>
               </div>
             )}
             {subscription && (
               <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider">Amount</p>
-                <p className="text-sm text-white mt-1">{formatNaira(subscription.amount_kobo / 100)}/{subscription.interval === 'annually' ? 'yr' : 'mo'}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Amount</p>
+                <p className="text-sm text-foreground mt-1">{formatNaira(subscription.amount_kobo / 100)}/{subscription.interval === 'annually' ? 'yr' : 'mo'}</p>
               </div>
             )}
           </div>
@@ -359,8 +359,8 @@ export default function BillingPage() {
       {!isSuperAdmin && (
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
           <Crown className="mx-auto h-8 w-8 text-amber-400 mb-3" />
-          <h3 className="text-lg font-semibold text-white mb-2">Need to Change Your Plan?</h3>
-          <p className="text-neutral-400 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Need to Change Your Plan?</h3>
+          <p className="text-muted-foreground mb-4">
             Contact your Marketing4Effect account manager to discuss plan upgrades, package purchases, or billing questions.
           </p>
           <a
@@ -374,15 +374,15 @@ export default function BillingPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-neutral-900 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-card p-1 rounded-lg w-fit">
         {(['overview', 'packages', 'history'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm rounded-md transition-colors capitalize ${
               activeTab === tab
-                ? 'bg-neutral-700 text-white'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-accent text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab === 'overview' ? 'Subscription Plans' : tab === 'packages' ? 'Project Packages' : 'Billing History'}
@@ -399,21 +399,21 @@ export default function BillingPage() {
             return (
               <div
                 key={plan.tier}
-                className={`bg-neutral-900 border rounded-xl p-6 transition-colors ${
-                  isCurrentPlan ? 'border-amber-500/50' : 'border-neutral-800 hover:border-neutral-700'
+                className={`bg-card border rounded-xl p-6 transition-colors ${
+                  isCurrentPlan ? 'border-amber-500/50' : 'border-border hover:border-border'
                 }`}
               >
                 <div className="flex items-center gap-3 mb-4">
                   <PlanIcon className={`w-5 h-5 ${tierColors[plan.tier]}`} />
-                  <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
                 </div>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-white">{formatNaira(plan.amountNaira)}</span>
-                  <span className="text-neutral-400 text-sm">/month</span>
+                  <span className="text-3xl font-bold text-foreground">{formatNaira(plan.amountNaira)}</span>
+                  <span className="text-muted-foreground text-sm">/month</span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-neutral-300">
+                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
                       {f}
                     </li>
@@ -426,14 +426,14 @@ export default function BillingPage() {
                     <button
                       onClick={() => handleSubscribe(plan.tier, 'monthly')}
                       disabled={!!actionLoading}
-                      className="w-full py-2 text-sm bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors disabled:opacity-50"
+                      className="w-full py-2 text-sm bg-amber-600 hover:bg-amber-500 text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
                     >
                       {actionLoading === `subscribe_${plan.tier}_monthly` ? 'Processing...' : 'Subscribe Monthly'}
                     </button>
                     <button
                       onClick={() => handleSubscribe(plan.tier, 'annually')}
                       disabled={!!actionLoading}
-                      className="w-full py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                      className="w-full py-2 text-sm bg-muted hover:bg-accent text-foreground rounded-lg transition-colors disabled:opacity-50"
                     >
                       {actionLoading === `subscribe_${plan.tier}_annually` ? 'Processing...' : 'Annual (Save 17%)'}
                     </button>
@@ -447,21 +447,21 @@ export default function BillingPage() {
 
       {activeTab === 'packages' && isSuperAdmin && (
         <div className="space-y-4">
-          <p className="text-neutral-400 text-sm">One-time project packages for comprehensive business growth</p>
+          <p className="text-muted-foreground text-sm">One-time project packages for comprehensive business growth</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {PACKAGE_PLANS.map(pkg => {
               const isPaid = packagePayments.some(p => p.package_key === pkg.key && p.status === 'success')
               return (
-                <div key={pkg.key} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+                <div key={pkg.key} className="bg-card border border-border rounded-xl p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <Package className="w-5 h-5 text-amber-400" />
-                    <h3 className="text-lg font-semibold text-white">{pkg.name}</h3>
+                    <h3 className="text-lg font-semibold text-foreground">{pkg.name}</h3>
                   </div>
-                  <p className="text-neutral-400 text-sm mb-4">{pkg.description}</p>
+                  <p className="text-muted-foreground text-sm mb-4">{pkg.description}</p>
                   <div className="mb-4">
-                    <span className="text-2xl font-bold text-white">{formatNaira(pkg.amountNaira)}</span>
+                    <span className="text-2xl font-bold text-foreground">{formatNaira(pkg.amountNaira)}</span>
                     {pkg.key === 'unicorn_programme' && (
-                      <span className="text-neutral-400 text-xs ml-1">+ 10-20% revenue share</span>
+                      <span className="text-muted-foreground text-xs ml-1">+ 10-20% revenue share</span>
                     )}
                   </div>
                   {isPaid ? (
@@ -472,7 +472,7 @@ export default function BillingPage() {
                     <button
                       onClick={() => handlePackageCheckout(pkg.key)}
                       disabled={!!actionLoading}
-                      className="w-full py-2 text-sm bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-2 text-sm bg-amber-600 hover:bg-amber-500 text-primary-foreground rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       <ArrowUpRight className="w-4 h-4" />
                       {actionLoading === `package_${pkg.key}` ? 'Processing...' : 'Purchase'}
@@ -489,23 +489,23 @@ export default function BillingPage() {
         <div className="space-y-4">
           {/* Package Payments */}
           {packagePayments.length > 0 && (
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-neutral-800">
-                <h3 className="text-white font-medium flex items-center gap-2">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-foreground font-medium flex items-center gap-2">
                   <Receipt className="w-4 h-4" /> Package Payments
                 </h3>
               </div>
-              <div className="divide-y divide-neutral-800">
+              <div className="divide-y divide-border">
                 {packagePayments.map(payment => (
                   <div key={payment.id} className="px-6 py-3 flex items-center justify-between">
                     <div>
-                      <p className="text-white text-sm">{payment.package_name}</p>
-                      <p className="text-neutral-500 text-xs">
+                      <p className="text-foreground text-sm">{payment.package_name}</p>
+                      <p className="text-muted-foreground text-xs">
                         {payment.paid_at ? formatDate(payment.paid_at) : formatDate(payment.created_at)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-white text-sm font-medium">
+                      <span className="text-foreground text-sm font-medium">
                         {formatNaira(payment.amount_kobo / 100)}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-xs ${
@@ -523,18 +523,18 @@ export default function BillingPage() {
           )}
 
           {/* Billing Events */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-neutral-800">
-              <h3 className="text-white font-medium flex items-center gap-2">
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-foreground font-medium flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Billing Events
               </h3>
             </div>
             {events.length === 0 ? (
-              <div className="px-6 py-8 text-center text-neutral-500">
+              <div className="px-6 py-8 text-center text-muted-foreground">
                 No billing events yet
               </div>
             ) : (
-              <div className="divide-y divide-neutral-800">
+              <div className="divide-y divide-border">
                 {events.map(event => (
                   <div key={event.id} className="px-6 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -543,15 +543,15 @@ export default function BillingPage() {
                       ) : event.event_type.includes('failed') ? (
                         <XCircle className="w-4 h-4 text-red-400" />
                       ) : (
-                        <Clock className="w-4 h-4 text-neutral-400" />
+                        <Clock className="w-4 h-4 text-muted-foreground" />
                       )}
                       <div>
-                        <p className="text-white text-sm">{event.description}</p>
-                        <p className="text-neutral-500 text-xs">{formatDate(event.created_at)}</p>
+                        <p className="text-foreground text-sm">{event.description}</p>
+                        <p className="text-muted-foreground text-xs">{formatDate(event.created_at)}</p>
                       </div>
                     </div>
                     {event.amount_kobo && (
-                      <span className="text-white text-sm">{formatNaira(event.amount_kobo / 100)}</span>
+                      <span className="text-foreground text-sm">{formatNaira(event.amount_kobo / 100)}</span>
                     )}
                   </div>
                 ))}

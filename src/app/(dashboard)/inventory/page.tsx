@@ -95,7 +95,7 @@ const ENTRY_TYPE_STYLES: Record<string, string> = {
 };
 
 const COUNT_STATUS_STYLES: Record<string, string> = {
-  draft: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+  draft: "bg-muted/50 text-muted-foreground border-border",
   in_progress: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   completed: "bg-green-500/20 text-green-400 border-green-500/30",
   cancelled: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -364,8 +364,8 @@ export default function InventoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Inventory</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Inventory</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Manage stock, locations, suppliers, and physical counts
           </p>
         </div>
@@ -374,7 +374,7 @@ export default function InventoryPage() {
           size="sm"
           onClick={handleRefresh}
           disabled={loading}
-          className="border-zinc-700"
+          className="border-border"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -382,7 +382,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-zinc-800">
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b border-border">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -391,8 +391,8 @@ export default function InventoryPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? "bg-zinc-800 text-white border-b-2 border-[#C9A84C]"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                  ? "bg-muted text-foreground border-b-2 border-[#C9A84C]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -407,34 +407,34 @@ export default function InventoryPage() {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
-              <div className="flex items-center gap-2 text-zinc-400 mb-2">
+            <div className="bg-muted rounded-lg p-4 border border-border">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
                 <Package className="h-4 w-4" />
                 <span className="text-xs uppercase">Products Tracked</span>
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-foreground">
                 {summary?.total_products_tracked ?? "-"}
               </p>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
-              <div className="flex items-center gap-2 text-zinc-400 mb-2">
+            <div className="bg-muted rounded-lg p-4 border border-border">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-xs uppercase">Stock Value</span>
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-foreground">
                 {summary ? formatCurrency(summary.total_stock_value) : "-"}
               </p>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
-              <div className="flex items-center gap-2 text-zinc-400 mb-2">
+            <div className="bg-muted rounded-lg p-4 border border-border">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
                 <MapPin className="h-4 w-4" />
                 <span className="text-xs uppercase">Locations</span>
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-foreground">
                 {summary?.total_locations ?? "-"}
               </p>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4 border border-amber-500/30">
+            <div className="bg-muted rounded-lg p-4 border border-amber-500/30">
               <div className="flex items-center gap-2 text-amber-400 mb-2">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-xs uppercase">Low Stock</span>
@@ -443,7 +443,7 @@ export default function InventoryPage() {
                 {summary?.low_stock_count ?? "-"}
               </p>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-4 border border-red-500/30">
+            <div className="bg-muted rounded-lg p-4 border border-red-500/30">
               <div className="flex items-center gap-2 text-red-400 mb-2">
                 <TrendingDown className="h-4 w-4" />
                 <span className="text-xs uppercase">Out of Stock</span>
@@ -458,19 +458,19 @@ export default function InventoryPage() {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => setShowReceiveStock(true)}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-primary-foreground"
             >
               <PackagePlus className="h-4 w-4 mr-2" /> Receive Stock
             </Button>
             <Button
               onClick={() => setShowTransferStock(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-primary-foreground"
             >
               <ArrowLeftRight className="h-4 w-4 mr-2" /> Transfer Stock
             </Button>
             <Button
               onClick={() => setShowCountWizard(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-purple-600 hover:bg-purple-700 text-primary-foreground"
             >
               <ClipboardCheck className="h-4 w-4 mr-2" /> New Count
             </Button>
@@ -485,12 +485,12 @@ export default function InventoryPage() {
           </div>
 
           {/* Recent Stock Movements */}
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700">
-            <div className="p-4 border-b border-zinc-700">
-              <h3 className="text-sm font-semibold text-white">Recent Stock Movements</h3>
+          <div className="bg-muted rounded-lg border border-border">
+            <div className="p-4 border-b border-border">
+              <h3 className="text-sm font-semibold text-foreground">Recent Stock Movements</h3>
             </div>
             {recentLedger.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No stock movements yet</p>
               </div>
@@ -498,7 +498,7 @@ export default function InventoryPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                    <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                       <th className="text-left p-3">Date</th>
                       <th className="text-left p-3">Product</th>
                       <th className="text-left p-3">Location</th>
@@ -509,18 +509,18 @@ export default function InventoryPage() {
                   </thead>
                   <tbody>
                     {recentLedger.map((entry) => (
-                      <tr key={entry.id} className="border-b border-zinc-700/50 hover:bg-zinc-700/30">
-                        <td className="p-3 text-zinc-400">
+                      <tr key={entry.id} className="border-b border-border/50 hover:bg-accent/30">
+                        <td className="p-3 text-muted-foreground">
                           {formatDateTime(entry.created_at)}
                         </td>
-                        <td className="p-3 text-white">
+                        <td className="p-3 text-foreground">
                           {(entry as unknown as { product?: { name: string } }).product?.name || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {(entry as unknown as { location?: { name: string } }).location?.name || "-"}
                         </td>
                         <td className="p-3">
-                          <Badge className={ENTRY_TYPE_STYLES[entry.entry_type] || "bg-zinc-500/20 text-zinc-400"}>
+                          <Badge className={ENTRY_TYPE_STYLES[entry.entry_type] || "bg-muted/50 text-muted-foreground"}>
                             {entry.entry_type.replace(/_/g, " ")}
                           </Badge>
                         </td>
@@ -529,7 +529,7 @@ export default function InventoryPage() {
                         }`}>
                           {entry.quantity > 0 ? "+" : ""}{entry.quantity}
                         </td>
-                        <td className="p-3 text-right text-zinc-300">
+                        <td className="p-3 text-right text-muted-foreground">
                           {entry.balance_after}
                         </td>
                       </tr>
@@ -546,7 +546,7 @@ export default function InventoryPage() {
       {activeTab === "locations" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Stock Locations</h2>
+            <h2 className="text-lg font-semibold text-foreground">Stock Locations</h2>
             <div className="flex gap-2">
               {locations.length === 0 && (
                 <Button
@@ -570,12 +570,12 @@ export default function InventoryPage() {
           </div>
 
           {locations.length === 0 ? (
-            <div className="bg-zinc-800 rounded-lg border border-zinc-700 p-12 text-center">
-              <MapPin className="h-12 w-12 mx-auto mb-4 text-zinc-600" />
-              <h3 className="text-lg font-medium text-white mb-2">
+            <div className="bg-muted rounded-lg border border-border p-12 text-center">
+              <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 No locations set up yet
               </h3>
-              <p className="text-zinc-400 mb-6 max-w-md mx-auto">
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 Set up stock locations to track inventory across warehouses, stores,
                 and other areas. Use industry presets for quick setup.
               </p>
@@ -592,14 +592,14 @@ export default function InventoryPage() {
                     setEditingLocation(null);
                     setShowLocationForm(true);
                   }}
-                  className="border-zinc-600"
+                  className="border-border"
                 >
                   <Plus className="h-4 w-4 mr-2" /> Add Manually
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="bg-zinc-800 rounded-lg border border-zinc-700">
+            <div className="bg-muted rounded-lg border border-border">
               <LocationTree
                 locations={locationTree}
                 onEdit={(loc) => {
@@ -621,17 +621,17 @@ export default function InventoryPage() {
       {activeTab === "stock" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-white">Stock Levels</h2>
+            <h2 className="text-lg font-semibold text-foreground">Stock Levels</h2>
             <div className="flex gap-2">
               <Button
                 onClick={() => setShowReceiveStock(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-primary-foreground"
               >
                 <PackagePlus className="h-4 w-4 mr-2" /> Receive
               </Button>
               <Button
                 onClick={() => setShowIssueStock(true)}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-primary-foreground"
               >
                 <PackageMinus className="h-4 w-4 mr-2" /> Issue
               </Button>
@@ -641,16 +641,16 @@ export default function InventoryPage() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by product name or SKU..."
                 value={stockSearch}
                 onChange={(e) => setStockSearch(e.target.value)}
-                className="pl-10 bg-zinc-800 border-zinc-700"
+                className="pl-10 bg-muted border-border"
               />
             </div>
             <Select value={stockLocationFilter} onValueChange={setStockLocationFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] bg-zinc-800 border-zinc-700">
+              <SelectTrigger className="w-full sm:w-[200px] bg-muted border-border">
                 <SelectValue placeholder="All Locations" />
               </SelectTrigger>
               <SelectContent>
@@ -665,9 +665,9 @@ export default function InventoryPage() {
           </div>
 
           {/* Stock Table */}
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700 overflow-x-auto">
+          <div className="bg-muted rounded-lg border border-border overflow-x-auto">
             {filteredStock.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No stock records found</p>
                 <p className="text-xs mt-1">
@@ -677,7 +677,7 @@ export default function InventoryPage() {
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                  <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                     <th className="text-left p-3">Product</th>
                     <th className="text-left p-3">SKU</th>
                     <th className="text-left p-3">Location</th>
@@ -708,27 +708,27 @@ export default function InventoryPage() {
                     return (
                       <tr
                         key={s.id}
-                        className="border-b border-zinc-700/50 hover:bg-zinc-700/30"
+                        className="border-b border-border/50 hover:bg-accent/30"
                       >
-                        <td className="p-3 text-white font-medium">
+                        <td className="p-3 text-foreground font-medium">
                           {product?.name || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400 font-mono text-xs">
+                        <td className="p-3 text-muted-foreground font-mono text-xs">
                           {product?.sku || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {location?.name || "-"}
                         </td>
-                        <td className="p-3 text-right text-zinc-300">
+                        <td className="p-3 text-right text-muted-foreground">
                           {s.quantity_on_hand}
                         </td>
-                        <td className="p-3 text-right text-zinc-400">
+                        <td className="p-3 text-right text-muted-foreground">
                           {s.quantity_reserved ?? 0}
                         </td>
-                        <td className="p-3 text-right text-white font-medium">
+                        <td className="p-3 text-right text-foreground font-medium">
                           {available}
                         </td>
-                        <td className="p-3 text-right text-zinc-400">
+                        <td className="p-3 text-right text-muted-foreground">
                           {s.reorder_point ?? "-"}
                         </td>
                         <td className="p-3">
@@ -748,18 +748,18 @@ export default function InventoryPage() {
       {activeTab === "transfers" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Stock Transfers</h2>
+            <h2 className="text-lg font-semibold text-foreground">Stock Transfers</h2>
             <Button
               onClick={() => setShowTransferStock(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-primary-foreground"
             >
               <ArrowLeftRight className="h-4 w-4 mr-2" /> New Transfer
             </Button>
           </div>
 
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700">
+          <div className="bg-muted rounded-lg border border-border">
             {transferEntries.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <ArrowLeftRight className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No transfers recorded yet</p>
                 <p className="text-xs mt-1">
@@ -770,7 +770,7 @@ export default function InventoryPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                    <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                       <th className="text-left p-3">Date</th>
                       <th className="text-left p-3">Product</th>
                       <th className="text-left p-3">Location</th>
@@ -784,15 +784,15 @@ export default function InventoryPage() {
                     {transferEntries.map((entry) => (
                       <tr
                         key={entry.id}
-                        className="border-b border-zinc-700/50 hover:bg-zinc-700/30"
+                        className="border-b border-border/50 hover:bg-accent/30"
                       >
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {formatDateTime(entry.created_at)}
                         </td>
-                        <td className="p-3 text-white">
+                        <td className="p-3 text-foreground">
                           {(entry as unknown as { product?: { name: string } }).product?.name || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {(entry as unknown as { location?: { name: string } }).location?.name || "-"}
                         </td>
                         <td className="p-3">
@@ -814,10 +814,10 @@ export default function InventoryPage() {
                           {entry.quantity > 0 ? "+" : ""}
                           {entry.quantity}
                         </td>
-                        <td className="p-3 text-right text-zinc-300">
+                        <td className="p-3 text-right text-muted-foreground">
                           {entry.balance_after}
                         </td>
-                        <td className="p-3 text-zinc-400 max-w-[200px] truncate">
+                        <td className="p-3 text-muted-foreground max-w-[200px] truncate">
                           {entry.notes || "-"}
                         </td>
                       </tr>
@@ -834,8 +834,8 @@ export default function InventoryPage() {
       {activeTab === "ledger" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Stock Ledger</h2>
-            <p className="text-sm text-zinc-400">
+            <h2 className="text-lg font-semibold text-foreground">Stock Ledger</h2>
+            <p className="text-sm text-muted-foreground">
               {ledgerTotal} total entries
             </p>
           </div>
@@ -849,7 +849,7 @@ export default function InventoryPage() {
                 setLedgerPage(0);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[200px] bg-zinc-800 border-zinc-700">
+              <SelectTrigger className="w-full sm:w-[200px] bg-muted border-border">
                 <SelectValue placeholder="All Locations" />
               </SelectTrigger>
               <SelectContent>
@@ -868,7 +868,7 @@ export default function InventoryPage() {
                 setLedgerPage(0);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[200px] bg-zinc-800 border-zinc-700">
+              <SelectTrigger className="w-full sm:w-[200px] bg-muted border-border">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -885,16 +885,16 @@ export default function InventoryPage() {
           </div>
 
           {/* Ledger Table */}
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700 overflow-x-auto">
+          <div className="bg-muted rounded-lg border border-border overflow-x-auto">
             {ledgerEntries.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No ledger entries found</p>
               </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                  <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                     <th className="text-left p-3">Date</th>
                     <th className="text-left p-3">Product</th>
                     <th className="text-left p-3">Location</th>
@@ -908,22 +908,22 @@ export default function InventoryPage() {
                   {ledgerEntries.map((entry) => (
                     <tr
                       key={entry.id}
-                      className="border-b border-zinc-700/50 hover:bg-zinc-700/30"
+                      className="border-b border-border/50 hover:bg-accent/30"
                     >
-                      <td className="p-3 text-zinc-400 whitespace-nowrap">
+                      <td className="p-3 text-muted-foreground whitespace-nowrap">
                         {formatDateTime(entry.created_at)}
                       </td>
-                      <td className="p-3 text-white">
+                      <td className="p-3 text-foreground">
                         {(entry as unknown as { product?: { name: string } }).product?.name || "-"}
                       </td>
-                      <td className="p-3 text-zinc-400">
+                      <td className="p-3 text-muted-foreground">
                         {(entry as unknown as { location?: { name: string } }).location?.name || "-"}
                       </td>
                       <td className="p-3">
                         <Badge
                           className={
                             ENTRY_TYPE_STYLES[entry.entry_type] ||
-                            "bg-zinc-500/20 text-zinc-400"
+                            "bg-muted/50 text-muted-foreground"
                           }
                         >
                           {entry.entry_type.replace(/_/g, " ")}
@@ -937,10 +937,10 @@ export default function InventoryPage() {
                         {entry.quantity > 0 ? "+" : ""}
                         {entry.quantity}
                       </td>
-                      <td className="p-3 text-right text-zinc-300">
+                      <td className="p-3 text-right text-muted-foreground">
                         {entry.balance_after}
                       </td>
-                      <td className="p-3 text-zinc-400 max-w-[200px] truncate">
+                      <td className="p-3 text-muted-foreground max-w-[200px] truncate">
                         {entry.notes || "-"}
                       </td>
                     </tr>
@@ -953,7 +953,7 @@ export default function InventoryPage() {
           {/* Pagination */}
           {ledgerTotal > 20 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Showing {ledgerPage * 20 + 1}-
                 {Math.min((ledgerPage + 1) * 20, ledgerTotal)} of {ledgerTotal}
               </p>
@@ -963,7 +963,7 @@ export default function InventoryPage() {
                   size="sm"
                   disabled={ledgerPage === 0}
                   onClick={() => setLedgerPage((p) => p - 1)}
-                  className="border-zinc-700"
+                  className="border-border"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" /> Previous
                 </Button>
@@ -972,7 +972,7 @@ export default function InventoryPage() {
                   size="sm"
                   disabled={(ledgerPage + 1) * 20 >= ledgerTotal}
                   onClick={() => setLedgerPage((p) => p + 1)}
-                  className="border-zinc-700"
+                  className="border-border"
                 >
                   Next <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -986,7 +986,7 @@ export default function InventoryPage() {
       {activeTab === "suppliers" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Suppliers</h2>
+            <h2 className="text-lg font-semibold text-foreground">Suppliers</h2>
             <Button
               onClick={() => {
                 setEditingSupplier(null);
@@ -998,9 +998,9 @@ export default function InventoryPage() {
             </Button>
           </div>
 
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700">
+          <div className="bg-muted rounded-lg border border-border">
             {suppliers.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No suppliers added yet</p>
                 <p className="text-xs mt-1">
@@ -1011,7 +1011,7 @@ export default function InventoryPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                    <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                       <th className="text-left p-3">Name</th>
                       <th className="text-left p-3">Contact</th>
                       <th className="text-left p-3">Phone</th>
@@ -1025,24 +1025,24 @@ export default function InventoryPage() {
                     {suppliers.map((supplier) => (
                       <tr
                         key={supplier.id}
-                        className="border-b border-zinc-700/50 hover:bg-zinc-700/30"
+                        className="border-b border-border/50 hover:bg-accent/30"
                       >
-                        <td className="p-3 text-white font-medium">
+                        <td className="p-3 text-foreground font-medium">
                           {supplier.name}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {supplier.contact_name || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {supplier.phone || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {supplier.email || "-"}
                         </td>
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {supplier.payment_terms || "-"}
                         </td>
-                        <td className="p-3 text-zinc-500 text-xs">
+                        <td className="p-3 text-muted-foreground text-xs">
                           {formatDate(supplier.created_at)}
                         </td>
                         <td className="p-3 text-right">
@@ -1052,14 +1052,14 @@ export default function InventoryPage() {
                                 setEditingSupplier(supplier);
                                 setShowSupplierForm(true);
                               }}
-                              className="p-1.5 rounded hover:bg-zinc-600 text-zinc-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded hover:bg-muted-foreground/60 text-muted-foreground hover:text-foreground transition-colors"
                               title="Edit"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteSupplier(supplier.id)}
-                              className="p-1.5 rounded hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -1080,18 +1080,18 @@ export default function InventoryPage() {
       {activeTab === "counts" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Physical Stock Counts</h2>
+            <h2 className="text-lg font-semibold text-foreground">Physical Stock Counts</h2>
             <Button
               onClick={() => setShowCountWizard(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-purple-600 hover:bg-purple-700 text-primary-foreground"
             >
               <Plus className="h-4 w-4 mr-2" /> New Count
             </Button>
           </div>
 
-          <div className="bg-zinc-800 rounded-lg border border-zinc-700">
+          <div className="bg-muted rounded-lg border border-border">
             {counts.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No stock counts recorded yet</p>
                 <p className="text-xs mt-1">
@@ -1102,7 +1102,7 @@ export default function InventoryPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-zinc-400 text-xs uppercase border-b border-zinc-700">
+                    <tr className="text-muted-foreground text-xs uppercase border-b border-border">
                       <th className="text-left p-3">Date</th>
                       <th className="text-left p-3">Location</th>
                       <th className="text-left p-3">Status</th>
@@ -1115,31 +1115,31 @@ export default function InventoryPage() {
                     {counts.map((count) => (
                       <tr
                         key={count.id}
-                        className="border-b border-zinc-700/50 hover:bg-zinc-700/30"
+                        className="border-b border-border/50 hover:bg-accent/30"
                       >
-                        <td className="p-3 text-zinc-400">
+                        <td className="p-3 text-muted-foreground">
                           {formatDate(count.count_date)}
                         </td>
-                        <td className="p-3 text-white">
+                        <td className="p-3 text-foreground">
                           {count.location?.name || "-"}
                         </td>
                         <td className="p-3">
                           <Badge
                             className={
                               COUNT_STATUS_STYLES[count.status] ||
-                              "bg-zinc-500/20 text-zinc-400"
+                              "bg-muted/50 text-muted-foreground"
                             }
                           >
                             {count.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
-                        <td className="p-3 text-right text-zinc-300">
+                        <td className="p-3 text-right text-muted-foreground">
                           {count.items?.length ?? 0}
                         </td>
-                        <td className="p-3 text-zinc-400 max-w-[200px] truncate">
+                        <td className="p-3 text-muted-foreground max-w-[200px] truncate">
                           {count.notes || "-"}
                         </td>
-                        <td className="p-3 text-zinc-500 text-xs">
+                        <td className="p-3 text-muted-foreground text-xs">
                           {count.completed_at
                             ? formatDateTime(count.completed_at)
                             : "-"}

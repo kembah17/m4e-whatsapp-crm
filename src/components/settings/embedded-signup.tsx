@@ -583,7 +583,7 @@ export function EmbeddedSignup() {
               onClick={handleStartSignup}
               disabled={!isConfigReady}
               size="lg"
-              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-semibold text-base h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-foreground font-semibold text-base h-12 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <MessageSquare className="size-5" />
               {!isConfigReady ? "Configuration Required (see above)" : "Connect with WhatsApp"}
@@ -731,7 +731,7 @@ export function EmbeddedSignup() {
               <Button
                 onClick={handleStartSignup}
                 disabled={!isConfigReady}
-                className="bg-[#25D366] hover:bg-[#128C7E] text-white"
+                className="bg-[#25D366] hover:bg-[#128C7E] text-foreground"
               >
                 <RefreshCw className="size-4" />
                 Try Again

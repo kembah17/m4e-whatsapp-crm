@@ -323,7 +323,7 @@ export default function BroadcastDetailPage() {
               size="sm"
               onClick={handleDelete}
               disabled={deleting}
-              className="h-7 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              className="h-7 bg-red-600 text-primary-foreground hover:bg-red-700 disabled:opacity-50"
             >
               {deleting ? 'Deleting…' : 'Confirm'}
             </Button>

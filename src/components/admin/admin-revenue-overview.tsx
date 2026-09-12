@@ -55,7 +55,7 @@ const STATUS_COLORS: Record<SubscriptionStatus, string> = {
   active: "bg-emerald-500/10 text-emerald-500",
   trial: "bg-blue-500/10 text-blue-400",
   suspended: "bg-red-500/10 text-red-500",
-  cancelled: "bg-zinc-500/10 text-zinc-400",
+  cancelled: "bg-muted/50 text-muted-foreground",
 }
 
 const TIER_OPTIONS: SubscriptionTier[] = ["starter", "professional", "business", "enterprise"]

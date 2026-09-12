@@ -193,14 +193,14 @@ export function SmsConfig() {
         )}
 
         {/* Connection Status */}
-        <Alert className="bg-slate-900 border-slate-700">
+        <Alert className="bg-card border-border">
           <div className="flex items-center gap-2">
             {hasConfig && enabled ? (
               <CheckCircle2 className="size-4 text-primary" />
             ) : (
               <XCircle className="size-4 text-red-500" />
             )}
-            <AlertTitle className="text-white mb-0">
+            <AlertTitle className="text-foreground mb-0">
               {hasConfig && enabled
                 ? `SMS Active \u2014 Sender: ${senderId}`
                 : hasConfig
@@ -208,7 +208,7 @@ export function SmsConfig() {
                   : "SMS Not Configured"}
             </AlertTitle>
           </div>
-          <AlertDescription className="text-slate-400">
+          <AlertDescription className="text-muted-foreground">
             {hasConfig && enabled
               ? `${monthlySmsCount} SMS sent this month.`
               : hasConfig
@@ -218,13 +218,13 @@ export function SmsConfig() {
         </Alert>
 
         {/* SMS Configuration */}
-        <Card className="bg-slate-900 border-slate-700 ring-0 ring-transparent">
+        <Card className="bg-card border-border ring-0 ring-transparent">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <MessageSquare className="size-5" />
               SMS Configuration
             </CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-muted-foreground">
               Configure Brevo SMS sending. Uses the same API key as your email integration.
             </CardDescription>
           </CardHeader>
@@ -232,8 +232,8 @@ export function SmsConfig() {
             {/* Enable Toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-slate-300">Enable SMS Sending</Label>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <Label className="text-muted-foreground">Enable SMS Sending</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   When enabled, automations can send SMS messages.
                 </p>
               </div>
@@ -246,15 +246,15 @@ export function SmsConfig() {
 
             {/* Sender ID */}
             <div className="space-y-2">
-              <Label className="text-slate-300">Sender ID</Label>
+              <Label className="text-muted-foreground">Sender ID</Label>
               <Input
                 placeholder="e.g. M4E, AcmeCorp"
                 value={senderId}
                 onChange={(e) => setSenderId(e.target.value)}
                 maxLength={11}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 3\u201311 alphanumeric characters. Displayed as the SMS sender name.
                 Some Nigerian carriers require pre-registered sender IDs.
               </p>
@@ -262,37 +262,37 @@ export function SmsConfig() {
 
             {/* Monthly Cost Cap */}
             <div className="space-y-2">
-              <Label className="text-slate-300">Monthly SMS Cap (optional)</Label>
+              <Label className="text-muted-foreground">Monthly SMS Cap (optional)</Label>
               <Input
                 type="number"
                 placeholder="e.g. 500 (max SMS per month)"
                 value={monthlyCostCap}
                 onChange={(e) => setMonthlyCostCap(e.target.value)}
                 min={0}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Maximum number of SMS messages per month. Leave empty for no limit.
               </p>
             </div>
 
             {/* Test SMS */}
             {hasConfig && enabled && (
-              <div className="space-y-2 pt-2 border-t border-slate-700">
-                <Label className="text-slate-300">Send Test SMS</Label>
+              <div className="space-y-2 pt-2 border-t border-border">
+                <Label className="text-muted-foreground">Send Test SMS</Label>
                 <div className="flex gap-2">
                   <Input
                     type="tel"
                     placeholder="+234 801 234 5678"
                     value={testPhone}
                     onChange={(e) => setTestPhone(e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                   />
                   <Button
                     variant="outline"
                     onClick={handleTestSms}
                     disabled={testing}
-                    className="border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0"
+                    className="border-border text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
                   >
                     {testing ? (
                       <><Loader2 className="size-4 animate-spin" /> Sending...</>
@@ -338,32 +338,32 @@ export function SmsConfig() {
 
       {/* Setup Instructions Sidebar */}
       <div>
-        <Card className="bg-slate-900 border-slate-700 ring-0 ring-transparent">
+        <Card className="bg-card border-border ring-0 ring-transparent">
           <CardHeader>
-            <CardTitle className="text-white text-base">SMS Setup Guide</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className="text-foreground text-base">SMS Setup Guide</CardTitle>
+            <CardDescription className="text-muted-foreground">
               How to enable Brevo SMS sending.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-400">
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
             <ol className="list-decimal list-inside space-y-2">
-              <li>Ensure <strong className="text-slate-200">Brevo Email</strong> is configured (same API key)</li>
-              <li>Purchase SMS credits in your <strong className="text-slate-200">Brevo dashboard</strong></li>
-              <li>Set your <strong className="text-slate-200">Sender ID</strong> (3\u201311 alphanumeric chars)</li>
-              <li>For Nigerian carriers, <strong className="text-slate-200">register your Sender ID</strong> — see the Sender ID Registration section below for detailed NCC requirements and provider instructions</li>
-              <li>Toggle <strong className="text-slate-200">Enable SMS</strong> and save</li>
-              <li>Send a <strong className="text-slate-200">test SMS</strong> to verify delivery</li>
+              <li>Ensure <strong className="text-foreground">Brevo Email</strong> is configured (same API key)</li>
+              <li>Purchase SMS credits in your <strong className="text-foreground">Brevo dashboard</strong></li>
+              <li>Set your <strong className="text-foreground">Sender ID</strong> (3\u201311 alphanumeric chars)</li>
+              <li>For Nigerian carriers, <strong className="text-foreground">register your Sender ID</strong> — see the Sender ID Registration section below for detailed NCC requirements and provider instructions</li>
+              <li>Toggle <strong className="text-foreground">Enable SMS</strong> and save</li>
+              <li>Send a <strong className="text-foreground">test SMS</strong> to verify delivery</li>
             </ol>
 
-            <div className="pt-3 border-t border-slate-700 space-y-2">
-              <p className="text-xs text-slate-500">
-                <strong className="text-slate-400">Pricing:</strong> Brevo SMS to Nigeria costs
+            <div className="pt-3 border-t border-border space-y-2">
+              <p className="text-xs text-muted-foreground">
+                <strong className="text-muted-foreground">Pricing:</strong> Brevo SMS to Nigeria costs
                 approximately \u20A64\u20135 per SMS segment (160 characters). Credits are
                 purchased separately from email.
               </p>
             </div>
 
-            <div className="pt-3 border-t border-slate-700">
+            <div className="pt-3 border-t border-border">
               <a
                 href="https://developers.brevo.com/reference/sendtransacsms"
                 target="_blank"

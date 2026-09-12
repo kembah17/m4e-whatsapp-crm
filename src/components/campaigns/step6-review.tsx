@@ -648,7 +648,7 @@ export function Step6Review({
               !wizardState.campaignName.trim()
             }
             className={cn(
-              "gap-2 flex-1 sm:flex-initial text-white font-semibold px-8 py-2.5 text-base",
+              "gap-2 flex-1 sm:flex-initial text-foreground font-semibold px-8 py-2.5 text-base",
               "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600",
               "shadow-lg shadow-emerald-200 hover:shadow-emerald-300",
               "transition-all duration-300",

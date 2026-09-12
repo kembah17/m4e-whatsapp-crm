@@ -117,7 +117,7 @@ export function ReceiveStockModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+      <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5 text-green-400" />
@@ -126,9 +126,9 @@ export function ReceiveStockModal({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-zinc-300">Product *</Label>
+            <Label className="text-muted-foreground">Product *</Label>
             {loadingProducts ? (
-              <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
+              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading products...
               </div>
             ) : (
@@ -136,7 +136,7 @@ export function ReceiveStockModal({
                 value={form.productId}
                 onValueChange={(v) => setForm((p) => ({ ...p, productId: v }))}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+                <SelectTrigger className="bg-muted border-border mt-1">
                   <SelectValue placeholder="Select product" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,12 +151,12 @@ export function ReceiveStockModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">Location *</Label>
+            <Label className="text-muted-foreground">Location *</Label>
             <Select
               value={form.locationId}
               onValueChange={(v) => setForm((p) => ({ ...p, locationId: v }))}
             >
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 mt-1">
+              <SelectTrigger className="bg-muted border-border mt-1">
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
@@ -170,7 +170,7 @@ export function ReceiveStockModal({
           </div>
 
           <div>
-            <Label className="text-zinc-300">
+            <Label className="text-muted-foreground">
               Quantity *{selectedProduct?.unit_of_measure
                 ? ` (${selectedProduct.unit_of_measure})`
                 : ""}
@@ -181,17 +181,17 @@ export function ReceiveStockModal({
               value={form.quantity}
               onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))}
               placeholder="Enter quantity"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-zinc-300">Notes</Label>
+            <Label className="text-muted-foreground">Notes</Label>
             <Textarea
               value={form.notes}
               onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
               placeholder="e.g. PO #1234, Supplier delivery"
-              className="bg-zinc-800 border-zinc-700 mt-1"
+              className="bg-muted border-border mt-1"
               rows={2}
             />
           </div>
@@ -200,14 +200,14 @@ export function ReceiveStockModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-zinc-700"
+            className="border-border"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={saving || !form.productId || !form.locationId || !form.quantity}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-primary-foreground"
           >
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Receive Stock

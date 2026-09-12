@@ -360,7 +360,7 @@ export function SetupWizard() {
       </div>
 
       {/* Step Content */}
-      <Card className="border-slate-800 bg-slate-900/50">
+      <Card className="border-border bg-card/50">
         {currentStep === 1 && (
           <Step1BusinessBasics data={data} updateField={updateField} />
         )}
@@ -462,7 +462,7 @@ function Step1BusinessBasics({ data, updateField }: StepProps) {
             placeholder="e.g. Mama Nkechi's Kitchen"
             value={data.business_name ?? ""}
             onChange={(e) => updateField("business_name", e.target.value)}
-            className="bg-slate-800/50 border-slate-700"
+            className="bg-muted/50 border-border"
           />
         </div>
 
@@ -473,7 +473,7 @@ function Step1BusinessBasics({ data, updateField }: StepProps) {
             value={data.industry ?? ""}
             onChange={(e) => updateField("industry", e.target.value)}
             className={cn(
-              "flex h-9 w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm",
+              "flex h-9 w-full rounded-lg border border-border bg-muted/50 px-3 py-1 text-sm",
               "text-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/50",
               !data.industry && "text-muted-foreground"
             )}
@@ -492,7 +492,7 @@ function Step1BusinessBasics({ data, updateField }: StepProps) {
             value={data.business_size ?? ""}
             onChange={(e) => updateField("business_size", e.target.value)}
             className={cn(
-              "flex h-9 w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm",
+              "flex h-9 w-full rounded-lg border border-border bg-muted/50 px-3 py-1 text-sm",
               "text-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/50",
               !data.business_size && "text-muted-foreground"
             )}
@@ -511,7 +511,7 @@ function Step1BusinessBasics({ data, updateField }: StepProps) {
             value={data.country ?? "Nigeria"}
             onChange={(e) => updateField("country", e.target.value)}
             className={cn(
-              "flex h-9 w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm",
+              "flex h-9 w-full rounded-lg border border-border bg-muted/50 px-3 py-1 text-sm",
               "text-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/50"
             )}
           >
@@ -550,7 +550,7 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
             "w-full rounded-lg border p-4 text-left transition-colors",
             method === "embedded"
               ? "border-primary bg-primary/10"
-              : "border-slate-700 bg-slate-800/30 hover:border-slate-600"
+              : "border-border bg-muted/30 hover:border-border"
           )}
         >
           <div className="flex items-start gap-3">
@@ -569,7 +569,7 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
         </button>
 
         {method === "embedded" && (
-          <div className="ml-8 rounded-lg border border-slate-700 bg-slate-800/30 p-4">
+          <div className="ml-8 rounded-lg border border-border bg-muted/30 p-4">
             <p className="text-sm text-muted-foreground">
               After completing this wizard, go to{" "}
               <span className="font-medium text-foreground">Settings → WhatsApp</span>{" "}
@@ -595,11 +595,11 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
             "w-full rounded-lg border p-4 text-left transition-colors",
             method === "manual"
               ? "border-primary bg-primary/10"
-              : "border-slate-700 bg-slate-800/30 hover:border-slate-600"
+              : "border-border bg-muted/30 hover:border-border"
           )}
         >
           <div className="flex items-start gap-3">
-            <Settings className="mt-0.5 h-5 w-5 text-slate-400" />
+            <Settings className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div>
               <span className="font-medium">Manual Setup</span>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -610,7 +610,7 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
         </button>
 
         {method === "manual" && (
-          <div className="ml-8 space-y-3 rounded-lg border border-slate-700 bg-slate-800/30 p-4">
+          <div className="ml-8 space-y-3 rounded-lg border border-border bg-muted/30 p-4">
             <div className="space-y-2">
               <Label htmlFor="phone_number_id">Phone Number ID</Label>
               <Input
@@ -618,7 +618,7 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
                 placeholder="e.g. 123456789012345"
                 value={data.phone_number_id ?? ""}
                 onChange={(e) => updateField("phone_number_id", e.target.value)}
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
             <div className="space-y-2">
@@ -629,7 +629,7 @@ function Step2WhatsApp({ data, updateField }: StepProps) {
                 placeholder="Your permanent access token"
                 value={data.access_token ?? ""}
                 onChange={(e) => updateField("access_token", e.target.value)}
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
           </div>
@@ -692,7 +692,7 @@ function Step3Contacts({ data, updateField }: StepProps) {
                 placeholder="e.g. John Doe"
                 value={data.contact_name ?? ""}
                 onChange={(e) => updateField("contact_name", e.target.value)}
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
             <div className="space-y-2">
@@ -702,7 +702,7 @@ function Step3Contacts({ data, updateField }: StepProps) {
                 placeholder="e.g. +234 801 234 5678"
                 value={data.contact_phone ?? ""}
                 onChange={(e) => updateField("contact_phone", e.target.value)}
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
             <div className="space-y-2">
@@ -713,14 +713,14 @@ function Step3Contacts({ data, updateField }: StepProps) {
                 placeholder="e.g. john@example.com"
                 value={data.contact_email ?? ""}
                 onChange={(e) => updateField("contact_email", e.target.value)}
-                className="bg-slate-800/50 border-slate-700"
+                className="bg-muted/50 border-border"
               />
             </div>
           </div>
         )}
 
         {method === "csv" && (
-          <div className="rounded-lg border-2 border-dashed border-slate-700 p-8 text-center">
+          <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
             <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-3 text-sm font-medium">Upload a CSV file</p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -762,7 +762,7 @@ function Step4QuickWins({ data, updateField }: StepProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* AI Chatbot */}
-        <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/30 p-4">
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4">
           <div className="flex items-center gap-3">
             <Sparkles className="h-5 w-5 text-violet-400" />
             <div>
@@ -778,7 +778,7 @@ function Step4QuickWins({ data, updateField }: StepProps) {
           />
         </div>
 
-        <Separator className="bg-slate-800" />
+        <Separator className="bg-muted" />
 
         {/* Business Hours */}
         <div className="space-y-3">
@@ -801,7 +801,7 @@ function Step4QuickWins({ data, updateField }: StepProps) {
                   "rounded-lg border p-3 text-left text-sm transition-colors",
                   data.business_hours_preset === preset.value
                     ? "border-primary bg-primary/10 font-medium"
-                    : "border-slate-700 bg-slate-800/30 hover:border-slate-600"
+                    : "border-border bg-muted/30 hover:border-border"
                 )}
               >
                 {preset.label}
@@ -810,7 +810,7 @@ function Step4QuickWins({ data, updateField }: StepProps) {
           </div>
         </div>
 
-        <Separator className="bg-slate-800" />
+        <Separator className="bg-muted" />
 
         {/* First Campaign Template */}
         <div className="space-y-3">
@@ -827,7 +827,7 @@ function Step4QuickWins({ data, updateField }: StepProps) {
                     "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors",
                     data.first_campaign === tpl.id
                       ? "border-primary bg-primary/10"
-                      : "border-slate-700 bg-slate-800/30 hover:border-slate-600"
+                      : "border-border bg-muted/30 hover:border-border"
                   )}
                 >
                   <Icon className={cn("mt-0.5 h-5 w-5 shrink-0", tpl.color)} />
@@ -913,7 +913,7 @@ function Step5Ready({ data }: { data: StepData }) {
           {items.map((item) => (
             <div
               key={item.label}
-              className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800/30 p-3"
+              className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3"
             >
               <div
                 className={cn(
@@ -946,7 +946,7 @@ function Step5Ready({ data }: { data: StepData }) {
           ))}
         </div>
 
-        <Separator className="my-6 bg-slate-800" />
+        <Separator className="my-6 bg-muted" />
 
         <div className="text-center">
           <p className="text-sm text-muted-foreground">

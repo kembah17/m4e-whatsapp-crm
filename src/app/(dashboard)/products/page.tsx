@@ -132,10 +132,10 @@ export default function ProductsPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
-          <h1 className="text-lg font-semibold text-white">Products</h1>
-          <p className="text-sm text-slate-400">
+          <h1 className="text-lg font-semibold text-foreground">Products</h1>
+          <p className="text-sm text-muted-foreground">
             Manage your product and service catalog
           </p>
         </div>
@@ -162,18 +162,18 @@ export default function ProductsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 border-b border-slate-800 px-6 py-3">
+      <div className="flex items-center gap-3 border-b border-border px-6 py-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-slate-800/50 border-slate-700"
+            className="pl-9 bg-muted/50 border-border"
           />
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "all")}>
-          <SelectTrigger className="w-40 bg-slate-800/50 border-slate-700">
+          <SelectTrigger className="w-40 bg-muted/50 border-border">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -193,13 +193,13 @@ export default function ProductsPage() {
           </div>
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Package className="h-12 w-12 text-slate-600 mb-4" />
-            <h3 className="text-sm font-medium text-white mb-1">
+            <Package className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-sm font-medium text-foreground mb-1">
               {search || statusFilter !== 'all'
                 ? 'No products match your filters'
                 : 'Add your first product'}
             </h3>
-            <p className="text-xs text-slate-500 mb-4 max-w-sm">
+            <p className="text-xs text-muted-foreground mb-4 max-w-sm">
               {search || statusFilter !== 'all'
                 ? 'Try adjusting your search or filter criteria'
                 : 'Create products and services to track in your reactivation campaigns'}
@@ -222,27 +222,27 @@ export default function ProductsPage() {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
-                <TableHead className="text-slate-400 w-[60px]">Image</TableHead>
-                <TableHead className="text-slate-400">Name</TableHead>
-                <TableHead className="text-slate-400">Category</TableHead>
-                <TableHead className="text-slate-400">Price</TableHead>
-                <TableHead className="text-slate-400">Status</TableHead>
-                <TableHead className="text-slate-400 w-[60px]">Actions</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground w-[60px]">Image</TableHead>
+                <TableHead className="text-muted-foreground">Name</TableHead>
+                <TableHead className="text-muted-foreground">Category</TableHead>
+                <TableHead className="text-muted-foreground">Price</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground w-[60px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.map((product) => (
                 <TableRow
                   key={product.id}
-                  className="border-slate-800 cursor-pointer hover:bg-slate-800/50"
+                  className="border-border cursor-pointer hover:bg-muted/50"
                   onClick={() => {
                     setEditProduct(product);
                     setFormOpen(true);
                   }}
                 >
                   <TableCell>
-                    <div className="h-10 w-10 rounded-md overflow-hidden bg-slate-800 flex items-center justify-center flex-shrink-0">
+                    <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
                       {product.image_url ? (
                         <Image
                           src={product.image_url}
@@ -253,24 +253,24 @@ export default function ProductsPage() {
                           unoptimized
                         />
                       ) : (
-                        <ImageIcon className="h-4 w-4 text-slate-600" />
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="text-sm font-medium text-white">{product.name}</p>
+                      <p className="text-sm font-medium text-foreground">{product.name}</p>
                       {product.short_pitch && (
-                        <p className="text-xs text-slate-500 truncate max-w-xs">
+                        <p className="text-xs text-muted-foreground truncate max-w-xs">
                           {product.short_pitch}
                         </p>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-400">
+                  <TableCell className="text-sm text-muted-foreground">
                     {product.category || '\u2014'}
                   </TableCell>
-                  <TableCell className="text-sm text-white">
+                  <TableCell className="text-sm text-foreground">
                     {formatCurrency(product.price, defaultCurrency)}
                   </TableCell>
                   <TableCell>
@@ -285,7 +285,7 @@ export default function ProductsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-red-400"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-400"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteTarget(product);
@@ -304,8 +304,8 @@ export default function ProductsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-800 px-6 py-3">
-          <p className="text-xs text-slate-500">
+        <div className="flex items-center justify-between border-t border-border px-6 py-3">
+          <p className="text-xs text-muted-foreground">
             Showing {page * PAGE_SIZE + 1}\u2013{Math.min((page + 1) * PAGE_SIZE, totalCount)} of{' '}
             {totalCount}
           </p>
@@ -352,10 +352,10 @@ export default function ProductsPage() {
 
       {/* Delete Confirmation */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="bg-slate-900 border-slate-800">
+        <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Delete Product</DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogTitle className="text-foreground">Delete Product</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete &ldquo;{deleteTarget?.name}&rdquo;? This action
               cannot be undone.
             </DialogDescription>

@@ -169,14 +169,14 @@ export default function HomePage() {
               height={40}
               className="rounded-full"
             />
-            <span className="font-heading text-lg font-semibold text-white">
+            <span className="font-heading text-lg font-semibold text-foreground">
               M4E Growth Engine
             </span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               Login
             </Link>
@@ -208,12 +208,12 @@ export default function HomePage() {
             />
           </div>
 
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             The M4E{' '}
             <span className="text-[#C9A84C]">Business Growth Engine</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground/70 sm:text-xl">
             Everything you need to manage your customers, track your sales,
             send WhatsApp messages, and grow your business — all in one place.
             No more juggling different apps and spreadsheets.
@@ -232,7 +232,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-semibold text-white transition-all hover:border-white/40 hover:bg-white/5"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-3.5 text-base font-semibold text-foreground transition-all hover:border-white/40 hover:bg-white/5"
             >
               Login
             </Link>
@@ -382,7 +382,7 @@ export default function HomePage() {
                   className={`mt-8 block rounded-xl py-3 text-center text-sm font-semibold transition-all ${
                     tier.highlighted
                       ? 'bg-[#C9A84C] text-[#1B1F3B] shadow-lg shadow-[#C9A84C]/20 hover:bg-[#C9A84C]/90'
-                      : 'bg-[#1B1F3B] text-white hover:bg-[#1B1F3B]/90'
+                      : 'bg-[#1B1F3B] text-foreground hover:bg-[#1B1F3B]/90'
                   }`}
                 >
                   {tier.cta}
@@ -427,10 +427,10 @@ export default function HomePage() {
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-[#C9A84C]/5 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="font-heading text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="font-heading text-3xl font-bold text-foreground sm:text-4xl">
             Ready to Grow Your Business?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-white/70">
+          <p className="mx-auto mt-4 max-w-xl text-lg text-foreground/70">
             Join Nigerian businesses using M4E to manage customers, track sales,
             and grow revenue
           </p>

@@ -94,7 +94,7 @@ export function Step1Analyze({
         <div className="flex justify-center py-12">
           <button
             onClick={handleAnalyze}
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-foreground font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="h-6 w-6 animate-sparkle" />
             Analyze My Database

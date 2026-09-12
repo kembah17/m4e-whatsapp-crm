@@ -42,7 +42,7 @@ interface MemberRow {
 
 const TIER_CONFIG: Record<string, { label: string; color: string; icon: typeof Crown }> = {
   bronze: { label: "Bronze", color: "bg-orange-800/30 text-orange-300 border-orange-700/50", icon: CircleDot },
-  silver: { label: "Silver", color: "bg-zinc-400/20 text-zinc-300 border-zinc-500/50", icon: Medal },
+  silver: { label: "Silver", color: "bg-muted/30 text-muted-foreground border-border", icon: Medal },
   gold: { label: "Gold", color: "bg-[#C9A84C]/20 text-[#C9A84C] border-[#C9A84C]/50", icon: Star },
   platinum: { label: "Platinum", color: "bg-purple-500/20 text-purple-300 border-purple-500/50", icon: Crown },
 };
@@ -54,7 +54,7 @@ const TXN_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   birthday: { label: "Birthday", color: "text-pink-400" },
   manual: { label: "Manual", color: "text-[#C9A84C]" },
   redemption: { label: "Redemption", color: "text-red-400" },
-  expiry: { label: "Expired", color: "text-zinc-500" },
+  expiry: { label: "Expired", color: "text-muted-foreground" },
 };
 
 export default function LoyaltyPage() {
@@ -223,10 +223,10 @@ export default function LoyaltyPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {config?.programme_name || "Loyalty Programme"}
           </h1>
-          <p className="text-zinc-400 text-sm">Reward your best customers with points and tiers</p>
+          <p className="text-muted-foreground text-sm">Reward your best customers with points and tiers</p>
         </div>
         <Button
           onClick={() => setShowAdjustModal(true)}
@@ -238,45 +238,45 @@ export default function LoyaltyPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-blue-400" />
               <div>
-                <p className="text-xs text-zinc-400">Active Members</p>
-                <p className="text-xl font-bold text-white">{formatNumber(stats?.active_members || 0)}</p>
+                <p className="text-xs text-muted-foreground">Active Members</p>
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats?.active_members || 0)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Star className="h-5 w-5 text-[#C9A84C]" />
               <div>
-                <p className="text-xs text-zinc-400">Points Outstanding</p>
-                <p className="text-xl font-bold text-white">{formatNumber(stats?.total_points_outstanding || 0)}</p>
+                <p className="text-xs text-muted-foreground">Points Outstanding</p>
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats?.total_points_outstanding || 0)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-green-400" />
               <div>
-                <p className="text-xs text-zinc-400">Total Redeemed</p>
-                <p className="text-xl font-bold text-white">{formatNumber(stats?.total_redeemed || 0)}</p>
+                <p className="text-xs text-muted-foreground">Total Redeemed</p>
+                <p className="text-xl font-bold text-foreground">{formatNumber(stats?.total_redeemed || 0)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Gem className="h-5 w-5 text-purple-400" />
               <div>
-                <p className="text-xs text-zinc-400">Tier Distribution</p>
+                <p className="text-xs text-muted-foreground">Tier Distribution</p>
                 <div className="flex gap-1 mt-1">
                   {Object.entries(stats?.tier_distribution || {}).map(([tier, count]) => (
                     count > 0 && (
@@ -294,7 +294,7 @@ export default function LoyaltyPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-zinc-900/50 border border-zinc-800">
+        <TabsList className="bg-card/50 border border-border">
           <TabsTrigger value="overview">Members</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -303,23 +303,23 @@ export default function LoyaltyPage() {
         {/* Members */}
         <TabsContent value="overview">
           {members.length === 0 ? (
-            <Card className="bg-zinc-900/50 border-zinc-800">
+            <Card className="bg-card/50 border-border">
               <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-zinc-300 mb-2">No Loyalty Members Yet</h3>
-                <p className="text-zinc-500">Points will be awarded automatically on purchases</p>
+                <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">No Loyalty Members Yet</h3>
+                <p className="text-muted-foreground">Points will be awarded automatically on purchases</p>
               </CardContent>
             </Card>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Customer</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Phone</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Points</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Tier</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Last Activity</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Customer</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Phone</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Points</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Tier</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Last Activity</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -327,9 +327,9 @@ export default function LoyaltyPage() {
                     const tierInfo = TIER_CONFIG[member.loyalty_tier] || TIER_CONFIG.bronze;
                     const TierIcon = tierInfo.icon;
                     return (
-                      <tr key={member.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                        <td className="py-3 px-4 text-sm font-medium text-white">{member.name}</td>
-                        <td className="py-3 px-4 text-sm text-zinc-400">{member.phone}</td>
+                      <tr key={member.id} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="py-3 px-4 text-sm font-medium text-foreground">{member.name}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{member.phone}</td>
                         <td className="py-3 px-4 text-sm font-medium text-[#C9A84C]">
                           {formatNumber(member.loyalty_points)}
                         </td>
@@ -339,7 +339,7 @@ export default function LoyaltyPage() {
                             {tierInfo.label}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-400">
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
                           {new Date(member.updated_at).toLocaleDateString()}
                         </td>
                       </tr>
@@ -354,36 +354,36 @@ export default function LoyaltyPage() {
         {/* Transactions */}
         <TabsContent value="transactions">
           {transactions.length === 0 ? (
-            <Card className="bg-zinc-900/50 border-zinc-800">
+            <Card className="bg-card/50 border-border">
               <CardContent className="py-12 text-center">
-                <p className="text-zinc-500">No transactions yet</p>
+                <p className="text-muted-foreground">No transactions yet</p>
               </CardContent>
             </Card>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Date</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Customer</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Type</th>
-                    <th className="text-right text-xs text-zinc-400 font-medium py-3 px-4">Points</th>
-                    <th className="text-right text-xs text-zinc-400 font-medium py-3 px-4">Balance</th>
-                    <th className="text-left text-xs text-zinc-400 font-medium py-3 px-4">Description</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Date</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Customer</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Type</th>
+                    <th className="text-right text-xs text-muted-foreground font-medium py-3 px-4">Points</th>
+                    <th className="text-right text-xs text-muted-foreground font-medium py-3 px-4">Balance</th>
+                    <th className="text-left text-xs text-muted-foreground font-medium py-3 px-4">Description</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((txn) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const contact = txn.contact as any;
-                    const typeInfo = TXN_TYPE_LABELS[txn.transaction_type] || { label: txn.transaction_type, color: "text-zinc-400" };
+                    const typeInfo = TXN_TYPE_LABELS[txn.transaction_type] || { label: txn.transaction_type, color: "text-muted-foreground" };
                     const isPositive = txn.points > 0;
                     return (
-                      <tr key={txn.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                        <td className="py-3 px-4 text-sm text-zinc-400">
+                      <tr key={txn.id} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
                           {new Date(txn.created_at).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 text-sm text-white">
+                        <td className="py-3 px-4 text-sm text-foreground">
                           {contact?.name || "Unknown"}
                         </td>
                         <td className="py-3 px-4">
@@ -396,10 +396,10 @@ export default function LoyaltyPage() {
                         }`}>
                           {isPositive ? "+" : ""}{formatNumber(txn.points)}
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-300 text-right">
+                        <td className="py-3 px-4 text-sm text-muted-foreground text-right">
                           {formatNumber(txn.balance_after)}
                         </td>
-                        <td className="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate">
+                        <td className="py-3 px-4 text-sm text-muted-foreground max-w-xs truncate">
                           {txn.description}
                         </td>
                       </tr>
@@ -413,18 +413,18 @@ export default function LoyaltyPage() {
 
         {/* Settings */}
         <TabsContent value="settings">
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardHeader>
-              <CardTitle className="text-white">Loyalty Programme Settings</CardTitle>
+              <CardTitle className="text-foreground">Loyalty Programme Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               {/* General */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">General</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">General</h3>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-white">Programme Active</Label>
-                    <p className="text-xs text-zinc-400">Enable or disable the loyalty programme</p>
+                    <Label className="text-foreground">Programme Active</Label>
+                    <p className="text-xs text-muted-foreground">Enable or disable the loyalty programme</p>
                   </div>
                   <Switch
                     checked={configForm.is_active}
@@ -432,55 +432,55 @@ export default function LoyaltyPage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-zinc-300">Programme Name</Label>
+                  <Label className="text-muted-foreground">Programme Name</Label>
                   <Input
                     value={configForm.programme_name}
                     onChange={(e) => setConfigForm({ ...configForm, programme_name: e.target.value })}
-                    className="bg-zinc-800 border-zinc-700 text-white max-w-sm"
+                    className="bg-muted border-border text-foreground max-w-sm"
                   />
                 </div>
               </div>
 
               {/* Points Earning */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Points Earning</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Points Earning</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-zinc-300">Points per Naira Spent</Label>
+                    <Label className="text-muted-foreground">Points per Naira Spent</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={configForm.points_per_naira}
                       onChange={(e) => setConfigForm({ ...configForm, points_per_naira: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
-                    <p className="text-xs text-zinc-500 mt-1">e.g. 1 = 1 point per NGN 1 spent</p>
+                    <p className="text-xs text-muted-foreground mt-1">e.g. 1 = 1 point per NGN 1 spent</p>
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Points per Referral</Label>
+                    <Label className="text-muted-foreground">Points per Referral</Label>
                     <Input
                       type="number"
                       value={configForm.points_per_referral}
                       onChange={(e) => setConfigForm({ ...configForm, points_per_referral: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Points per Review</Label>
+                    <Label className="text-muted-foreground">Points per Review</Label>
                     <Input
                       type="number"
                       value={configForm.points_per_review}
                       onChange={(e) => setConfigForm({ ...configForm, points_per_review: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Birthday Bonus Points</Label>
+                    <Label className="text-muted-foreground">Birthday Bonus Points</Label>
                     <Input
                       type="number"
                       value={configForm.birthday_bonus_points}
                       onChange={(e) => setConfigForm({ ...configForm, birthday_bonus_points: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -488,40 +488,40 @@ export default function LoyaltyPage() {
 
               {/* Tier Thresholds */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Tier Thresholds</h3>
-                <p className="text-xs text-zinc-500">Points needed to reach each tier</p>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tier Thresholds</h3>
+                <p className="text-xs text-muted-foreground">Points needed to reach each tier</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-zinc-300 flex items-center gap-2">
-                      <Medal className="h-4 w-4 text-zinc-400" /> Silver Threshold
+                    <Label className="text-muted-foreground flex items-center gap-2">
+                      <Medal className="h-4 w-4 text-muted-foreground" /> Silver Threshold
                     </Label>
                     <Input
                       type="number"
                       value={configForm.silver_threshold}
                       onChange={(e) => setConfigForm({ ...configForm, silver_threshold: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300 flex items-center gap-2">
+                    <Label className="text-muted-foreground flex items-center gap-2">
                       <Star className="h-4 w-4 text-[#C9A84C]" /> Gold Threshold
                     </Label>
                     <Input
                       type="number"
                       value={configForm.gold_threshold}
                       onChange={(e) => setConfigForm({ ...configForm, gold_threshold: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300 flex items-center gap-2">
+                    <Label className="text-muted-foreground flex items-center gap-2">
                       <Crown className="h-4 w-4 text-purple-400" /> Platinum Threshold
                     </Label>
                     <Input
                       type="number"
                       value={configForm.platinum_threshold}
                       onChange={(e) => setConfigForm({ ...configForm, platinum_threshold: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -529,36 +529,36 @@ export default function LoyaltyPage() {
 
               {/* Tier Benefits */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Tier Benefits (Discount %)</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tier Benefits (Discount %)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-zinc-300">Silver Discount %</Label>
+                    <Label className="text-muted-foreground">Silver Discount %</Label>
                     <Input
                       type="number"
                       step="0.5"
                       value={configForm.silver_discount_percent}
                       onChange={(e) => setConfigForm({ ...configForm, silver_discount_percent: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Gold Discount %</Label>
+                    <Label className="text-muted-foreground">Gold Discount %</Label>
                     <Input
                       type="number"
                       step="0.5"
                       value={configForm.gold_discount_percent}
                       onChange={(e) => setConfigForm({ ...configForm, gold_discount_percent: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Platinum Discount %</Label>
+                    <Label className="text-muted-foreground">Platinum Discount %</Label>
                     <Input
                       type="number"
                       step="0.5"
                       value={configForm.platinum_discount_percent}
                       onChange={(e) => setConfigForm({ ...configForm, platinum_discount_percent: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -566,26 +566,26 @@ export default function LoyaltyPage() {
 
               {/* Redemption */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Redemption</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Redemption</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-zinc-300">Points to Naira Rate</Label>
+                    <Label className="text-muted-foreground">Points to Naira Rate</Label>
                     <Input
                       type="number"
                       step="0.1"
                       value={configForm.points_to_naira_rate}
                       onChange={(e) => setConfigForm({ ...configForm, points_to_naira_rate: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
-                    <p className="text-xs text-zinc-500 mt-1">e.g. 0.5 = 100 points = NGN 50</p>
+                    <p className="text-xs text-muted-foreground mt-1">e.g. 0.5 = 100 points = NGN 50</p>
                   </div>
                   <div>
-                    <Label className="text-zinc-300">Minimum Redemption Points</Label>
+                    <Label className="text-muted-foreground">Minimum Redemption Points</Label>
                     <Input
                       type="number"
                       value={configForm.min_redemption_points}
                       onChange={(e) => setConfigForm({ ...configForm, min_redemption_points: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-muted border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -593,11 +593,11 @@ export default function LoyaltyPage() {
 
               {/* Expiry */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Point Expiry</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Point Expiry</h3>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-white">Points Expire</Label>
-                    <p className="text-xs text-zinc-400">Automatically expire unused points</p>
+                    <Label className="text-foreground">Points Expire</Label>
+                    <p className="text-xs text-muted-foreground">Automatically expire unused points</p>
                   </div>
                   <Switch
                     checked={configForm.points_expire}
@@ -606,12 +606,12 @@ export default function LoyaltyPage() {
                 </div>
                 {configForm.points_expire && (
                   <div>
-                    <Label className="text-zinc-300">Expiry Period (months)</Label>
+                    <Label className="text-muted-foreground">Expiry Period (months)</Label>
                     <Input
                       type="number"
                       value={configForm.points_expiry_months}
                       onChange={(e) => setConfigForm({ ...configForm, points_expiry_months: Number(e.target.value) })}
-                      className="bg-zinc-800 border-zinc-700 text-white w-32"
+                      className="bg-muted border-border text-foreground w-32"
                     />
                   </div>
                 )}
@@ -632,27 +632,27 @@ export default function LoyaltyPage() {
 
       {/* Adjust Points Modal */}
       <Dialog open={showAdjustModal} onOpenChange={setShowAdjustModal}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Manual Point Adjustment</DialogTitle>
+            <DialogTitle className="text-foreground">Manual Point Adjustment</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-zinc-300">Contact ID *</Label>
+              <Label className="text-muted-foreground">Contact ID *</Label>
               <Input
                 value={adjustForm.contact_id}
                 onChange={(e) => setAdjustForm({ ...adjustForm, contact_id: e.target.value })}
                 placeholder="Contact ID"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
               />
             </div>
             <div>
-              <Label className="text-zinc-300">Action</Label>
+              <Label className="text-muted-foreground">Action</Label>
               <Select
                 value={adjustForm.action}
                 onValueChange={(v) => setAdjustForm({ ...adjustForm, action: v as "award" | "redeem" })}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -666,27 +666,27 @@ export default function LoyaltyPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-zinc-300">Points *</Label>
+              <Label className="text-muted-foreground">Points *</Label>
               <Input
                 type="number"
                 value={adjustForm.points || ""}
                 onChange={(e) => setAdjustForm({ ...adjustForm, points: Number(e.target.value) })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
               />
             </div>
             <div>
-              <Label className="text-zinc-300">Description *</Label>
+              <Label className="text-muted-foreground">Description *</Label>
               <Textarea
                 value={adjustForm.description}
                 onChange={(e) => setAdjustForm({ ...adjustForm, description: e.target.value })}
                 placeholder="Reason for adjustment"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-muted border-border text-foreground"
                 rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdjustModal(false)} className="border-zinc-700 text-zinc-300">
+            <Button variant="outline" onClick={() => setShowAdjustModal(false)} className="border-border text-muted-foreground">
               Cancel
             </Button>
             <Button onClick={handleAdjust} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">

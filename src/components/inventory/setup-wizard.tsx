@@ -65,17 +65,17 @@ function PresetLocationPreview({
   depth?: number;
 }) {
   return (
-    <div className={depth > 0 ? "ml-5 border-l border-zinc-700 pl-3" : ""}>
+    <div className={depth > 0 ? "ml-5 border-l border-border pl-3" : ""}>
       {locations.map((loc, i) => {
         const Icon = TYPE_ICONS[loc.type] || Box;
         return (
           <div key={`${loc.name}-${i}`}>
             <div className="flex items-center gap-2 py-1.5">
-              <Icon className="h-4 w-4 text-zinc-400 shrink-0" />
-              <span className="text-sm text-white">{loc.name}</span>
+              <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-sm text-foreground">{loc.name}</span>
               <Badge
                 variant="outline"
-                className="text-[10px] px-1.5 py-0 border-zinc-600 text-zinc-400"
+                className="text-[10px] px-1.5 py-0 border-border text-muted-foreground"
               >
                 {loc.type}
               </Badge>
@@ -157,7 +157,7 @@ export function SetupWizard({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5 text-[#C9A84C]" />
@@ -167,7 +167,7 @@ export function SetupWizard({
 
         {/* Progress */}
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-zinc-500">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>Step {step} of 3</span>
             <span>
               {step === 1
@@ -177,7 +177,7 @@ export function SetupWizard({
                 : "Confirm"}
             </span>
           </div>
-          <div className="w-full bg-zinc-800 rounded-full h-1">
+          <div className="w-full bg-muted rounded-full h-1">
             <div
               className="bg-[#C9A84C] h-1 rounded-full transition-all"
               style={{ width: `${(step / 3) * 100}%` }}
@@ -188,7 +188,7 @@ export function SetupWizard({
         {/* Step 1: Select Industry */}
         {step === 1 && (
           <div className="space-y-2">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               Choose your industry to set up recommended stock locations.
             </p>
             <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto">
@@ -201,18 +201,18 @@ export function SetupWizard({
                     className={`p-3 rounded-lg border text-left transition-all ${
                       selectedIndustry === preset.industry
                         ? "border-[#C9A84C] bg-[#C9A84C]/10"
-                        : "border-zinc-700 bg-zinc-800 hover:border-zinc-600"
+                        : "border-border bg-muted hover:border-border"
                     }`}
                   >
                     <Icon className={`h-5 w-5 mb-1 ${
                       selectedIndustry === preset.industry
                         ? "text-[#C9A84C]"
-                        : "text-zinc-400"
+                        : "text-muted-foreground"
                     }`} />
-                    <div className="text-sm font-medium text-white capitalize">
+                    <div className="text-sm font-medium text-foreground capitalize">
                       {preset.industry.replace(/_/g, " ")}
                     </div>
-                    <div className="text-[11px] text-zinc-500 mt-0.5 line-clamp-2">
+                    <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
                       {preset.description}
                     </div>
                   </button>
@@ -226,43 +226,43 @@ export function SetupWizard({
         {step === 2 && selectedPreset && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 These locations will be created:
               </p>
               <Badge
                 variant="outline"
-                className="border-zinc-600 text-zinc-400"
+                className="border-border text-muted-foreground"
               >
                 {countLocations(selectedPreset.defaultLocations)} locations
               </Badge>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700 max-h-[40vh] overflow-y-auto">
+            <div className="bg-muted rounded-lg p-3 border border-border max-h-[40vh] overflow-y-auto">
               <PresetLocationPreview
                 locations={selectedPreset.defaultLocations}
               />
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-zinc-800 rounded p-2 border border-zinc-700">
-                <span className="text-zinc-500">Unit of Measure:</span>
-                <span className="text-white ml-1">
+              <div className="bg-muted rounded p-2 border border-border">
+                <span className="text-muted-foreground">Unit of Measure:</span>
+                <span className="text-foreground ml-1">
                   {selectedPreset.unitOfMeasure}
                 </span>
               </div>
-              <div className="bg-zinc-800 rounded p-2 border border-zinc-700">
-                <span className="text-zinc-500">Batch Tracking:</span>
-                <span className="text-white ml-1">
+              <div className="bg-muted rounded p-2 border border-border">
+                <span className="text-muted-foreground">Batch Tracking:</span>
+                <span className="text-foreground ml-1">
                   {selectedPreset.batchTrackingEnabled ? "Yes" : "No"}
                 </span>
               </div>
-              <div className="bg-zinc-800 rounded p-2 border border-zinc-700">
-                <span className="text-zinc-500">Expiry Tracking:</span>
-                <span className="text-white ml-1">
+              <div className="bg-muted rounded p-2 border border-border">
+                <span className="text-muted-foreground">Expiry Tracking:</span>
+                <span className="text-foreground ml-1">
                   {selectedPreset.expiryTrackingEnabled ? "Yes" : "No"}
                 </span>
               </div>
-              <div className="bg-zinc-800 rounded p-2 border border-zinc-700">
-                <span className="text-zinc-500">Reorder Point:</span>
-                <span className="text-white ml-1">
+              <div className="bg-muted rounded p-2 border border-border">
+                <span className="text-muted-foreground">Reorder Point:</span>
+                <span className="text-foreground ml-1">
                   {selectedPreset.reorderDefaults.point}
                 </span>
               </div>
@@ -278,26 +278,26 @@ export function SetupWizard({
                 const Icon = INDUSTRY_ICONS[selectedPreset.industry] || Box;
                 return <Icon className="h-10 w-10 text-[#C9A84C] mx-auto mb-2" />;
               })()}
-              <h3 className="text-lg font-semibold text-white capitalize">
+              <h3 className="text-lg font-semibold text-foreground capitalize">
                 {selectedPreset.industry.replace(/_/g, " ")} Setup
               </h3>
-              <p className="text-sm text-zinc-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {countLocations(selectedPreset.defaultLocations)} locations will
                 be created for your business.
               </p>
             </div>
-            <div className="bg-zinc-800 rounded-lg p-3 border border-zinc-700">
-              <p className="text-xs text-zinc-500 mb-2">This will create:</p>
+            <div className="bg-muted rounded-lg p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-2">This will create:</p>
               <ul className="space-y-1">
                 {selectedPreset.defaultLocations.map((loc, i) => (
                   <li
                     key={i}
-                    className="flex items-center gap-2 text-sm text-white"
+                    className="flex items-center gap-2 text-sm text-foreground"
                   >
                     <Check className="h-3.5 w-3.5 text-green-400 shrink-0" />
                     {loc.name}
                     {loc.children && (
-                      <span className="text-zinc-500 text-xs">
+                      <span className="text-muted-foreground text-xs">
                         ({loc.children.length} sub-locations)
                       </span>
                     )}
@@ -313,7 +313,7 @@ export function SetupWizard({
             <Button
               variant="outline"
               onClick={() => setStep(step - 1)}
-              className="border-zinc-700"
+              className="border-border"
             >
               Back
             </Button>
@@ -322,7 +322,7 @@ export function SetupWizard({
             <Button
               variant="outline"
               onClick={() => handleClose(false)}
-              className="border-zinc-700"
+              className="border-border"
             >
               Cancel
             </Button>
@@ -341,7 +341,7 @@ export function SetupWizard({
             <Button
               onClick={handleApply}
               disabled={saving}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-primary-foreground"
             >
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Create Locations

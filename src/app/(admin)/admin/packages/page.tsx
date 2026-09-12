@@ -523,11 +523,11 @@ function TransitionsTab() {
           {/* Decision buttons */}
           <div className="flex gap-3">
             <button onClick={() => handleDecision("accepted")} disabled={deciding}
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-40">
+              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-emerald-500 disabled:opacity-40">
               <CheckCircle className="h-4 w-4" /> Accept
             </button>
             <button onClick={() => handleDecision("declined")} disabled={deciding}
-              className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-40">
+              className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-red-500 disabled:opacity-40">
               <AlertTriangle className="h-4 w-4" /> Decline
             </button>
             <button onClick={() => handleDecision("deferred")} disabled={deciding}

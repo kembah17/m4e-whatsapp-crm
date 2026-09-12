@@ -118,7 +118,7 @@ const formatDateShort = (d: string | null) =>
   d ? new Date(d).toLocaleDateString("en-NG", { day: "numeric", month: "short" }) : "—"
 
 const statusColors: Record<string, string> = {
-  pending: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+  pending: "bg-muted/50 text-muted-foreground border-border",
   in_progress: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   skipped: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -792,7 +792,7 @@ function AssignTab({
             className={cn(
               "w-full py-3 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2",
               selectedAcct && selectedPkg
-                ? "bg-accent-500 text-white hover:bg-accent-600"
+                ? "bg-accent-500 text-foreground hover:bg-accent-600"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             )}
           >
@@ -1030,7 +1030,7 @@ function ExecuteTab({
                                   className={cn(
                                     "w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors",
                                     d.status === "completed"
-                                      ? "bg-emerald-500 border-emerald-500 text-white"
+                                      ? "bg-emerald-500 border-emerald-500 text-primary-foreground"
                                       : "border-border hover:border-accent-500"
                                   )}
                                 >
@@ -1085,7 +1085,7 @@ function ExecuteTab({
                                   className={cn(
                                     "w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors",
                                     c.met
-                                      ? "bg-purple-500 border-purple-500 text-white"
+                                      ? "bg-purple-500 border-purple-500 text-primary-foreground"
                                       : "border-border hover:border-purple-500"
                                   )}
                                 >
@@ -1773,7 +1773,7 @@ function TransitionsTab({
               <button
                 onClick={handleTransition}
                 disabled={actionLoading}
-                className="w-full py-3 rounded-lg font-medium text-sm bg-accent-500 text-white hover:bg-accent-600 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-lg font-medium text-sm bg-accent-500 text-foreground hover:bg-accent-600 transition-colors flex items-center justify-center gap-2"
               >
                 {actionLoading ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>

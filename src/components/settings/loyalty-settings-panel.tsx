@@ -62,66 +62,66 @@ export function LoyaltySettingsPanel() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+    return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Award className="h-5 w-5 text-[#C9A84C]" /> Loyalty Programme Settings
         </h2>
-        <p className="text-sm text-zinc-400 mt-1">Configure your customer loyalty programme.</p>
+        <p className="text-sm text-muted-foreground mt-1">Configure your customer loyalty programme.</p>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-white">Programme Active</Label>
+            <Label className="text-foreground">Programme Active</Label>
             <Switch checked={config.is_active} onCheckedChange={(v) => setConfig({ ...config, is_active: v })} />
           </div>
           <div>
-            <Label className="text-zinc-300">Programme Name</Label>
-            <Input value={config.programme_name} onChange={(e) => setConfig({ ...config, programme_name: e.target.value })} className="bg-zinc-800 border-zinc-700 text-white max-w-sm" />
+            <Label className="text-muted-foreground">Programme Name</Label>
+            <Input value={config.programme_name} onChange={(e) => setConfig({ ...config, programme_name: e.target.value })} className="bg-muted border-border text-foreground max-w-sm" />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Points Earning</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Points Earning</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
-          <div><Label className="text-zinc-300">Points per Naira</Label><Input type="number" step="0.1" value={config.points_per_naira} onChange={(e) => setConfig({ ...config, points_per_naira: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Points per Referral</Label><Input type="number" value={config.points_per_referral} onChange={(e) => setConfig({ ...config, points_per_referral: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Points per Review</Label><Input type="number" value={config.points_per_review} onChange={(e) => setConfig({ ...config, points_per_review: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Birthday Bonus</Label><Input type="number" value={config.birthday_bonus_points} onChange={(e) => setConfig({ ...config, birthday_bonus_points: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
+          <div><Label className="text-muted-foreground">Points per Naira</Label><Input type="number" step="0.1" value={config.points_per_naira} onChange={(e) => setConfig({ ...config, points_per_naira: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Points per Referral</Label><Input type="number" value={config.points_per_referral} onChange={(e) => setConfig({ ...config, points_per_referral: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Points per Review</Label><Input type="number" value={config.points_per_review} onChange={(e) => setConfig({ ...config, points_per_review: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Birthday Bonus</Label><Input type="number" value={config.birthday_bonus_points} onChange={(e) => setConfig({ ...config, birthday_bonus_points: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Tier Thresholds &amp; Benefits</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Tier Thresholds &amp; Benefits</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-3 gap-4">
-          <div><Label className="text-zinc-300">Silver Points</Label><Input type="number" value={config.silver_threshold} onChange={(e) => setConfig({ ...config, silver_threshold: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Gold Points</Label><Input type="number" value={config.gold_threshold} onChange={(e) => setConfig({ ...config, gold_threshold: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Platinum Points</Label><Input type="number" value={config.platinum_threshold} onChange={(e) => setConfig({ ...config, platinum_threshold: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Silver Discount %</Label><Input type="number" step="0.5" value={config.silver_discount_percent} onChange={(e) => setConfig({ ...config, silver_discount_percent: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Gold Discount %</Label><Input type="number" step="0.5" value={config.gold_discount_percent} onChange={(e) => setConfig({ ...config, gold_discount_percent: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
-          <div><Label className="text-zinc-300">Platinum Discount %</Label><Input type="number" step="0.5" value={config.platinum_discount_percent} onChange={(e) => setConfig({ ...config, platinum_discount_percent: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
+          <div><Label className="text-muted-foreground">Silver Points</Label><Input type="number" value={config.silver_threshold} onChange={(e) => setConfig({ ...config, silver_threshold: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Gold Points</Label><Input type="number" value={config.gold_threshold} onChange={(e) => setConfig({ ...config, gold_threshold: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Platinum Points</Label><Input type="number" value={config.platinum_threshold} onChange={(e) => setConfig({ ...config, platinum_threshold: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Silver Discount %</Label><Input type="number" step="0.5" value={config.silver_discount_percent} onChange={(e) => setConfig({ ...config, silver_discount_percent: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Gold Discount %</Label><Input type="number" step="0.5" value={config.gold_discount_percent} onChange={(e) => setConfig({ ...config, gold_discount_percent: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
+          <div><Label className="text-muted-foreground">Platinum Discount %</Label><Input type="number" step="0.5" value={config.platinum_discount_percent} onChange={(e) => setConfig({ ...config, platinum_discount_percent: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
         </CardContent>
       </Card>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader><CardTitle className="text-white text-sm">Redemption &amp; Expiry</CardTitle></CardHeader>
+      <Card className="bg-card/50 border-border">
+        <CardHeader><CardTitle className="text-foreground text-sm">Redemption &amp; Expiry</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div><Label className="text-zinc-300">Points to Naira Rate</Label><Input type="number" step="0.1" value={config.points_to_naira_rate} onChange={(e) => setConfig({ ...config, points_to_naira_rate: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /><p className="text-xs text-zinc-500 mt-1">e.g. 0.5 = 100 pts = NGN 50</p></div>
-            <div><Label className="text-zinc-300">Min Redemption Points</Label><Input type="number" value={config.min_redemption_points} onChange={(e) => setConfig({ ...config, min_redemption_points: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white" /></div>
+            <div><Label className="text-muted-foreground">Points to Naira Rate</Label><Input type="number" step="0.1" value={config.points_to_naira_rate} onChange={(e) => setConfig({ ...config, points_to_naira_rate: Number(e.target.value) })} className="bg-muted border-border text-foreground" /><p className="text-xs text-muted-foreground mt-1">e.g. 0.5 = 100 pts = NGN 50</p></div>
+            <div><Label className="text-muted-foreground">Min Redemption Points</Label><Input type="number" value={config.min_redemption_points} onChange={(e) => setConfig({ ...config, min_redemption_points: Number(e.target.value) })} className="bg-muted border-border text-foreground" /></div>
           </div>
           <div className="flex items-center justify-between">
-            <Label className="text-white">Points Expire</Label>
+            <Label className="text-foreground">Points Expire</Label>
             <Switch checked={config.points_expire} onCheckedChange={(v) => setConfig({ ...config, points_expire: v })} />
           </div>
           {config.points_expire && (
-            <div><Label className="text-zinc-300">Expiry Period (months)</Label><Input type="number" value={config.points_expiry_months} onChange={(e) => setConfig({ ...config, points_expiry_months: Number(e.target.value) })} className="bg-zinc-800 border-zinc-700 text-white w-32" /></div>
+            <div><Label className="text-muted-foreground">Expiry Period (months)</Label><Input type="number" value={config.points_expiry_months} onChange={(e) => setConfig({ ...config, points_expiry_months: Number(e.target.value) })} className="bg-muted border-border text-foreground w-32" /></div>
           )}
         </CardContent>
       </Card>

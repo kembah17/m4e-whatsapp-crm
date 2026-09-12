@@ -63,7 +63,7 @@ export function PipelineDonut({ data, loading, currency }: PipelineDonutProps) {
 // ------------------------------------------------------------
 // SVG ring. 200×200 viewBox, 12px ring width. We draw one <path>
 // per stage using an SVG arc from startAngle → endAngle. Gaps
-// between segments are implied by a thin slate-900 stroke between
+// between segments are implied by a thin border stroke between
 // them for a cleaner look.
 // ------------------------------------------------------------
 function Donut({ data, currency }: { data: PipelineDonutData; currency: string }) {

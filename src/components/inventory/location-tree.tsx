@@ -46,7 +46,7 @@ const LOCATION_TYPE_CONFIG: Record<
   bin: {
     label: "Bin",
     icon: Box,
-    color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+    color: "bg-muted/50 text-muted-foreground border-border",
   },
   transit: {
     label: "Transit",
@@ -85,7 +85,7 @@ function LocationTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-slate-800/50 group transition-colors ${
+        className={`flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-muted/50 group transition-colors ${
           depth > 0 ? "ml-" + Math.min(depth * 6, 24) : ""
         }`}
         style={{ marginLeft: depth > 0 ? `${depth * 1.5}rem` : undefined }}
@@ -93,22 +93,22 @@ function LocationTreeNode({
         {/* Expand/Collapse */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className={`p-0.5 rounded hover:bg-slate-700 transition-colors ${
+          className={`p-0.5 rounded hover:bg-accent transition-colors ${
             !hasChildren ? "invisible" : ""
           }`}
         >
           {expanded ? (
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-slate-400" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
         </button>
 
         {/* Icon */}
-        <Icon className="h-4 w-4 text-slate-400 shrink-0" />
+        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
 
         {/* Name */}
-        <span className="text-sm font-medium text-white flex-1 truncate">
+        <span className="text-sm font-medium text-foreground flex-1 truncate">
           {location.name}
         </span>
 
@@ -122,7 +122,7 @@ function LocationTreeNode({
 
         {/* Child count */}
         {hasChildren && (
-          <span className="text-[10px] text-slate-500">
+          <span className="text-[10px] text-muted-foreground">
             {location.children!.length} sub
           </span>
         )}
@@ -131,21 +131,21 @@ function LocationTreeNode({
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onAddChild(location.id)}
-            className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-green-400"
+            className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-green-400"
             title="Add sub-location"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => onEdit(location)}
-            className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-blue-400"
+            className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-blue-400"
             title="Edit"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => onDelete(location)}
-            className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-red-400"
+            className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-red-400"
             title="Delete"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -210,9 +210,9 @@ export function LocationTree({
   if (locations.length === 0) {
     return (
       <div className="text-center py-12">
-        <MapPin className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-        <p className="text-slate-400 text-sm">No locations set up yet</p>
-        <p className="text-slate-500 text-xs mt-1">
+        <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+        <p className="text-muted-foreground text-sm">No locations set up yet</p>
+        <p className="text-muted-foreground text-xs mt-1">
           Use the Setup Wizard or add locations manually
         </p>
       </div>

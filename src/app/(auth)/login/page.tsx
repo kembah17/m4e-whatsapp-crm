@@ -112,16 +112,16 @@ function LoginPageInner() {
               priority
             />
           </div>
-          <CardTitle className="text-xl text-white font-heading">
+          <CardTitle className="text-xl text-foreground font-heading">
             {inviteToken ? "Sign in to accept" : "Business Growth Engine"}
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-muted-foreground">
             {inviteToken
               ? "Sign in and we\u2019ll take you to the invitation."
               : "Applying Real-Time Customer Intelligence to Your Entire Business!"}
           </CardDescription>
           {!inviteToken && (
-            <p className="mt-2 text-sm font-medium text-slate-300">Sign in</p>
+            <p className="mt-2 text-sm font-medium text-muted-foreground">Sign in</p>
           )}
         </CardHeader>
         <div className="mx-6 mb-2 h-px bg-gradient-to-r from-transparent via-[#C9A96E]/40 to-transparent" />
@@ -134,7 +134,7 @@ function LoginPageInner() {
             )}
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-slate-300">
+              <Label htmlFor="email" className="text-muted-foreground">
                 Email
               </Label>
               <Input
@@ -144,13 +144,13 @@ function LoginPageInner() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-slate-300">
+                <Label htmlFor="password" className="text-muted-foreground">
                   Password
                 </Label>
                 <Link
@@ -168,12 +168,12 @@ function LoginPageInner() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus-visible:border-primary focus-visible:ring-primary/20"
+                  className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -193,7 +193,7 @@ function LoginPageInner() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href={
@@ -206,12 +206,12 @@ function LoginPageInner() {
               Create account
             </Link>
           </p>
-          <p className="mt-3 text-center text-sm text-slate-500">
+          <p className="mt-3 text-center text-sm text-muted-foreground">
             <a
               href="https://marketing4effect.com/subscribe"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-primary/80 underline underline-offset-2"
+              className="text-muted-foreground hover:text-primary/80 underline underline-offset-2"
             >
               View Plans &amp; Pricing →
             </a>

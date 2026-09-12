@@ -121,9 +121,9 @@ export function EndOfCampaignWorkflow({ campaign, onRefresh }: EndOfCampaignWork
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-purple-500 px-6 py-4">
         <div className="flex items-center gap-3">
-          <CheckCircle2 className="h-6 w-6 text-white" />
+          <CheckCircle2 className="h-6 w-6 text-foreground" />
           <div>
-            <h3 className="text-lg font-bold text-white">Campaign Completed</h3>
+            <h3 className="text-lg font-bold text-foreground">Campaign Completed</h3>
             <p className="text-sm text-purple-100">
               Completed {formatDate(campaign.completed_at)} • {campaign.total_audience} contacts reached
             </p>
@@ -187,7 +187,7 @@ export function EndOfCampaignWorkflow({ campaign, onRefresh }: EndOfCampaignWork
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep("report")}
-                className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+                className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-purple-700 transition-colors"
               >
                 Continue to Report <ArrowRight className="h-4 w-4" />
               </button>
@@ -258,7 +258,7 @@ export function EndOfCampaignWorkflow({ campaign, onRefresh }: EndOfCampaignWork
               </button>
               <button
                 onClick={() => setActiveStep("decide")}
-                className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+                className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-purple-700 transition-colors"
               >
                 Continue to Next Steps <ArrowRight className="h-4 w-4" />
               </button>
@@ -399,7 +399,7 @@ export function EndOfCampaignWorkflow({ campaign, onRefresh }: EndOfCampaignWork
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                   selectedAction
-                    ? "bg-purple-600 text-white hover:bg-purple-700"
+                    ? "bg-purple-600 text-primary-foreground hover:bg-purple-700"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 )}
               >
@@ -458,7 +458,7 @@ export function EndOfCampaignWorkflow({ campaign, onRefresh }: EndOfCampaignWork
               <button
                 onClick={() => selectedAction && executeCampaignAction(selectedAction)}
                 disabled={!selectedAction || loading !== null}
-                className="flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-purple-700 transition-colors disabled:opacity-50"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
