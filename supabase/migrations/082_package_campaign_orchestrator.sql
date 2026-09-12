@@ -91,7 +91,7 @@ CREATE POLICY "Account members can view campaign schedules"
   ON package_campaign_schedule FOR SELECT
   USING (
     account_id IN (
-      SELECT account_id FROM account_members WHERE user_id = auth.uid()
+      SELECT account_id FROM profiles WHERE user_id = auth.uid()
     )
   );
 
