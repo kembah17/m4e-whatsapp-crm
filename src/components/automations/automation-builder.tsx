@@ -990,7 +990,7 @@ function BranchColumn({
 }: {
   label: string
   color: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="flex flex-col items-center">
@@ -1283,7 +1283,7 @@ function FieldBlock({
   children,
 }: {
   label: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="mb-2 last:mb-0">

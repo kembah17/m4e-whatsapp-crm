@@ -84,6 +84,7 @@ export default function AutomationsPage() {
   const [error, setError] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Automation | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(true)
 
   async function load() {
     try {
@@ -174,7 +175,6 @@ export default function AutomationsPage() {
     )
   }
 
-  const [showTemplates, setShowTemplates] = useState(true)
 
   return (
     <div className="space-y-6">
