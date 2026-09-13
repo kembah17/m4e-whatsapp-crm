@@ -83,9 +83,9 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.location.href = "/automations"}
+              onClick={() => window.location.reload()}
             >
-              Back to Automations
+              Reload Page
             </Button>
           </div>
         </div>

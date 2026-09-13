@@ -42,6 +42,7 @@ import {
 import { AUTOMATION_TEMPLATES, type TemplateSlug } from "@/lib/automations/templates"
 import { triggerMeta, formatRelative } from "@/lib/automations/trigger-meta"
 import { cn } from "@/lib/utils"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
 const TEMPLATE_ORDER: TemplateSlug[] = [
   "welcome_message",
@@ -77,7 +78,7 @@ const TEMPLATE_ICON: Record<TemplateSlug, typeof Zap> = {
   post_checkout_feedback: MessageSquare,
 }
 
-export default function AutomationsPage() {
+function AutomationsPageInner() {
   const router = useRouter()
   const canCreate = useCan("send-messages")
   const [automations, setAutomations] = useState<Automation[] | null>(null)
@@ -379,5 +380,17 @@ function AutomationCard({
         </div>
       </div>
     </li>
+  )
+}
+
+
+export default function AutomationsPage() {
+  return (
+    <ErrorBoundary
+      fallbackTitle="Automations Error"
+      fallbackMessage="The Automations page encountered an error. Click Try Again or Reload Page."
+    >
+      <AutomationsPageInner />
+    </ErrorBoundary>
   )
 }

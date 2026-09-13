@@ -12,6 +12,7 @@ import { TicketForm } from '@/components/support/ticket-form'
 import { SupportSettings } from '@/components/support/support-settings'
 import { Plus, LayoutGrid, List, Settings, RefreshCw, Headphones, MessageSquare, Clock, CheckCircle2, ArrowRight } from 'lucide-react'
 import type { SupportTicket, TicketStatus } from '@/types/business-growth'
+import { ErrorBoundary } from '@/components/ui/error-boundary'
 
 function EmptyState({ onCreateTicket }: { onCreateTicket: () => void }) {
   return (
@@ -137,6 +138,7 @@ export default function SupportPage() {
   const showEmptyState = !loading && hasAnyTickets === false
 
   return (
+    <ErrorBoundary fallbackTitle="Support Desk Error" fallbackMessage="The Support Desk encountered an error. Click Try Again or Reload Page.">
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
@@ -210,5 +212,6 @@ export default function SupportPage() {
         }}
       />
     </div>
+    </ErrorBoundary>
   )
 }
