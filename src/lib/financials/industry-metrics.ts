@@ -1,0 +1,198 @@
+import type { IndustryMetricConfig } from '@/types/financials'
+
+export const INDUSTRY_METRIC_CONFIGS: Record<string, IndustryMetricConfig> = {
+  retail: {
+    industry: 'retail',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'outstanding', label: 'Outstanding', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'cogs', label: 'Cost of Goods', format: 'currency' },
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'avg_order_value', label: 'Avg Order Value', format: 'currency' },
+      { key: 'top_category', label: 'Top Category Revenue', format: 'currency' },
+      { key: 'stock_turnover', label: 'Stock Turnover', format: 'number' },
+      { key: 'return_rate', label: 'Return Rate', format: 'percent' },
+      { key: 'repeat_customer_rate', label: 'Repeat Customer Rate', format: 'percent' },
+    ],
+  },
+  restaurant: {
+    industry: 'restaurant',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Food Cost Margin', format: 'percent' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'expenses', label: 'Operating Costs', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'cogs', label: 'Food & Beverage Cost', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'avg_order_value', label: 'Avg Ticket Size', format: 'currency' },
+      { key: 'outstanding', label: 'Outstanding', format: 'currency' },
+      { key: 'daily_covers', label: 'Daily Covers', format: 'number' },
+      { key: 'waste_percent', label: 'Waste Percentage', format: 'percent' },
+      { key: 'labour_cost_ratio', label: 'Labour Cost Ratio', format: 'percent' },
+      { key: 'peak_hour_revenue', label: 'Peak Hour Revenue', format: 'currency' },
+    ],
+  },
+  real_estate: {
+    industry: 'real_estate',
+    headline_metrics: [
+      { key: 'revenue', label: 'Commission Revenue', format: 'currency' },
+      { key: 'outstanding', label: 'Outstanding Commissions', format: 'currency' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'marketing_spend', label: 'Marketing Spend', format: 'currency' },
+      { key: 'avg_deal_value', label: 'Avg Deal Value', format: 'currency' },
+      { key: 'deals_closed', label: 'Deals Closed', format: 'number' },
+      { key: 'pipeline_value', label: 'Pipeline Value', format: 'currency' },
+      { key: 'conversion_rate', label: 'Lead to Close Rate', format: 'percent' },
+      { key: 'days_to_close', label: 'Avg Days to Close', format: 'number' },
+      { key: 'referral_rate', label: 'Referral Rate', format: 'percent' },
+    ],
+  },
+  consulting: {
+    industry: 'consulting',
+    headline_metrics: [
+      { key: 'revenue', label: 'Billings', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'outstanding', label: 'Receivables', format: 'currency' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+    ],
+    detail_metrics: [
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'avg_project_value', label: 'Avg Project Value', format: 'currency' },
+      { key: 'utilisation_rate', label: 'Utilisation Rate', format: 'percent' },
+      { key: 'active_projects', label: 'Active Projects', format: 'number' },
+      { key: 'pipeline_value', label: 'Pipeline Value', format: 'currency' },
+      { key: 'client_retention', label: 'Client Retention', format: 'percent' },
+      { key: 'revenue_per_consultant', label: 'Revenue per Consultant', format: 'currency' },
+    ],
+  },
+  healthcare: {
+    industry: 'healthcare',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'outstanding', label: 'Outstanding', format: 'currency' },
+      { key: 'expenses', label: 'Operating Costs', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'avg_visit_value', label: 'Avg Visit Value', format: 'currency' },
+      { key: 'patient_volume', label: 'Patient Volume', format: 'number' },
+      { key: 'supply_cost', label: 'Supply Cost', format: 'currency' },
+      { key: 'insurance_claims', label: 'Insurance Claims', format: 'currency' },
+      { key: 'claim_rejection_rate', label: 'Claim Rejection Rate', format: 'percent' },
+      { key: 'new_patients', label: 'New Patients', format: 'number' },
+      { key: 'return_visit_rate', label: 'Return Visit Rate', format: 'percent' },
+    ],
+  },
+  education: {
+    industry: 'education',
+    headline_metrics: [
+      { key: 'revenue', label: 'Tuition Revenue', format: 'currency' },
+      { key: 'collections_rate', label: 'Fee Collection Rate', format: 'percent' },
+      { key: 'outstanding', label: 'Outstanding Fees', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'staff_costs', label: 'Staff Costs', format: 'currency' },
+      { key: 'enrollment', label: 'Total Enrollment', format: 'number' },
+      { key: 'revenue_per_student', label: 'Revenue per Student', format: 'currency' },
+      { key: 'new_enrollments', label: 'New Enrollments', format: 'number' },
+      { key: 'dropout_rate', label: 'Dropout Rate', format: 'percent' },
+      { key: 'facility_cost', label: 'Facility Cost', format: 'currency' },
+      { key: 'scholarship_cost', label: 'Scholarship Cost', format: 'currency' },
+    ],
+  },
+  logistics: {
+    industry: 'logistics',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'outstanding', label: 'Receivables', format: 'currency' },
+      { key: 'expenses', label: 'Operating Costs', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'fuel_cost', label: 'Fuel Cost', format: 'currency' },
+      { key: 'deliveries', label: 'Total Deliveries', format: 'number' },
+      { key: 'revenue_per_delivery', label: 'Revenue per Delivery', format: 'currency' },
+      { key: 'vehicle_utilisation', label: 'Vehicle Utilisation', format: 'percent' },
+      { key: 'on_time_rate', label: 'On-Time Delivery Rate', format: 'percent' },
+      { key: 'damage_rate', label: 'Damage Rate', format: 'percent' },
+    ],
+  },
+  beauty: {
+    industry: 'beauty',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'outstanding', label: 'Outstanding', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'product_cost', label: 'Product Cost', format: 'currency' },
+      { key: 'avg_service_value', label: 'Avg Service Value', format: 'currency' },
+      { key: 'appointments', label: 'Total Appointments', format: 'number' },
+      { key: 'no_show_rate', label: 'No-Show Rate', format: 'percent' },
+      { key: 'retail_revenue', label: 'Retail Product Revenue', format: 'currency' },
+      { key: 'client_retention', label: 'Client Retention', format: 'percent' },
+    ],
+  },
+  manufacturing: {
+    industry: 'manufacturing',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'outstanding', label: 'Receivables', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'cogs', label: 'Cost of Production', format: 'currency' },
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'raw_material_cost', label: 'Raw Material Cost', format: 'currency' },
+      { key: 'units_produced', label: 'Units Produced', format: 'number' },
+      { key: 'cost_per_unit', label: 'Cost per Unit', format: 'currency' },
+      { key: 'defect_rate', label: 'Defect Rate', format: 'percent' },
+      { key: 'capacity_utilisation', label: 'Capacity Utilisation', format: 'percent' },
+    ],
+  },
+  general: {
+    industry: 'general',
+    headline_metrics: [
+      { key: 'revenue', label: 'Revenue', format: 'currency' },
+      { key: 'gross_margin', label: 'Gross Margin', format: 'percent' },
+      { key: 'collections_rate', label: 'Collections Rate', format: 'percent' },
+      { key: 'outstanding', label: 'Outstanding', format: 'currency' },
+    ],
+    detail_metrics: [
+      { key: 'cogs', label: 'Cost of Goods/Services', format: 'currency' },
+      { key: 'expenses', label: 'Operating Expenses', format: 'currency' },
+      { key: 'net_position', label: 'Net Position', format: 'currency' },
+      { key: 'gross_profit', label: 'Gross Profit', format: 'currency' },
+      { key: 'avg_order_value', label: 'Avg Transaction Value', format: 'currency' },
+      { key: 'customer_count', label: 'Active Customers', format: 'number' },
+      { key: 'repeat_rate', label: 'Repeat Rate', format: 'percent' },
+      { key: 'marketing_roi', label: 'Marketing ROI', format: 'percent' },
+    ],
+  },
+}
+
+export function getIndustryConfig(industry: string): IndustryMetricConfig {
+  return INDUSTRY_METRIC_CONFIGS[industry] ?? INDUSTRY_METRIC_CONFIGS.general
+}

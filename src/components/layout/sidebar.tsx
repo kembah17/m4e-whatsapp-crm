@@ -54,6 +54,7 @@ import {
   HeartPulse,
   Compass,
   MonitorCheck,
+  BarChart3,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -149,6 +150,7 @@ const navGroups: NavGroup[] = [
       { href: "/invoices", label: "Invoices", icon: FileText },
       { href: "/installments", label: "Installments", icon: CalendarClock },
       { href: "/debt-book", label: "Debt Book", icon: BookOpen },
+      { href: '/financials', label: 'Financial Dashboard', icon: BarChart3 },
       { href: "/billing", label: "Billing", icon: CreditCard },
     ],
   },
