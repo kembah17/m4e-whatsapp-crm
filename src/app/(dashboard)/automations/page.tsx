@@ -16,6 +16,15 @@ import {
   Users,
   PhoneCall,
   Loader2,
+  CreditCard,
+  Truck,
+  CalendarClock,
+  Star,
+  UserCheck,
+  UserPlus,
+  Crown,
+  AlertTriangle,
+  CheckCircle,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"

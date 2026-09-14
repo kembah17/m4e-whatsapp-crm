@@ -54,7 +54,7 @@ export function TicketForm({
 
     fetch('/api/support/categories')
       .then((r) => r.json())
-      .then(setCategories)
+      .then((data) => setCategories(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(console.error)
 
     fetch('/api/contacts?limit=100')

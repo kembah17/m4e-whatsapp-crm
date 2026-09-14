@@ -42,7 +42,7 @@ function CategoryManager() {
   async function loadCategories() {
     try {
       const res = await fetch('/api/support/categories')
-      if (res.ok) setCategories(await res.json())
+      if (res.ok) { const d = await res.json(); setCategories(Array.isArray(d) ? d : (d?.data ?? [])) }
     } catch {
       console.error('Failed to load categories')
     } finally {
@@ -232,7 +232,7 @@ function SLAPolicyManager() {
   async function loadPolicies() {
     try {
       const res = await fetch('/api/support/sla')
-      if (res.ok) setPolicies(await res.json())
+      if (res.ok) { const d = await res.json(); setPolicies(Array.isArray(d) ? d : (d?.data ?? [])) }
     } catch {
       console.error('Failed to load SLA policies')
     } finally {

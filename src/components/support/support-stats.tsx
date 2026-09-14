@@ -39,8 +39,8 @@ export function SupportStats() {
 
   useEffect(() => {
     fetch('/api/support/stats')
-      .then((r) => r.json())
-      .then(setStats)
+      .then((r) => { if (!r.ok) throw new Error('Failed'); return r.json() })
+      .then((data) => { if (data && typeof data === 'object' && !data.error) setStats(data) })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])

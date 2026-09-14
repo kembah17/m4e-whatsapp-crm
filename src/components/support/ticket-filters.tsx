@@ -52,7 +52,7 @@ export function TicketFiltersBar({ filters, onChange, teamMembers }: TicketFilte
   useEffect(() => {
     fetch('/api/support/categories')
       .then((r) => r.json())
-      .then(setCategories)
+      .then((data) => setCategories(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(console.error)
   }, [])
 
