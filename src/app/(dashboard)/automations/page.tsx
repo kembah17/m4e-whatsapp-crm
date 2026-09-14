@@ -12,6 +12,7 @@ import {
   Trash2,
   FileText,
   MessageCircle,
+  MessageSquare,
   Clock,
   Users,
   PhoneCall,
