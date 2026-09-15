@@ -131,10 +131,10 @@ const STEP_ORDER: SignupStep[] = ["connecting", "verifying", "registering", "con
 
 /**
  * Required OAuth permissions for WhatsApp Business API.
- * These are the approved permissions from Meta App Review.
+ * Minimum permissions for WhatsApp Business API functionality.
+ * business_management removed — config_id-based Embedded Signup eliminates the need.
  */
 const REQUIRED_PERMISSIONS = [
-  "business_management",
   "whatsapp_business_management",
   "whatsapp_business_messaging",
 ].join(",");
