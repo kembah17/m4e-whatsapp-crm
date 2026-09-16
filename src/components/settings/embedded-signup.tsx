@@ -289,7 +289,7 @@ export function EmbeddedSignup() {
           const loginOptions: FBLoginOptions = {
             extras: {
               setup: {},
-              featureType: 'only_waba_sharing',
+              featureType: '',
               sessionInfoVersion: "2",
             },
           };
