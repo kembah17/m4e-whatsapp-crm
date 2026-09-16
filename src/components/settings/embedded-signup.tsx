@@ -296,8 +296,10 @@ export function EmbeddedSignup() {
 
           if (config_id) {
             // Method A: Use pre-configured Embedded Signup Configuration
-            // This controls the signup UI and pre-selects options
+            // config_id flow REQUIRES response_type:'code' per Meta docs
             loginOptions.config_id = config_id;
+            loginOptions.response_type = 'code';
+            loginOptions.override_default_response_type = true;
           } else {
             // Method B: Standard OAuth scope-based permission request
             // Both methods are documented and production-valid per Meta docs
@@ -315,14 +317,22 @@ export function EmbeddedSignup() {
         },
       );
 
-      // Check if user cancelled or no token received
-      if (!fbResponse.authResponse?.accessToken) {
+      // Check if user cancelled or no auth response
+      if (!fbResponse.authResponse) {
         setStep("idle");
         toast.error("Signup was cancelled or no authorization was granted.");
         return;
       }
 
+      // config_id flow returns a code; scope flow returns an accessToken
+      const authCode = (fbResponse.authResponse as Record<string, unknown>).code as string | undefined;
       const accessToken = fbResponse.authResponse.accessToken;
+
+      if (!authCode && !accessToken) {
+        setStep("idle");
+        toast.error("No authorization code or token received. Please try again.");
+        return;
+      }
 
       // Extract WABA ID and Phone Number ID from the session info
       const authResponse = fbResponse.authResponse as Record<string, unknown>;
@@ -367,7 +377,8 @@ export function EmbeddedSignup() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            access_token: accessToken,
+            // config_id flow sends code; scope flow sends access_token
+            ...(authCode ? { code: authCode } : { access_token: accessToken }),
             state_token,
             // Only include WABA/phone if available from popup response
             // Server will auto-discover them if missing (scope-based OAuth)
