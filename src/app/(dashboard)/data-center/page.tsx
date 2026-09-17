@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { UnifiedImportHub } from "@/components/data-center/unified-import-hub";
 import { ImportWizard } from "@/components/contacts/import-wizard";
 import { ProductImportWizard } from "@/components/products/product-import-wizard";
 import {
@@ -29,6 +30,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Package,
+  Layers,
 } from "lucide-react";
 
 interface DataQuality {
@@ -44,8 +46,14 @@ interface DataQuality {
 export default function DataCenterPage() {
   const supabase = createClient();
   const { accountId } = useAuth();
-  const [wizardOpen, setWizardOpen] = useState(false);
+
+  // Unified Import Hub state
+  const [hubOpen, setHubOpen] = useState(false);
+
+  // Direct wizard states (for quick-access cards)
+  const [contactWizardOpen, setContactWizardOpen] = useState(false);
   const [productWizardOpen, setProductWizardOpen] = useState(false);
+
   const [quality, setQuality] = useState<DataQuality>({
     totalContacts: 0,
     withPhone: 0,
@@ -55,19 +63,18 @@ export default function DataCenterPage() {
     duplicatePhones: 0,
     loading: true,
   });
+  const [productCount, setProductCount] = useState(0);
 
   const fetchQuality = async () => {
     if (!accountId) return;
     setQuality((q) => ({ ...q, loading: true }));
 
     try {
-      // Total contacts
       const { count: total } = await supabase
         .from("contacts")
         .select("id", { count: "exact", head: true })
         .eq("account_id", accountId);
 
-      // With phone
       const { count: phones } = await supabase
         .from("contacts")
         .select("id", { count: "exact", head: true })
@@ -75,7 +82,6 @@ export default function DataCenterPage() {
         .not("phone", "is", null)
         .neq("phone", "");
 
-      // With email
       const { count: emails } = await supabase
         .from("contacts")
         .select("id", { count: "exact", head: true })
@@ -83,7 +89,6 @@ export default function DataCenterPage() {
         .not("email", "is", null)
         .neq("email", "");
 
-      // With full name
       const { count: names } = await supabase
         .from("contacts")
         .select("id", { count: "exact", head: true })
@@ -91,7 +96,6 @@ export default function DataCenterPage() {
         .not("name", "is", null)
         .neq("name", "");
 
-      // Recently added (last 7 days)
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const { count: recent } = await supabase
@@ -114,14 +118,6 @@ export default function DataCenterPage() {
     }
   };
 
-  useEffect(() => {
-    fetchQuality();
-    fetchProductCount();
-    // eslint-disable-next-line react-hooks-exhaustive-deps
-  }, [accountId]);
-
-  const [productCount, setProductCount] = useState(0);
-
   const fetchProductCount = async () => {
     if (!accountId) return;
     try {
@@ -133,10 +129,22 @@ export default function DataCenterPage() {
     } catch {}
   };
 
+  const refreshAll = () => {
+    fetchQuality();
+    fetchProductCount();
+  };
+
+  useEffect(() => {
+    refreshAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]);
+
   const pct = (n: number) =>
     quality.totalContacts > 0
       ? Math.round((n / quality.totalContacts) * 100)
       : 0;
+
+  const hasData = quality.totalContacts > 0 || productCount > 0;
 
   return (
     <div className="space-y-6">
@@ -148,14 +156,14 @@ export default function DataCenterPage() {
             Data Center
           </h1>
           <p className="text-muted-foreground mt-1">
-            Import, manage, and monitor the quality of your customer data
+            Import, manage, and monitor the quality of your business data
           </p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchQuality}
+            onClick={refreshAll}
             disabled={quality.loading}
           >
             <RefreshCw
@@ -163,25 +171,47 @@ export default function DataCenterPage() {
             />
             Refresh
           </Button>
-          <Button onClick={() => setWizardOpen(true)}>
+          <Button onClick={() => setHubOpen(true)}>
             <Upload className="h-4 w-4 mr-1" />
             Import Data
           </Button>
         </div>
       </div>
 
+      {/* Empty State — prominent CTA for new accounts */}
+      {!hasData && !quality.loading && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="flex flex-col items-center text-center py-10">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Layers className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Import Your Business Data</h2>
+            <p className="text-muted-foreground max-w-md mb-6">
+              Get started by importing your customer contacts and product catalog.
+              The import wizard supports Excel, CSV, Google Sheets, and more.
+            </p>
+            <Button size="lg" onClick={() => setHubOpen(true)}>
+              <Upload className="h-5 w-5 mr-2" />
+              Start Importing
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tip */}
-      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-        <CardContent className="flex items-start gap-3 pt-4 pb-4">
-          <Lightbulb className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-          <div className="text-sm">
-            <strong>Why data quality matters:</strong> Campaigns sent to contacts
-            with complete phone numbers and names get 3x higher response rates.
-            Use the Import Wizard to bulk-upload your customer list from Excel or
-            CSV files.
-          </div>
-        </CardContent>
-      </Card>
+      {hasData && (
+        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardContent className="flex items-start gap-3 pt-4 pb-4">
+            <Lightbulb className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <strong>Why data quality matters:</strong> Campaigns sent to contacts
+              with complete phone numbers and names get 3x higher response rates.
+              Use the Import Wizard to bulk-upload your customer list from Excel or
+              CSV files.
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Data Quality Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -201,6 +231,19 @@ export default function DataCenterPage() {
                 </span>
               )}
             </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Products</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {productCount.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">in your catalog</p>
           </CardContent>
         </Card>
 
@@ -235,51 +278,32 @@ export default function DataCenterPage() {
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Name Completeness
-            </CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {pct(quality.withFullName)}%
-            </div>
-            <Progress value={pct(quality.withFullName)} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">
-              {quality.withFullName} of {quality.totalContacts} contacts
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card
           className="cursor-pointer hover:border-primary transition-colors"
-          onClick={() => setWizardOpen(true)}
+          onClick={() => setContactWizardOpen(true)}
         >
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <FileSpreadsheet className="h-5 w-5 text-blue-600" />
-              Import from Spreadsheet
+              Import Contacts
             </CardTitle>
             <CardDescription>
-              Upload Excel (.xlsx) or CSV files with your customer data. The
-              wizard will guide you through mapping columns.
+              Upload Excel, CSV, or import from Google Sheets and phone contacts.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" size="sm" className="w-full">
-              Open Import Wizard
+              Open Contact Wizard
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </CardContent>
         </Card>
 
-<Card
+        <Card
           className="cursor-pointer hover:border-primary transition-colors"
           onClick={() => setProductWizardOpen(true)}
         >
@@ -289,8 +313,7 @@ export default function DataCenterPage() {
               Import Products
             </CardTitle>
             <CardDescription>
-              Upload your product catalog from a CSV file. Includes support for
-              images, pricing, inventory, and supplier details.
+              Upload your product catalog with pricing, images, and inventory.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -299,7 +322,7 @@ export default function DataCenterPage() {
                 {productCount} products
               </Badge>
               <Button variant="outline" size="sm">
-                Import Products
+                Import
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -310,28 +333,27 @@ export default function DataCenterPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Data Health Check
+              Data Health
             </CardTitle>
             <CardDescription>
-              Review your data quality scores and get recommendations for
-              improving contact completeness.
+              Review data quality scores and completeness recommendations.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {quality.totalContacts === 0 ? (
               <Badge variant="outline" className="text-amber-600">
                 <AlertTriangle className="h-3 w-3 mr-1" />
-                No contacts yet — import your first batch
+                No contacts yet
               </Badge>
             ) : pct(quality.withPhone) >= 80 && pct(quality.withEmail) >= 50 ? (
               <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                Good data quality
+                Good quality
               </Badge>
             ) : (
               <Badge variant="outline" className="text-amber-600">
                 <AlertTriangle className="h-3 w-3 mr-1" />
-                Some contacts missing phone or email
+                Missing phone or email
               </Badge>
             )}
           </CardContent>
@@ -344,14 +366,13 @@ export default function DataCenterPage() {
               Data Sources
             </CardTitle>
             <CardDescription>
-              Your contacts come from manual entry, spreadsheet imports, WhatsApp
-              conversations, and web forms.
+              Your data comes from imports, WhatsApp, and web forms.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">Manual Entry</Badge>
-              <Badge variant="secondary">CSV/Excel Import</Badge>
+              <Badge variant="secondary">Manual</Badge>
+              <Badge variant="secondary">CSV/Excel</Badge>
               <Badge variant="secondary">WhatsApp</Badge>
               <Badge variant="secondary">Web Forms</Badge>
             </div>
@@ -359,18 +380,27 @@ export default function DataCenterPage() {
         </Card>
       </div>
 
-      {/* Import Wizard Modal */}
-      <ImportWizard
-        open={wizardOpen}
-        onOpenChange={setWizardOpen}
-        onImported={fetchQuality}
+      {/* ── Modals ─────────────────────────────────────────── */}
+
+      {/* Unified Import Hub (main entry point) */}
+      <UnifiedImportHub
+        open={hubOpen}
+        onOpenChange={setHubOpen}
+        onImported={refreshAll}
       />
 
-      {/* Product Import Wizard Modal */}
+      {/* Direct Contact Import Wizard (from quick-access card) */}
+      <ImportWizard
+        open={contactWizardOpen}
+        onOpenChange={setContactWizardOpen}
+        onImported={refreshAll}
+      />
+
+      {/* Direct Product Import Wizard (from quick-access card) */}
       <ProductImportWizard
         open={productWizardOpen}
         onOpenChange={setProductWizardOpen}
-        onImported={() => { fetchProductCount(); }}
+        onImported={refreshAll}
       />
     </div>
   );

@@ -1,81 +1,128 @@
 import { supabaseAdmin } from '@/lib/ecommerce/admin-client'
 
-// Onboarding steps for platform-only subscribers
-export const ONBOARDING_STEPS = [
+// ── Step Categories ─────────────────────────────────────────
+export type StepCategory = 'setup' | 'data' | 'engagement' | 'growth'
+
+export interface OnboardingStepDef {
+  step: number
+  key: string
+  title: string
+  description: string
+  category: StepCategory
+  estimatedMinutes: number
+  action: 'watch_video' | 'navigate'
+  targetPath: string
+  helpUrl: string
+}
+
+// Onboarding steps for platform subscribers
+// Categories: setup (initial config), data (import & organize),
+//             engagement (connect & message), growth (campaigns & automation)
+export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
   {
     step: 1,
     key: 'welcome',
     title: 'Welcome to Your Business Growth Engine',
     description: 'Quick overview of what the platform can do for your business',
+    category: 'setup',
     estimatedMinutes: 2,
     action: 'watch_video',
+    targetPath: '/getting-started',
+    helpUrl: '/help#welcome',
   },
   {
     step: 2,
-    key: 'import_contacts',
-    title: 'Import Your Customer Database',
-    description: 'Upload your existing contacts from Excel, CSV, or your phone',
+    key: 'import_data',
+    title: 'Import Your Business Data',
+    description: 'Upload your customer contacts and product catalog from Excel, CSV, or your phone',
+    category: 'data',
     estimatedMinutes: 5,
     action: 'navigate',
     targetPath: '/data-center',
+    helpUrl: '/help#import-data',
   },
   {
     step: 3,
     key: 'connect_whatsapp',
     title: 'Connect Your WhatsApp Business',
-    description: 'Connect your WhatsApp Business number. Three pathways available: CAC-ready, CAC assist, or M4E-provisioned number',
+    description: 'Connect your WhatsApp Business number to start messaging customers',
+    category: 'setup',
     estimatedMinutes: 10,
     action: 'navigate',
     targetPath: '/settings',
+    helpUrl: '/help#whatsapp-setup',
   },
   {
     step: 4,
     key: 'create_template',
     title: 'Create Your First Message Template',
     description: 'Set up a reusable message template for customer outreach',
+    category: 'engagement',
     estimatedMinutes: 5,
     action: 'navigate',
     targetPath: '/templates',
+    helpUrl: '/help#templates',
   },
   {
     step: 5,
     key: 'setup_pipeline',
     title: 'Set Up Your Sales Pipeline',
     description: 'Organise your sales process with customisable stages',
+    category: 'setup',
     estimatedMinutes: 5,
     action: 'navigate',
     targetPath: '/pipelines',
+    helpUrl: '/help#pipelines',
   },
   {
     step: 6,
     key: 'send_first_message',
     title: 'Send Your First Message',
     description: 'Reach out to a customer using WhatsApp or email',
+    category: 'engagement',
     estimatedMinutes: 3,
     action: 'navigate',
     targetPath: '/contacts',
+    helpUrl: '/help#messaging',
   },
   {
     step: 7,
     key: 'create_campaign',
     title: 'Launch Your First Campaign',
     description: 'Create a reactivation campaign to win back dormant customers',
+    category: 'growth',
     estimatedMinutes: 10,
     action: 'navigate',
     targetPath: '/campaigns',
+    helpUrl: '/help#campaigns',
   },
   {
     step: 8,
     key: 'explore_automation',
     title: 'Explore Automation',
     description: 'Set up automated workflows to save time on repetitive tasks',
+    category: 'growth',
     estimatedMinutes: 5,
     action: 'navigate',
     targetPath: '/automations',
+    helpUrl: '/help#automations',
   },
 ] as const
 
 export type OnboardingStepKey = typeof ONBOARDING_STEPS[number]['key']
+
+// ── Enriched step (includes runtime status) ─────────────────
+export interface EnrichedStep {
+  key: string
+  title: string
+  description: string
+  category: StepCategory
+  estimatedMinutes: number
+  helpUrl: string
+  targetPath: string
+  status: 'pending' | 'completed' | 'skipped'
+  completedAt: string | null
+}
 
 export interface OnboardingProgress {
   id: string
@@ -89,6 +136,8 @@ export interface OnboardingProgress {
   skippedSteps: string[]
   timeSpentMinutes: number
   percentComplete: number
+  /** Full step objects with status — ready for frontend rendering */
+  steps: EnrichedStep[]
 }
 
 /**
@@ -243,7 +292,16 @@ export async function autoDetectCompletedSteps(
     .from('contacts')
     .select('id', { count: 'exact', head: true })
     .eq('account_id', accountId)
-  if (contactCount && contactCount > 0) completed.push('import_contacts')
+  if (contactCount && contactCount > 0) completed.push('import_data')
+
+  // Check products imported (also counts for import_data)
+  const { count: productCount } = await db
+    .from('products')
+    .select('id', { count: 'exact', head: true })
+    .eq('account_id', accountId)
+  if (productCount && productCount > 0 && !completed.includes('import_data')) {
+    completed.push('import_data')
+  }
 
   // Check WhatsApp connected
   const { data: waConfig } = await db
@@ -298,7 +356,37 @@ export async function autoDetectCompletedSteps(
 
 function formatProgress(raw: Record<string, unknown>): OnboardingProgress {
   const stepsCompleted = (raw.steps_completed as { key: string; completedAt: string }[]) || []
+  const skippedSteps = (raw.skipped_steps as string[]) || []
   const totalSteps = (raw.total_steps as number) || ONBOARDING_STEPS.length
+
+  // Build enriched steps array with status
+  const completedKeys = new Set(stepsCompleted.map(s => s.key))
+  const skippedKeys = new Set(skippedSteps)
+
+  const steps: EnrichedStep[] = ONBOARDING_STEPS.map(def => {
+    let status: EnrichedStep['status'] = 'pending'
+    let completedAt: string | null = null
+
+    if (completedKeys.has(def.key)) {
+      status = 'completed'
+      const match = stepsCompleted.find(s => s.key === def.key)
+      completedAt = match?.completedAt ?? null
+    } else if (skippedKeys.has(def.key)) {
+      status = 'skipped'
+    }
+
+    return {
+      key: def.key,
+      title: def.title,
+      description: def.description,
+      category: def.category,
+      estimatedMinutes: def.estimatedMinutes,
+      helpUrl: def.helpUrl,
+      targetPath: def.targetPath,
+      status,
+      completedAt,
+    }
+  })
 
   return {
     id: raw.id as string,
@@ -309,8 +397,9 @@ function formatProgress(raw: Record<string, unknown>): OnboardingProgress {
     stepsCompleted,
     isComplete: raw.is_complete as boolean,
     completedAt: raw.completed_at as string | null,
-    skippedSteps: (raw.skipped_steps as string[]) || [],
+    skippedSteps,
     timeSpentMinutes: (raw.time_spent_minutes as number) || 0,
     percentComplete: Math.round((stepsCompleted.length / totalSteps) * 100),
+    steps,
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   CheckCircle,
   Circle,
@@ -18,46 +19,74 @@ import {
   RefreshCw,
   Clock,
   Star,
+  ExternalLink,
 } from 'lucide-react'
 
+// ── Types aligned with backend EnrichedStep ──────────────────
 interface OnboardingStep {
   key: string
   title: string
   description: string
-  category: string
+  category: 'setup' | 'data' | 'engagement' | 'growth'
   estimatedMinutes: number
   helpUrl: string
+  targetPath: string
   status: 'pending' | 'completed' | 'skipped'
   completedAt: string | null
 }
 
 interface OnboardingProgress {
+  id: string
   accountId: string
-  type: string
-  completedSteps: number
+  onboardingType: string
+  currentStep: number
   totalSteps: number
+  stepsCompleted: { key: string; completedAt: string }[]
+  isComplete: boolean
+  completedAt: string | null
+  skippedSteps: string[]
+  timeSpentMinutes: number
   percentComplete: number
   steps: OnboardingStep[]
-  startedAt: string
-  completedAt: string | null
   autoDetectedSteps: string[]
+  onboarding_completed: boolean
 }
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  setup: <Settings className="w-5 h-5" />,
-  data: <Upload className="w-5 h-5" />,
-  engagement: <MessageSquare className="w-5 h-5" />,
-  growth: <Rocket className="w-5 h-5" />,
-}
-
-const categoryColors: Record<string, string> = {
-  setup: 'text-blue-400 bg-blue-500/10',
-  data: 'text-emerald-400 bg-emerald-500/10',
-  engagement: 'text-amber-400 bg-amber-500/10',
-  growth: 'text-purple-400 bg-purple-500/10',
+// ── Category display config ──────────────────────────────────
+const categoryMeta: Record<string, {
+  label: string
+  icon: React.ReactNode
+  color: string
+  description: string
+}> = {
+  setup: {
+    label: 'Setup',
+    icon: <Settings className="w-5 h-5" />,
+    color: 'text-blue-400 bg-blue-500/10',
+    description: 'Configure your account and connect services',
+  },
+  data: {
+    label: 'Data',
+    icon: <Upload className="w-5 h-5" />,
+    color: 'text-emerald-400 bg-emerald-500/10',
+    description: 'Import your business data to get started',
+  },
+  engagement: {
+    label: 'Engagement',
+    icon: <MessageSquare className="w-5 h-5" />,
+    color: 'text-amber-400 bg-amber-500/10',
+    description: 'Start connecting with your customers',
+  },
+  growth: {
+    label: 'Growth',
+    icon: <Rocket className="w-5 h-5" />,
+    color: 'text-purple-400 bg-purple-500/10',
+    description: 'Launch campaigns and automate your growth',
+  },
 }
 
 export default function GettingStartedPage() {
+  const router = useRouter()
   const [progress, setProgress] = useState<OnboardingProgress | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -87,9 +116,7 @@ export default function GettingStartedPage() {
         body: JSON.stringify({ action: 'complete', stepKey }),
       })
       if (res.ok) {
-        const data = await res.json()
-        setProgress(prev => prev ? { ...prev, ...data } : prev)
-        fetchProgress()
+        await fetchProgress()
       }
     } catch (err) {
       console.error('Failed to complete step:', err)
@@ -107,14 +134,18 @@ export default function GettingStartedPage() {
         body: JSON.stringify({ action: 'skip', stepKey }),
       })
       if (res.ok) {
-        const data = await res.json()
-        setProgress(prev => prev ? { ...prev, ...data } : prev)
-        fetchProgress()
+        await fetchProgress()
       }
     } catch (err) {
       console.error('Failed to skip step:', err)
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  const handleNavigate = (step: OnboardingStep) => {
+    if (step.targetPath && step.targetPath !== '/getting-started') {
+      router.push(step.targetPath)
     }
   }
 
@@ -132,10 +163,40 @@ export default function GettingStartedPage() {
     )
   }
 
-  const isComplete = progress && progress.percentComplete === 100
+  if (!progress || !progress.steps || progress.steps.length === 0) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="bg-card rounded-xl border border-border p-8 text-center">
+          <Rocket className="w-12 h-12 text-primary-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-foreground mb-2">Setting up your onboarding...</h2>
+          <p className="text-muted-foreground mb-4">We&apos;re preparing your personalised getting started guide.</p>
+          <button
+            onClick={() => { setLoading(true); fetchProgress() }}
+            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-primary-foreground rounded-lg text-sm font-medium transition-colors"
+          >
+            <RefreshCw className="w-4 h-4 inline mr-2" />
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
-  // Group steps by category
-  const categories = progress ? Array.from(new Set(progress.steps.map(s => s.category))) : []
+  const isComplete = progress.percentComplete === 100
+  const completedCount = progress.steps.filter(s => s.status === 'completed').length
+  const pendingSteps = progress.steps.filter(s => s.status === 'pending')
+  const remainingMinutes = pendingSteps.reduce((sum, s) => sum + s.estimatedMinutes, 0)
+
+  // Group steps by category, preserving order
+  const categoryOrder: string[] = []
+  const categoryMap = new Map<string, OnboardingStep[]>()
+  for (const step of progress.steps) {
+    if (!categoryMap.has(step.category)) {
+      categoryOrder.push(step.category)
+      categoryMap.set(step.category, [])
+    }
+    categoryMap.get(step.category)!.push(step)
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-3xl mx-auto">
@@ -146,36 +207,42 @@ export default function GettingStartedPage() {
       </div>
 
       {/* Progress Bar */}
-      {progress && (
-        <div className="bg-card rounded-xl border border-border p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              {isComplete ? (
-                <PartyPopper className="w-6 h-6 text-amber-400" />
-              ) : (
-                <Rocket className="w-6 h-6 text-primary-400" />
-              )}
-              <div>
-                <div className="text-lg font-semibold text-foreground">
-                  {isComplete ? 'All done! You are ready to grow.' : `${progress.completedSteps} of ${progress.totalSteps} steps complete`}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {isComplete
-                    ? 'You have completed all onboarding steps'
-                    : `About ${progress.steps.filter(s => s.status === 'pending').reduce((sum, s) => sum + s.estimatedMinutes, 0)} minutes remaining`}
-                </div>
+      <div className="bg-card rounded-xl border border-border p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            {isComplete ? (
+              <PartyPopper className="w-6 h-6 text-amber-400" />
+            ) : (
+              <Rocket className="w-6 h-6 text-primary-400" />
+            )}
+            <div>
+              <div className="text-lg font-semibold text-foreground">
+                {isComplete ? 'All done! You\'re ready to grow.' : `${completedCount} of ${progress.totalSteps} steps complete`}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {isComplete
+                  ? 'You have completed all onboarding steps'
+                  : `About ${remainingMinutes} minutes remaining`}
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground">{progress.percentComplete}%</div>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-700"
-              style={{ width: `${progress.percentComplete}%` }}
-            />
-          </div>
+          <div className="text-2xl font-bold text-foreground">{progress.percentComplete}%</div>
         </div>
-      )}
+        <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-700"
+            style={{ width: `${progress.percentComplete}%` }}
+          />
+        </div>
+
+        {/* Auto-detected hint */}
+        {progress.autoDetectedSteps && progress.autoDetectedSteps.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-2">
+            <CheckCircle className="w-3 h-3 inline mr-1 text-emerald-400" />
+            {progress.autoDetectedSteps.length} step{progress.autoDetectedSteps.length > 1 ? 's' : ''} auto-detected from your activity
+          </p>
+        )}
+      </div>
 
       {/* Completion Celebration */}
       {isComplete && (
@@ -198,25 +265,33 @@ export default function GettingStartedPage() {
       )}
 
       {/* Steps by Category */}
-      {progress && categories.map(category => {
-        const categorySteps = progress.steps.filter(s => s.category === category)
-        const completedInCategory = categorySteps.filter(s => s.status === 'completed').length
-        const iconClass = categoryColors[category] || 'text-muted-foreground bg-muted/50'
+      {categoryOrder.map(category => {
+        const steps = categoryMap.get(category)!
+        const meta = categoryMeta[category] || {
+          label: category,
+          icon: <Star className="w-5 h-5" />,
+          color: 'text-muted-foreground bg-muted/50',
+          description: '',
+        }
+        const completedInCategory = steps.filter(s => s.status === 'completed').length
 
         return (
           <div key={category} className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${iconClass}`}>
-                {categoryIcons[category] || <Star className="w-5 h-5" />}
+              <div className={`p-2 rounded-lg ${meta.color}`}>
+                {meta.icon}
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground capitalize">{category}</h2>
-                <p className="text-xs text-muted-foreground">{completedInCategory}/{categorySteps.length} complete</p>
+                <h2 className="text-lg font-semibold text-foreground">{meta.label}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {completedInCategory}/{steps.length} complete
+                  {meta.description && ` — ${meta.description}`}
+                </p>
               </div>
             </div>
 
             <div className="space-y-2 ml-2">
-              {categorySteps.map(step => (
+              {steps.map(step => (
                 <div
                   key={step.key}
                   className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
@@ -224,7 +299,7 @@ export default function GettingStartedPage() {
                       ? 'bg-emerald-500/5 border-emerald-500/20'
                       : step.status === 'skipped'
                       ? 'bg-card/50 border-border/50 opacity-60'
-                      : 'bg-card border-border hover:border-border'
+                      : 'bg-card border-border hover:border-primary-500/30'
                   }`}
                 >
                   {/* Status Icon */}
@@ -264,16 +339,19 @@ export default function GettingStartedPage() {
                       <button
                         onClick={() => handleSkip(step.key)}
                         disabled={actionLoading === step.key}
-                        className="px-3 py-1.5 text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
+                        className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         Skip
                       </button>
-                      <a
-                        href={step.helpUrl}
-                        className="px-3 py-1.5 text-xs bg-muted hover:bg-accent text-muted-foreground rounded-md transition-colors"
-                      >
-                        Guide
-                      </a>
+                      {step.targetPath && step.targetPath !== '/getting-started' && (
+                        <button
+                          onClick={() => handleNavigate(step)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-muted hover:bg-accent text-foreground rounded-md transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Go
+                        </button>
+                      )}
                       <button
                         onClick={() => handleComplete(step.key)}
                         disabled={actionLoading === step.key}
