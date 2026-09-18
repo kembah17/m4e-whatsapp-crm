@@ -44,6 +44,9 @@ interface AccountSummary {
   /** Default deal currency (ISO-4217). NOT NULL DEFAULT 'USD' in the
    *  DB (migration 021); narrowed to DEFAULT_CURRENCY when absent. */
   default_currency: string;
+  /** Primary industry (migration 039). Used for item type defaults,
+   *  import field matching, and industry-aware labels. */
+  industry: string;
 }
 
 interface AuthContextValue {
@@ -89,6 +92,8 @@ interface AuthContextValue {
    *  while loading or when no account is resolved, so callers can use
    *  it unconditionally. */
   defaultCurrency: string;
+  /** Account primary industry. Falls back to 'retail' while loading. */
+  industry: string;
   /** True if `accountRole === 'owner'`. */
   isOwner: boolean;
   /** True if `accountRole === 'admin'` (does NOT include owner — use canManageMembers for "admin or above"). */
@@ -141,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // missing account collapses to null rather than a half-
           // populated row (shouldn't happen post-017 NOT NULL, but
           // belt-and-braces against forks running older schemas).
-          "id, full_name, email, avatar_url, is_super_admin, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency)",
+          "id, full_name, email, avatar_url, is_super_admin, role, beta_features, account_id, account_role, account:accounts!inner(id, name, default_currency, industry)",
         )
         .eq("user_id", userId)
         .maybeSingle();
@@ -167,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: string;
               name: string;
               default_currency: string | null;
+              industry: string | null;
             } | null);
         // Narrow default_currency defensively: forks running pre-021
         // schemas won't have the column, so a missing/null value reads
@@ -176,6 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: accountRaw.id,
               name: accountRaw.name,
               default_currency: accountRaw.default_currency ?? DEFAULT_CURRENCY,
+              industry: accountRaw.industry ?? 'retail',
             }
           : null;
 
@@ -346,6 +353,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshProfile,
         account,
         defaultCurrency: account?.default_currency ?? DEFAULT_CURRENCY,
+        industry: account?.industry ?? 'retail',
         mfaRequired,
         ...derived,
       }}
@@ -377,6 +385,7 @@ export function useAuth(): AuthContextValue {
       refreshProfile: async () => {},
       account: null,
       defaultCurrency: DEFAULT_CURRENCY,
+      industry: 'retail',
       accountId: null,
       accountRole: null,
       isOwner: false,

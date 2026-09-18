@@ -20,6 +20,7 @@ import {
   UserPlus,
   Crown,
   Headphones,
+  Boxes,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -42,6 +43,7 @@ export const SETTINGS_SECTIONS = [
   'channels',
   'templates',
   'fields',
+  'item-types',
   'deals',
   'recency',
   'branches',
@@ -79,6 +81,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   channels: { id: 'channels', label: 'Channels', icon: Globe, group: 'workspace' },
   templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace' },
   fields: { id: 'fields', label: 'Fields & tags', icon: Tags, group: 'workspace' },
+  'item-types': { id: 'item-types', label: 'Item types', icon: Boxes, group: 'workspace' },
   deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace' },
   recency: { id: 'recency', label: 'Recency & segments', icon: Timer, group: 'workspace' },
   branches: { id: 'branches', label: 'Branches', icon: GitBranch, group: 'workspace' },

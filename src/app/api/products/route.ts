@@ -26,6 +26,11 @@ export async function GET(request: Request) {
       query = query.eq('category', category);
     }
 
+    const itemType = searchParams.get('item_type') || '';
+    if (itemType) {
+      query = query.eq('item_type', itemType);
+    }
+
     const { data, count, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ products: data ?? [], count: count ?? 0 });
@@ -69,6 +74,11 @@ export async function POST(request: Request) {
       // Inventory fields (stock managed via inventory system)
       track_inventory: body.track_inventory ?? false,
       unit_of_measure: body.unit_of_measure || 'pieces',
+      // Smart Item System fields (migration 084)
+      item_type: body.item_type || 'product',
+      item_role: body.item_role || 'revenue',
+      metadata: body.metadata || {},
+      display_label: body.display_label?.trim() || null,
     };
 
     const { data, error } = await ctx.supabase

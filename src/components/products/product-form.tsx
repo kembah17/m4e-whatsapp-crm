@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useCan } from '@/hooks/use-can';
 import { toast } from 'sonner';
@@ -34,6 +34,19 @@ import {
 } from 'lucide-react';
 import { ProductImageUpload } from './product-image-upload';
 
+import {
+  ITEM_TYPE_REGISTRY,
+  getEnabledItemTypes,
+  getItemTypeLabel,
+} from '@/lib/industry/item-type-config';
+import type { ItemType, ItemRole } from '@/types';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
+
 interface ProductFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,7 +70,7 @@ export function ProductForm({
   product,
   onSaved,
 }: ProductFormProps) {
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, industry } = useAuth();
   const canEdit = useCan('edit-settings');
 
   // Form state
@@ -82,8 +95,15 @@ export function ProductForm({
   
   
   const [unitOfMeasure, setUnitOfMeasure] = useState('pieces');
-  
-  
+
+  // Smart Item System state
+  const [itemType, setItemType] = useState<ItemType>('product');
+  const [itemRole, setItemRole] = useState<ItemRole>('revenue');
+  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [displayLabel, setDisplayLabel] = useState('');
+
+  const enabledItemTypes = useMemo(() => getEnabledItemTypes(industry), [industry]);
+  const currentTypeDef = useMemo(() => ITEM_TYPE_REGISTRY[itemType], [itemType]);
 
   // Suggestions state
   const [suggestions, setSuggestions] = useState<Suggestions>({});
@@ -121,8 +141,11 @@ export function ProductForm({
       
       
       setUnitOfMeasure(String((product as any).unit_of_measure ?? 'pieces'));
-      
-      
+      // Smart Item System fields
+      setItemType((product.item_type as ItemType) || 'product');
+      setItemRole((product.item_role as ItemRole) || 'revenue');
+      setMetadata(product.metadata ?? {});
+      setDisplayLabel(product.display_label ?? '');
     } else {
       setName('');
       setPrice('');
@@ -141,6 +164,10 @@ export function ProductForm({
       // Reset inventory fields
       setTrackInventory(false);
       setUnitOfMeasure('pieces');
+      setItemType('product');
+      setItemRole('revenue');
+      setMetadata({});
+      setDisplayLabel('');
     }
   }, [open, product]);
 
@@ -240,6 +267,11 @@ export function ProductForm({
       // Inventory fields
       track_inventory: trackInventory,
       unit_of_measure: unitOfMeasure || 'pieces',
+      // Smart Item System fields
+      item_type: itemType,
+      item_role: itemRole,
+      metadata,
+      display_label: displayLabel.trim() || null,
     };
 
     try {
@@ -318,6 +350,50 @@ export function ProductForm({
               placeholder="e.g. Premium Hair Treatment"
               className="bg-muted/50 border-border"
             />
+          </div>
+
+          {/* Item Type & Role */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Item Type</Label>
+              <Select value={itemType} onValueChange={(v) => {
+                const newType = v as ItemType;
+                setItemType(newType);
+                setItemRole(ITEM_TYPE_REGISTRY[newType].defaultRole);
+                const newFields = ITEM_TYPE_REGISTRY[newType].metadataFields.map(f => f.key);
+                setMetadata(prev => {
+                  const kept: Record<string, unknown> = {};
+                  for (const [k, val] of Object.entries(prev)) {
+                    if (newFields.includes(k)) kept[k] = val;
+                  }
+                  return kept;
+                });
+              }}>
+                <SelectTrigger className="bg-muted/50 border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {enabledItemTypes.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Item Role</Label>
+              <Select value={itemRole} onValueChange={(v) => setItemRole(v as ItemRole)}>
+                <SelectTrigger className="bg-muted/50 border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="revenue">💰 Revenue</SelectItem>
+                  <SelectItem value="operational">⚙️ Operational</SelectItem>
+                  <SelectItem value="both">🔄 Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Price + Cost */}
@@ -478,6 +554,120 @@ export function ProductForm({
               className="bg-muted/50 border-border"
             />
             <SuggestionHint field="tags" label="Tags" />
+          </div>
+
+          {/* Industry Details (Dynamic Metadata) */}
+          {currentTypeDef.metadataFields.length > 0 && (
+            <Accordion>
+              <AccordionItem value="industry-details">
+                <AccordionTrigger className="text-sm font-medium text-foreground">
+                  {currentTypeDef.icon} Industry Details ({currentTypeDef.metadataFields.length} fields)
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3 pt-2">
+                    {currentTypeDef.metadataFields.map((field) => (
+                      <div key={field.key} className="space-y-1">
+                        <Label className="text-xs">
+                          {field.label}
+                          {field.unit && <span className="text-muted-foreground ml-1">({field.unit})</span>}
+                        </Label>
+                        {field.type === 'text' && (
+                          <Input
+                            value={String(metadata[field.key] ?? '')}
+                            onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value }))}
+                            placeholder={field.placeholder}
+                            className="bg-muted/50 border-border h-8 text-sm"
+                          />
+                        )}
+                        {field.type === 'number' && (
+                          <Input
+                            type="number"
+                            value={String(metadata[field.key] ?? '')}
+                            onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value ? Number(e.target.value) : undefined }))}
+                            placeholder={field.placeholder}
+                            className="bg-muted/50 border-border h-8 text-sm"
+                          />
+                        )}
+                        {field.type === 'boolean' && (
+                          <Switch
+                            checked={Boolean(metadata[field.key])}
+                            onCheckedChange={(v) => setMetadata(prev => ({ ...prev, [field.key]: v }))}
+                          />
+                        )}
+                        {field.type === 'select' && field.options && (
+                          <Select
+                            value={String(metadata[field.key] ?? '')}
+                            onValueChange={(v) => setMetadata(prev => ({ ...prev, [field.key]: v }))}
+                          >
+                            <SelectTrigger className="bg-muted/50 border-border h-8 text-sm">
+                              <SelectValue placeholder={field.placeholder || 'Select...'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {field.options.map((opt) => (
+                                <SelectItem key={opt} value={opt}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1).replace(/_/g, ' ')}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        {field.type === 'textarea' && (
+                          <Textarea
+                            value={String(metadata[field.key] ?? '')}
+                            onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value }))}
+                            placeholder={field.placeholder}
+                            rows={2}
+                            className="bg-muted/50 border-border text-sm"
+                          />
+                        )}
+                        {field.type === 'date' && (
+                          <Input
+                            type="date"
+                            value={String(metadata[field.key] ?? '')}
+                            onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value }))}
+                            className="bg-muted/50 border-border h-8 text-sm"
+                          />
+                        )}
+                        {field.type === 'multiselect' && field.options && (
+                          <div className="flex flex-wrap gap-2">
+                            {field.options.map((opt) => {
+                              const selected = Array.isArray(metadata[field.key]) && (metadata[field.key] as string[]).includes(opt);
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => {
+                                    setMetadata(prev => {
+                                      const current = Array.isArray(prev[field.key]) ? [...(prev[field.key] as string[])] : [];
+                                      if (current.includes(opt)) {
+                                        return { ...prev, [field.key]: current.filter(v => v !== opt) };
+                                      } else {
+                                        return { ...prev, [field.key]: [...current, opt] };
+                                      }
+                                    });
+                                  }}
+                                  className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                                    selected
+                                      ? 'bg-primary/20 border-primary/50 text-primary'
+                                      : 'bg-muted/50 border-border text-muted-foreground hover:border-primary/30'
+                                  }`}
+                                >
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1).replace(/_/g, ' ')}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {field.helpText && (
+                          <p className="text-[10px] text-muted-foreground">{field.helpText}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
 
           <Separator className="bg-muted" />
 
@@ -517,7 +707,6 @@ export function ProductForm({
                 </p>
               </div>
             )}
-          </div>
           </div>
 
           <Separator className="bg-muted" />

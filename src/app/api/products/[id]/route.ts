@@ -41,6 +41,7 @@ export async function PUT(
       'ai_generated_fields',
       // Inventory fields (stock managed via inventory system)
       'track_inventory', 'unit_of_measure',
+      'item_type', 'item_role', 'metadata', 'display_label',
     ] as const;
     for (const k of fields) {
       if (k in body) update[k] = body[k];

@@ -1,9 +1,22 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/currency";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  ITEM_TYPE_REGISTRY,
+  getEnabledItemTypes,
+  getItemTypeLabel,
+} from '@/lib/industry/item-type-config';
+import type { ItemType } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -64,7 +77,7 @@ export function ProductImportWizard({
   onOpenChange,
   onImported,
 }: ProductImportWizardProps) {
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, industry } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>("upload");
@@ -75,6 +88,9 @@ export function ProductImportWizard({
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [defaultItemType, setDefaultItemType] = useState<ItemType>('product');
+
+  const enabledItemTypes = useMemo(() => getEnabledItemTypes(industry), [industry]);
 
   const reset = useCallback(() => {
     setStep("upload");
@@ -85,6 +101,7 @@ export function ProductImportWizard({
     setImporting(false);
     setImportResult(null);
     setDragOver(false);
+    setDefaultItemType('product');
   }, []);
 
   const handleClose = useCallback(() => {
@@ -146,7 +163,11 @@ export function ProductImportWizard({
   );
 
   const handleImport = useCallback(async () => {
-    const toImport = products.filter((_, i) => selected.has(i));
+    const toImport = products.filter((_, i) => selected.has(i)).map(p => ({
+      ...p,
+      item_type: (p as any).item_type || defaultItemType,
+      item_role: ITEM_TYPE_REGISTRY[defaultItemType].defaultRole,
+    }));
     if (toImport.length === 0) {
       toast.error("No products selected");
       return;
@@ -231,6 +252,23 @@ export function ProductImportWizard({
           {/* STEP: Upload */}
           {step === "upload" && (
             <div className="space-y-4 py-4">
+              {/* What are you importing? */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">What are you importing?</label>
+                <Select value={defaultItemType} onValueChange={(v) => setDefaultItemType(v as ItemType)}>
+                  <SelectTrigger className="bg-muted/50 border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {enabledItemTypes.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry, true)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div
                 onDrop={handleDrop}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}

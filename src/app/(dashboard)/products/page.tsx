@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { formatCurrency } from '@/lib/currency';
@@ -8,6 +8,8 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { toast } from 'sonner';
 import type { Product, ProductStatus } from '@/types';
+import type { ItemType } from '@/types';
+import { ITEM_TYPE_REGISTRY, getEnabledItemTypes, getItemTypeLabel, getIndustryBundle } from '@/lib/industry/item-type-config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -59,13 +61,14 @@ const STATUS_COLORS: Record<ProductStatus, string> = {
 
 export default function ProductsPage() {
   const supabase = createClient();
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, industry } = useAuth();
   const canEdit = useCan('edit-settings');
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -77,12 +80,16 @@ export default function ProductsPage() {
   const [deleting, setDeleting] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
 
+  const enabledItemTypes = useMemo(() => getEnabledItemTypes(industry), [industry]);
+  const industryBundle = useMemo(() => getIndustryBundle(industry), [industry]);
+
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search.trim()) params.set('search', search.trim());
       if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter);
+      if (typeFilter && typeFilter !== 'all') params.set('item_type', typeFilter);
 
       const res = await fetch(`/api/products?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to load products');
@@ -99,7 +106,7 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page]);
+  }, [search, statusFilter, typeFilter, page]);
 
   useEffect(() => {
     fetchProducts();
@@ -108,7 +115,7 @@ export default function ProductsPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(0);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, typeFilter]);
 
   async function handleDelete() {
     if (!deleteTarget) return;
@@ -134,9 +141,13 @@ export default function ProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Products</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            {industryBundle.primaryTypes.length > 1
+              ? industryBundle.primaryTypes.map(t => getItemTypeLabel(t.type, industry, true)).join(' & ')
+              : 'Products'}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your product and service catalog
+            Manage your {industryBundle.displayName.toLowerCase()} catalog
           </p>
         </div>
         <div className="flex gap-2">
@@ -183,6 +194,19 @@ export default function ProductsPage() {
             <SelectItem value="seasonal">Seasonal</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v ?? 'all')}>
+          <SelectTrigger className="w-40 bg-muted/50 border-border">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {enabledItemTypes.map((t) => (
+              <SelectItem key={t} value={t}>
+                {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Content */}
@@ -195,16 +219,16 @@ export default function ProductsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Package className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-sm font-medium text-foreground mb-1">
-              {search || statusFilter !== 'all'
-                ? 'No products match your filters'
-                : 'Add your first product'}
+              {search || statusFilter !== 'all' || typeFilter !== 'all'
+                ? 'No items match your filters'
+                : `Add your first ${getItemTypeLabel(enabledItemTypes[0] ?? 'product', industry).toLowerCase()}`}
             </h3>
             <p className="text-xs text-muted-foreground mb-4 max-w-sm">
-              {search || statusFilter !== 'all'
+              {search || statusFilter !== 'all' || typeFilter !== 'all'
                 ? 'Try adjusting your search or filter criteria'
-                : 'Create products and services to track in your reactivation campaigns'}
+                : `Create ${industryBundle.displayName.toLowerCase()} items to track in your growth campaigns`}
             </p>
-            {!search && statusFilter === 'all' && (
+            {!search && statusFilter === 'all' && typeFilter === 'all' && (
               <GatedButton
                 canAct={canEdit}
                 gateReason="manage products"
@@ -224,6 +248,7 @@ export default function ProductsPage() {
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground w-[60px]">Image</TableHead>
+                <TableHead className="text-muted-foreground">Type</TableHead>
                 <TableHead className="text-muted-foreground">Name</TableHead>
                 <TableHead className="text-muted-foreground">Category</TableHead>
                 <TableHead className="text-muted-foreground">Price</TableHead>
@@ -256,6 +281,26 @@ export default function ProductsPage() {
                         <ImageIcon className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm">{ITEM_TYPE_REGISTRY[product.item_type]?.icon ?? '📦'}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {getItemTypeLabel(product.item_type, industry)}
+                      </span>
+                    </div>
+                    {product.item_role && product.item_role !== 'revenue' && (
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] mt-0.5 ${
+                          product.item_role === 'operational'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        }`}
+                      >
+                        {product.item_role}
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div>

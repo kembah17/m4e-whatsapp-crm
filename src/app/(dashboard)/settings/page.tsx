@@ -29,6 +29,8 @@ import { InvoicingSettings } from '@/components/settings/invoicing-settings';
 import { LoyaltySettingsPanel } from '@/components/settings/loyalty-settings-panel';
 import { ReferralSettingsPanel } from '@/components/settings/referral-settings-panel';
 import { TierAccessPanel } from '@/components/settings/tier-access-panel';
+import { ItemTypeSettings } from '@/components/settings/item-type-settings';
+import { SupportSettings } from '@/components/support/support-settings';
 import {
   resolveSection,
   type SettingsSection,
@@ -74,6 +76,7 @@ export default function SettingsPage() {
     channels: <ChannelMatrix />,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,
+    'item-types': <ItemTypeSettings />,
     deals: <DealsSettings />,
     recency: <RecencySettings />,
     branches: <BranchesPanel />,
@@ -85,6 +88,7 @@ export default function SettingsPage() {
     'loyalty-settings': <LoyaltySettingsPanel />,
     'referral-settings': <ReferralSettingsPanel />,
     'tier-access': <TierAccessPanel />,
+    'support-settings': <SupportSettings />,
   };
 
   return (
