@@ -7,6 +7,8 @@ import {
   skipStep,
   resetOnboarding,
   autoDetectCompletedSteps,
+  buildFallbackProgress,
+  ONBOARDING_STEPS,
 } from '@/lib/subscriber-monitoring/onboarding'
 
 export async function GET(req: NextRequest) {
@@ -29,8 +31,13 @@ export async function GET(req: NextRequest) {
 
     const progress = await getOnboardingProgress(account.account_id)
 
-    // Auto-detect completed steps
-    const autoCompleted = await autoDetectCompletedSteps(account.account_id)
+    // Auto-detect completed steps (wrap in try/catch so it never blocks)
+    let autoCompleted: string[] = []
+    try {
+      autoCompleted = await autoDetectCompletedSteps(account.account_id)
+    } catch (detectErr) {
+      console.error('[Onboarding API] Auto-detect error:', detectErr)
+    }
 
     return NextResponse.json({
       ...progress,
@@ -40,7 +47,14 @@ export async function GET(req: NextRequest) {
     })
   } catch (error) {
     console.error('[Onboarding API] Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    // Return fallback progress instead of 500 so the page always renders
+    const fallback = buildFallbackProgress('unknown')
+    return NextResponse.json({
+      ...fallback,
+      onboarding_completed: false,
+      autoDetectedSteps: [],
+      fallback: true,
+    })
   }
 }
 

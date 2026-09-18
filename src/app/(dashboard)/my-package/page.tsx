@@ -13,6 +13,9 @@ import {
   GitBranch, Radio, Bot, Workflow, AlertCircle, Star,
 } from "lucide-react"
 import CampaignScheduleTab from "@/components/packages/campaign-schedule-tab"
+import { PackageHealthDashboard } from "@/components/packages/package-health-dashboard"
+import { PackageInitiationWizard } from "@/components/packages/package-initiation-wizard"
+import { PackageCompletionFlow } from "@/components/packages/package-completion-flow"
 
 /* ================================================================== */
 /*  Types                                                              */
@@ -103,7 +106,7 @@ interface ManagementData {
   }
 }
 
-type Tab = "overview" | "assign" | "execute" | "configure" | "reports" | "transitions" | "campaigns"
+type Tab = "overview" | "initiate" | "assign" | "execute" | "configure" | "reports" | "transitions" | "campaigns"
 
 /* ================================================================== */
 /*  Helpers                                                            */
@@ -288,6 +291,7 @@ export default function PackageManagerPage() {
   /* ---- Tabs ---- */
   const tabs: { id: Tab; label: string; icon: typeof Package; count?: number }[] = [
     { id: "overview", label: "Overview", icon: BarChart3, count: data?.stats.total_accounts },
+    { id: "initiate", label: "Initiate", icon: Rocket, count: data?.stats.without_package },
     { id: "assign", label: "Assign", icon: Plus, count: data?.stats.without_package },
     { id: "execute", label: "Execute", icon: ClipboardList, count: data?.stats.with_package },
     { id: "configure", label: "Configure", icon: Settings },
@@ -393,11 +397,17 @@ export default function PackageManagerPage() {
 
       {/* Tab Content */}
       <div className="min-h-[50vh]">
-        {activeTab === "overview" && <OverviewTab accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={(id) => { selectAccount(id); setActiveTab("execute") }} />}
+        {activeTab === "overview" && <PackageHealthDashboard accounts={filteredAccounts} onSelectAccount={(id) => { selectAccount(id); setActiveTab("execute") }} />}
+        {activeTab === "initiate" && <PackageInitiationWizard accounts={data?.accounts ?? []} packages={data?.packages ?? []} onAssign={async (accountId, pkgId) => { const result = await doAction({ action: "assign_package", account_id: accountId, package_config_id: pkgId }); if (result.success) { await fetchData(); selectAccount(accountId); setActiveTab("execute") } return result }} actionLoading={actionLoading} onComplete={() => setActiveTab("execute")} />}
         {activeTab === "assign" && <AssignTab accounts={data?.accounts ?? []} packages={data?.packages ?? []} onAssign={async (accountId, pkgId) => { const result = await doAction({ action: "assign_package", account_id: accountId, package_config_id: pkgId }); if (result.success) { await fetchData(); selectAccount(accountId); setActiveTab("execute") } return result }} actionLoading={actionLoading} />}
         {activeTab === "execute" && <ExecuteTab account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} milestonesLoading={milestonesLoading} expandedMilestone={expandedMilestone} setExpandedMilestone={setExpandedMilestone} noteText={noteText} setNoteText={setNoteText} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} onUpdateMilestone={async (body) => { const result = await doAction(body); if (result.success && selectedAccount && selectedPackage) { await fetchMilestones(selectedAccount, selectedPackage) } return result }} onUpdateDeliverable={async (body) => { const result = await doAction(body); if (result.success && selectedAccount && selectedPackage) { await fetchMilestones(selectedAccount, selectedPackage) } return result }} onUpdateCriterion={async (body) => { const result = await doAction(body); if (result.success && selectedAccount && selectedPackage) { await fetchMilestones(selectedAccount, selectedPackage) } return result }} actionLoading={actionLoading} />}
         {activeTab === "configure" && <ConfigureTab account={selectedAccountData} pkgConfig={selectedPkgConfig} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
         {activeTab === "reports" && <ReportsTab account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
+        {activeTab === "transitions" && selectedAccountData?.active_package && selectedPkgConfig && milestones.length > 0 && (selectedAccountData.active_package.completed === selectedAccountData.active_package.total_milestones || selectedAccountData.active_package.progress_percent >= 100) && (
+          <div className="mb-6">
+            <PackageCompletionFlow account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} packages={data?.packages ?? []} onTransition={async (body) => { const result = await doAction(body); if (result.success) await fetchData(); return result }} actionLoading={actionLoading} />
+          </div>
+        )}
         {activeTab === "transitions" && <TransitionsTab account={selectedAccountData} pkgConfig={selectedPkgConfig} milestones={milestones} packages={data?.packages ?? []} accounts={filteredAccounts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} onTransition={async (body) => { const result = await doAction(body); if (result.success) await fetchData(); return result }} actionLoading={actionLoading} />}
         {activeTab === "campaigns" && <CampaignScheduleTab account={selectedAccountData as any} accounts={filteredAccounts as any} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSelectAccount={selectAccount} />}
       </div>

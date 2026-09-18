@@ -66,6 +66,8 @@ export async function middleware(request: NextRequest) {
     '/dashboard', '/inbox', '/contacts', '/pipelines',
     '/broadcasts', '/automations', '/settings', '/flows',
     '/admin',  // Super admin routes
+    '/getting-started', '/my-package', '/setup-2fa',
+    '/onboarding', '/industry-setup', '/help',
   ]
   if (!user && protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
     const url = request.nextUrl.clone()

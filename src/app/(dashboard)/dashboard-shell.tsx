@@ -7,15 +7,25 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { SessionTimeoutWarning } from "@/components/session-timeout-warning";
+import { createClient } from "@/lib/supabase/client";
+
+// Emails exempt from mandatory 2FA (e.g. meta-reviewer accounts)
+const MFA_EXEMPT_EMAILS = [
+  "meta-reviewer@marketing4effect.com",
+];
+
+// Paths that don't require MFA to be set up yet
+const MFA_EXEMPT_PATHS = ["/setup-2fa", "/settings"];
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
-// client components can't export Next's metadata object.
+// client components can't export Next.js metadata object.
 
 function DashboardShellInner({ children }: { children: React.ReactNode }) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const supabase = createClient();
 
   // Session timeout — auto-logout after 30 min of inactivity
   const handleSessionTimeout = useCallback(async () => {
@@ -38,12 +48,59 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
   const onboardingChecked = useRef(false);
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
 
+  // MFA enforcement — cached so we don't re-check on every navigation.
+  const mfaChecked = useRef(false);
+  const [mfaEnrolled, setMfaEnrolled] = useState<boolean | null>(null);
+
   // Auth redirect
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  // MFA check — runs once after auth succeeds
+  useEffect(() => {
+    if (loading || !user) return;
+    if (mfaChecked.current) return;
+    mfaChecked.current = true;
+
+    async function checkMfa() {
+      try {
+        // Check if user is exempt
+        const isExempt = MFA_EXEMPT_EMAILS.includes(user!.email || "");
+        if (isExempt) {
+          setMfaEnrolled(true);
+          return;
+        }
+
+        // Check MFA factors
+        const { data, error } = await supabase.auth.mfa.listFactors();
+        if (error) {
+          // If we can't check MFA, don't block the user
+          console.error("[MFA Check] listFactors error:", error);
+          setMfaEnrolled(true);
+          return;
+        }
+
+        const hasVerified =
+          data.totp?.some((f) => f.status === "verified") ?? false;
+        setMfaEnrolled(hasVerified);
+
+        if (
+          !hasVerified &&
+          !MFA_EXEMPT_PATHS.some((p) => pathname.startsWith(p))
+        ) {
+          router.push("/setup-2fa");
+        }
+      } catch {
+        // Network error — don't block the dashboard
+        setMfaEnrolled(true);
+      }
+    }
+
+    checkMfa();
+  }, [loading, user, pathname, router, supabase]);
 
   // Onboarding check — runs once after auth succeeds
   useEffect(() => {
@@ -62,7 +119,8 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         // Check both field names: isComplete (from platform_onboarding API) and
         // onboarding_completed (legacy accounts table field) for compatibility
-        const completed = data.isComplete === true || data.onboarding_completed === true;
+        const completed =
+          data.isComplete === true || data.onboarding_completed === true;
         setOnboardingDone(completed);
 
         if (!completed && !pathname.startsWith("/onboarding")) {
@@ -90,9 +148,13 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
 
   if (!user) return null;
 
-  // While checking onboarding status, show a brief loader (only on
-  // non-onboarding pages to avoid flash).
-  if (onboardingDone === null && !pathname.startsWith("/onboarding")) {
+  // While checking MFA or onboarding status, show a brief loader
+  // (only on non-exempt pages to avoid flash).
+  if (
+    (mfaEnrolled === null &&
+      !MFA_EXEMPT_PATHS.some((p) => pathname.startsWith(p))) ||
+    (onboardingDone === null && !pathname.startsWith("/onboarding"))
+  ) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">

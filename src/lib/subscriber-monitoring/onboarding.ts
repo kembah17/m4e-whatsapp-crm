@@ -32,6 +32,17 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
   },
   {
     step: 2,
+    key: 'setup_industry',
+    title: 'Set Up Your Industry Defaults',
+    description: 'Apply industry-specific pipelines, workflows, and templates to your account',
+    category: 'setup',
+    estimatedMinutes: 3,
+    action: 'navigate',
+    targetPath: '/industry-setup',
+    helpUrl: '/help#industry-setup',
+  },
+  {
+    step: 3,
     key: 'import_data',
     title: 'Import Your Business Data',
     description: 'Upload your customer contacts and product catalog from Excel, CSV, or your phone',
@@ -42,7 +53,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#import-data',
   },
   {
-    step: 3,
+    step: 4,
     key: 'connect_whatsapp',
     title: 'Connect Your WhatsApp Business',
     description: 'Connect your WhatsApp Business number to start messaging customers',
@@ -53,7 +64,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#whatsapp-setup',
   },
   {
-    step: 4,
+    step: 5,
     key: 'create_template',
     title: 'Create Your First Message Template',
     description: 'Set up a reusable message template for customer outreach',
@@ -64,7 +75,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#templates',
   },
   {
-    step: 5,
+    step: 6,
     key: 'setup_pipeline',
     title: 'Set Up Your Sales Pipeline',
     description: 'Organise your sales process with customisable stages',
@@ -75,7 +86,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#pipelines',
   },
   {
-    step: 6,
+    step: 7,
     key: 'send_first_message',
     title: 'Send Your First Message',
     description: 'Reach out to a customer using WhatsApp or email',
@@ -86,7 +97,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#messaging',
   },
   {
-    step: 7,
+    step: 8,
     key: 'create_campaign',
     title: 'Launch Your First Campaign',
     description: 'Create a reactivation campaign to win back dormant customers',
@@ -97,7 +108,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
     helpUrl: '/help#campaigns',
   },
   {
-    step: 8,
+    step: 9,
     key: 'explore_automation',
     title: 'Explore Automation',
     description: 'Set up automated workflows to save time on repetitive tasks',
@@ -138,41 +149,93 @@ export interface OnboardingProgress {
   percentComplete: number
   /** Full step objects with status — ready for frontend rendering */
   steps: EnrichedStep[]
+  /** True when data is synthetic (DB unreachable) */
+  fallback?: boolean
 }
 
 /**
- * Get or create onboarding progress for an account
+ * Build a synthetic progress object from ONBOARDING_STEPS.
+ * Used when the database is unreachable so the page always renders.
+ */
+export function buildFallbackProgress(accountId: string): OnboardingProgress {
+  const steps: EnrichedStep[] = ONBOARDING_STEPS.map(def => ({
+    key: def.key,
+    title: def.title,
+    description: def.description,
+    category: def.category,
+    estimatedMinutes: def.estimatedMinutes,
+    helpUrl: def.helpUrl,
+    targetPath: def.targetPath,
+    status: 'pending' as const,
+    completedAt: null,
+  }))
+
+  return {
+    id: 'fallback',
+    accountId,
+    onboardingType: 'self_service',
+    currentStep: 1,
+    totalSteps: ONBOARDING_STEPS.length,
+    stepsCompleted: [],
+    isComplete: false,
+    completedAt: null,
+    skippedSteps: [],
+    timeSpentMinutes: 0,
+    percentComplete: 0,
+    steps,
+    fallback: true,
+  }
+}
+
+/**
+ * Get or create onboarding progress for an account.
+ * Falls back to synthetic progress if the database is unreachable.
  */
 export async function getOnboardingProgress(
   accountId: string
 ): Promise<OnboardingProgress> {
-  const db = supabaseAdmin()
+  try {
+    const db = supabaseAdmin()
 
-  const { data: existing } = await db
-    .from('platform_onboarding')
-    .select('*')
-    .eq('account_id', accountId)
-    .single()
+    const { data: existing, error } = await db
+      .from('platform_onboarding')
+      .select('*')
+      .eq('account_id', accountId)
+      .single()
 
-  if (existing) {
-    return formatProgress(existing)
+    if (error && error.code !== 'PGRST116') {
+      console.error('[Onboarding] DB query error:', error)
+      // Fall through to create new record
+    }
+
+    if (existing) {
+      return formatProgress(existing)
+    }
+
+    // Create new onboarding record
+    const { data: newRecord, error: insertError } = await db
+      .from('platform_onboarding')
+      .insert({
+        account_id: accountId,
+        onboarding_type: 'self_service',
+        current_step: 1,
+        total_steps: ONBOARDING_STEPS.length,
+        steps_completed: [],
+        is_complete: false,
+      })
+      .select()
+      .single()
+
+    if (insertError || !newRecord) {
+      console.error('[Onboarding] Insert error:', insertError)
+      return buildFallbackProgress(accountId)
+    }
+
+    return formatProgress(newRecord)
+  } catch (err) {
+    console.error('[Onboarding] Unexpected error:', err)
+    return buildFallbackProgress(accountId)
   }
-
-  // Create new onboarding record
-  const { data: newRecord } = await db
-    .from('platform_onboarding')
-    .insert({
-      account_id: accountId,
-      onboarding_type: 'self_service',
-      current_step: 1,
-      total_steps: ONBOARDING_STEPS.length,
-      steps_completed: [],
-      is_complete: false,
-    })
-    .select()
-    .single()
-
-  return formatProgress(newRecord!)
 }
 
 /**
@@ -287,6 +350,13 @@ export async function autoDetectCompletedSteps(
   const db = supabaseAdmin()
   const completed: string[] = []
 
+  // Check if industry bundles have been applied (pipelines exist for this account)
+  const { count: pipeCount } = await db
+    .from('pipelines')
+    .select('id', { count: 'exact', head: true })
+    .eq('account_id', accountId)
+  if (pipeCount && pipeCount > 0) completed.push('setup_industry')
+
   // Check contacts imported
   const { count: contactCount } = await db
     .from('contacts')
@@ -318,9 +388,9 @@ export async function autoDetectCompletedSteps(
     .eq('account_id', accountId)
   if (templateCount && templateCount > 0) completed.push('create_template')
 
-  // Check pipeline exists
+  // Check pipeline exists (also counts for setup_pipeline)
   const { count: pipelineCount } = await db
-    .from('pipeline_stages')
+    .from('pipelines')
     .select('id', { count: 'exact', head: true })
     .eq('account_id', accountId)
   if (pipelineCount && pipelineCount > 0) completed.push('setup_pipeline')

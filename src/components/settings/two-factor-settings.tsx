@@ -174,6 +174,12 @@ export function TwoFactorSettings() {
       }
 
       toast.success("Two-factor authentication enabled!");
+
+      // Update profile mfa_enrolled flag
+      await supabase
+        .from("profiles")
+        .update({ mfa_enrolled: true })
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
     } catch (err) {
       console.error("[2FA] verify error:", err);
       toast.error("Verification failed");
@@ -216,6 +222,13 @@ export function TwoFactorSettings() {
       }
 
       toast.success("Two-factor authentication disabled");
+
+      // Update profile mfa_enrolled flag
+      await supabase
+        .from("profiles")
+        .update({ mfa_enrolled: false })
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+
       resetState();
       await checkMfaStatus();
     } catch (err) {

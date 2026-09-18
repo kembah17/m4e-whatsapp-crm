@@ -20,6 +20,7 @@ import {
   Clock,
   Star,
   ExternalLink,
+  AlertTriangle,
 } from 'lucide-react'
 
 // ── Types aligned with backend EnrichedStep ──────────────────
@@ -50,6 +51,7 @@ interface OnboardingProgress {
   steps: OnboardingStep[]
   autoDetectedSteps: string[]
   onboarding_completed: boolean
+  fallback?: boolean
 }
 
 // ── Category display config ──────────────────────────────────
@@ -89,23 +91,45 @@ export default function GettingStartedPage() {
   const router = useRouter()
   const [progress, setProgress] = useState<OnboardingProgress | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const fetchProgress = useCallback(async () => {
     try {
+      setFetchError(false)
       const res = await fetch('/api/onboarding')
       if (res.ok) {
         const data = await res.json()
         setProgress(data)
+      } else {
+        setFetchError(true)
       }
     } catch (err) {
       console.error('Failed to fetch onboarding:', err)
+      setFetchError(true)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => { fetchProgress() }, [fetchProgress])
+
+  // Auto-apply industry bundles when setup_industry step is pending
+  useEffect(() => {
+    if (!progress || progress.isComplete) return
+    const industryStep = progress.steps.find(s => s.key === 'setup_industry')
+    if (industryStep && industryStep.status === 'pending') {
+      fetch('/api/bundles/auto-apply', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+          if (result.applied) {
+            // Refresh progress to show the step as completed
+            fetchProgress()
+          }
+        })
+        .catch(() => {}) // Silent fail - user can still do it manually
+    }
+  }, [progress, fetchProgress])
 
   const handleComplete = async (stepKey: string) => {
     setActionLoading(stepKey)
@@ -163,6 +187,28 @@ export default function GettingStartedPage() {
     )
   }
 
+  // Only show the "Setting up" message if the fetch itself failed (network error)
+  // and we got no data at all. If the API returned fallback data, we render it.
+  if (fetchError && (!progress || !progress.steps || progress.steps.length === 0)) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="bg-card rounded-xl border border-border p-8 text-center">
+          <Rocket className="w-12 h-12 text-primary-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-foreground mb-2">Setting up your onboarding...</h2>
+          <p className="text-muted-foreground mb-4">We&apos;re preparing your personalised getting started guide.</p>
+          <button
+            onClick={() => { setLoading(true); fetchProgress() }}
+            className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-primary-foreground rounded-lg text-sm font-medium transition-colors"
+          >
+            <RefreshCw className="w-4 h-4 inline mr-2" />
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // If we still have no progress data (shouldn't happen with fallback), show empty state
   if (!progress || !progress.steps || progress.steps.length === 0) {
     return (
       <div className="p-6 max-w-3xl mx-auto">
@@ -200,6 +246,28 @@ export default function GettingStartedPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-3xl mx-auto">
+      {/* Fallback warning banner */}
+      {progress.fallback && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-300">
+              Showing default steps
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Your progress will sync when the connection is restored.
+            </p>
+          </div>
+          <button
+            onClick={() => { setLoading(true); fetchProgress() }}
+            className="ml-auto px-3 py-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-md transition-colors"
+          >
+            <RefreshCw className="w-3 h-3 inline mr-1" />
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Getting Started</h1>
