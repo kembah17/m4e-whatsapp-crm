@@ -21,6 +21,9 @@ import {
   CreditCard,
   Activity,
   Headphones,
+  Layers,
+  GraduationCap,
+  ExternalLink,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -499,6 +502,98 @@ const HELP_SECTIONS: HelpSection[] = [
       },
     ],
   },
+  {
+    id: "smart-items",
+    title: "Smart Item System",
+    icon: Layers,
+    description: "Industry-aware products, services, and inventory management that speaks your business language.",
+    faqs: [
+      {
+        question: "What is the Smart Item System?",
+        answer:
+          "The Smart Item System automatically adapts your product and inventory management to match your industry. Instead of forcing everything into a generic \u2018Products\u2019 table, it recognises 10 different item types (Products, Services, Menu Items, Room Types, Medications, Ingredients, Supplies, Packages, Subscriptions, and Programmes) and shows you only what\u2019s relevant to YOUR business. When you select your industry during setup, labels, fields, and suggestions all change to match how you actually think about your business.",
+      },
+      {
+        question: "What are the different item types?",
+        answer:
+          "There are 10 item types split into Revenue items (things you sell) and Operational items (things you use). Revenue types: Product (physical goods), Service (work you do), Menu Item (prepared food/drinks), Asset (things you rent/book like hotel rooms), Programme (educational offerings), Property (real estate), Package (bundled offerings), and Subscription (recurring payments). Operational types: Ingredient (raw inputs consumed in making things) and Supply (consumables that keep the business running).",
+      },
+      {
+        question: "How does my industry affect what I see?",
+        answer:
+          "When you select your industry, the system pre-configures everything. For example: a Restaurant sees \u2018Menu Items\u2019 instead of \u2018Products\u2019, with fields for prep time, allergens, and portion size. A Hotel sees \u2018Room Types\u2019 with bed type, amenities, and check-in times. A Law Firm sees \u2018Services\u2019 with hourly rates and practice areas. Each industry gets smart defaults, relevant labels, and suggested item types.",
+      },
+      {
+        question: "Can I use item types from other industries?",
+        answer:
+          "Absolutely! Industry bundles are suggestions, not restrictions. A hotel owner who also runs a restaurant can enable Menu Items and Ingredients with one click. A clinic with a pharmacy already has Medications enabled. A retail shop that starts offering delivery can enable Services. You\u2019re never locked in \u2014 enable whatever types your business needs.",
+      },
+      {
+        question: "What is the difference between Revenue and Operational items?",
+        answer:
+          "Every item has a role: Revenue (things you sell to make money, like jollof rice or hotel rooms), Operational (things you buy/use to run the business, like cooking oil or cleaning supplies), or Both (items that are sold AND used internally, like medications in a clinic). This separation lets you instantly see \u2018How much did I spend on operations this month?\u2019 vs \u2018What\u2019s my revenue per item type?\u2019",
+      },
+      {
+        question: "How does Smart Import work with the item system?",
+        answer:
+          "When you import data from Excel or CSV, Smart Import recognises your industry\u2019s vocabulary. A restaurant\u2019s \u2018Dish\u2019 column maps to Menu Item name. A hotel\u2019s \u2018Room Rate\u2019 maps to Room Type price. A clinic\u2019s \u2018Drug Name\u2019 maps to Medication name. No manual column mapping needed \u2014 just confirm and import.",
+      },
+      {
+        question: "What are metadata fields?",
+        answer:
+          "Metadata fields are extra information relevant to each item type. Menu Items can have prep time, allergens, and spice level. Room Types can have bed type, amenities, and maximum occupancy. Properties can have bedrooms, bathrooms, and title document type. These fields are optional suggestions \u2014 fill in what you know, skip what you don\u2019t. You can also add custom metadata fields.",
+      },
+      {
+        question: "What industries are supported?",
+        answer:
+          "Pre-configured industry bundles include: Retail/FMCG, Restaurant/Food Service, Hotels & Hospitality, Healthcare/Clinic, Education, Real Estate, Manufacturing, Logistics & Transport, Professional Services (Law, Accounting, Consulting), and Agriculture/Farming. If your industry isn\u2019t listed, you get a flexible generic bundle with Products and Services, and can enable any type you need.",
+      },
+      {
+        question: "Can I rename the labels?",
+        answer:
+          "Yes! While the system sets smart defaults (like \u2018Room Types\u2019 for hotels or \u2018Menu Items\u2019 for restaurants), you can rename any label to match your preference. Call \u2018Assets\u2019 \u2192 \u2018Equipment\u2019 if you prefer. The system adapts to you.",
+      },
+      {
+        question: "How does this connect to campaigns and reports?",
+        answer:
+          "Smart Items enhance every feature: Campaigns can target by item type (\u2018Send menu specials to restaurant customers\u2019). Reports separate revenue by type automatically. The Debt Book shows debts by item type. AI Insights analyse performance per item type. Inventory alerts only trigger for types that track stock. Your WhatsApp catalogue organises by item type automatically.",
+      },
+    ],
+  },
+  {
+    id: "feature-guides",
+    title: "Feature Guides & Training",
+    icon: GraduationCap,
+    description: "In-depth guides, executive briefs, and training materials for mastering the Business Growth Engine.",
+    faqs: [
+      {
+        question: "Where can I find detailed feature guides?",
+        answer:
+          "Visit the Feature Guides page (accessible from the sidebar under Help & Guides \u2192 Feature Guides) for comprehensive documentation on every BGE feature. Guides include step-by-step instructions, real-world examples, and best practices tailored to your industry.",
+      },
+      {
+        question: "What are Executive Briefs?",
+        answer:
+          "Executive Briefs are 5-7 minute reads designed for business owners and decision makers. They explain WHY a feature matters for your bottom line, using real Nigerian business examples and expected ROI. Topics include debt management, customer reactivation, inventory control, payment tracking, and the Smart Item System.",
+      },
+      {
+        question: "What training materials are available?",
+        answer:
+          "The BGE Training Curriculum has 8 levels: Getting Started (Modules 1-6), Daily Operations (7-12), Growth Features (13-18), Mastery (19-24), Package Mastery (25-28), Reports & Intelligence (29-32), Strategic Decisions (33-36), and Business Growth (37-40). Each module includes written guides and industry-specific examples.",
+      },
+      {
+        question: "Are there industry-specific guides?",
+        answer:
+          "Yes! We have dedicated training tracks for Retail, Restaurant, Beauty/Salon, Professional Services, and Automotive industries. Each track covers industry-specific features, best practices, and real-world scenarios relevant to your business type.",
+      },
+      {
+        question: "How do I access the guides?",
+        answer:
+          "Click \u2018Feature Guides\u2019 in the sidebar navigation under Help & Guides, or browse the guides section from this Help page. Guides are organised by category: Executive Briefs (business impact), Feature Guides (how-to), and Training Modules (step-by-step learning paths).",
+      },
+    ],
+  },
+
 ]
 
 // ---------------------------------------------------------------------------
@@ -539,7 +634,7 @@ export default function HelpPage() {
           Help & Guides
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Everything you need to know about using the Customer Reactivation
+          Everything you need to know about using the Business Growth
           Manager. {totalFAQs} answers across {HELP_SECTIONS.length} topics.
         </p>
       </div>

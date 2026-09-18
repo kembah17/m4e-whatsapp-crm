@@ -27,6 +27,7 @@ import {
   Zap,
   Bot,
   HelpCircle,
+  GraduationCap,
   QrCode,
   FileInput,
   Factory,
@@ -212,7 +213,8 @@ const navGroups: NavGroup[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
-  { href: "/help", label: "Help & Guides", icon: HelpCircle },
+  { href: "/help", label: "Help & FAQ", icon: HelpCircle },
+  { href: "/guides", label: "Feature Guides", icon: GraduationCap },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

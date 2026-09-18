@@ -694,6 +694,25 @@ export interface AutomationLog {
 
 export type ProductStatus = 'active' | 'discontinued' | 'seasonal';
 
+// Item types: WHAT the item fundamentally is
+export type ItemType =
+  | 'product'       // Physical goods for sale (retail, pharmacy, agriculture)
+  | 'service'       // Services for sale (consulting, delivery, consultation)
+  | 'menu_item'     // Prepared items for sale (restaurant meals, bar drinks)
+  | 'ingredient'    // Raw inputs consumed in production/preparation
+  | 'supply'        // Operational consumables (gloves, packaging, cleaning)
+  | 'asset'         // Bookable assets (rooms, vehicles, equipment, spaces)
+  | 'programme'     // Educational programmes, classes, courses
+  | 'property'      // Unique real estate listings
+  | 'package'       // Bundled offerings (combo meals, service packages)
+  | 'subscription'; // Recurring service/product (retainers, memberships)
+
+// Item roles: HOW the item relates to revenue
+export type ItemRole =
+  | 'revenue'       // Directly generates revenue (what you sell to customers)
+  | 'operational'   // Supports operations (what you consume/use internally)
+  | 'both';         // Both revenue and operational (pharmacy drugs: sold AND used)
+
 export interface Product {
   id: string;
   account_id: string;
@@ -713,6 +732,81 @@ export interface Product {
   seasonal_end?: string;
   tags: string[];
   ai_generated_fields: Record<string, boolean>;
+  // Industry-aware fields (migration 084)
+  item_type: ItemType;
+  item_role: ItemRole;
+  metadata: Record<string, unknown>;
+  display_label?: string;
+  // Inventory fields (migration 081)
+  track_inventory?: boolean;
+  unit_of_measure?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Product component (BOM entry)
+export interface ProductComponent {
+  id: string;
+  account_id: string;
+  parent_product_id: string;
+  component_product_id: string;
+  quantity_required: number;
+  unit: string;
+  is_optional: boolean;
+  waste_factor: number;
+  sort_order: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  component?: Pick<Product, 'id' | 'name' | 'sku' | 'price' | 'cost' | 'unit_of_measure' | 'image_url'>;
+}
+
+// Product availability (date-based booking)
+export interface ProductAvailability {
+  id: string;
+  account_id: string;
+  product_id: string;
+  date: string;
+  total_capacity: number;
+  booked: number;
+  price_override?: number;
+  min_duration: number;
+  is_blocked: boolean;
+  block_reason?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Account item type configuration
+export interface AccountItemTypeConfig {
+  id: string;
+  account_id: string;
+  item_type: ItemType;
+  is_enabled: boolean;
+  display_label?: string;
+  display_label_plural?: string;
+  icon?: string;
+  sort_order: number;
+  metadata_schema: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+// Import field mapping profile
+export interface ImportFieldMapping {
+  id: string;
+  account_id: string;
+  profile_name: string;
+  entity_type: 'product' | 'contact' | 'purchase_history';
+  field_map: Record<string, string>;
+  default_item_type?: ItemType;
+  default_item_role?: ItemRole;
+  default_metadata: Record<string, unknown>;
+  is_default: boolean;
+  use_count: number;
+  last_used_at?: string;
   created_at: string;
   updated_at: string;
 }
