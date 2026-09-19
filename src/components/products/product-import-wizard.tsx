@@ -167,7 +167,7 @@ export function ProductImportWizard({
     const toImport = products.filter((_, i) => selected.has(i)).map(p => ({
       ...p,
       item_type: (p as any).item_type || defaultItemType,
-      item_role: ITEM_TYPE_REGISTRY[defaultItemType].defaultRole,
+      item_role: ITEM_TYPE_REGISTRY[defaultItemType]?.defaultRole || 'primary',
     }));
     if (toImport.length === 0) {
       toast.error("No products selected");
@@ -263,7 +263,7 @@ export function ProductImportWizard({
                   <SelectContent>
                     {enabledItemTypes.map((t) => (
                       <SelectItem key={t} value={t}>
-                        {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry, true)}
+                        {ITEM_TYPE_REGISTRY[t]?.icon} {getItemTypeLabel(t, industry, true)}
                       </SelectItem>
                     ))}
                   </SelectContent>

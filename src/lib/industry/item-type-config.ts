@@ -679,7 +679,7 @@ export function getEnabledItemTypes(
   accountConfigs?: { item_type: string; is_enabled: boolean }[]
 ): ItemType[] {
   const bundle = getIndustryBundle(industry)
-  const primaryTypes = bundle.primaryTypes.map(t => t.type)
+  const primaryTypes = (bundle?.primaryTypes || []).map(t => t.type)
 
   if (!accountConfigs || accountConfigs.length === 0) {
     return primaryTypes

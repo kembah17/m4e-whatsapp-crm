@@ -31,7 +31,7 @@ export function ItemTypeSettings() {
 
   const bundle = useMemo(() => getIndustryBundle(industry), [industry]);
   const primaryTypeSet = useMemo(
-    () => new Set(bundle.primaryTypes.map(t => t.type)),
+    () => new Set((bundle?.primaryTypes || []).map(t => t.type)),
     [bundle]
   );
   const secondaryTypeSet = useMemo(
@@ -73,7 +73,7 @@ export function ItemTypeSettings() {
         body: JSON.stringify({ item_type: type, is_enabled: enabled }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      toast.success(`${ITEM_TYPE_REGISTRY[type].icon} ${getItemTypeLabel(type, industry)} ${enabled ? 'enabled' : 'disabled'}`);
+      toast.success(`${ITEM_TYPE_REGISTRY[type]?.icon} ${getItemTypeLabel(type, industry)} ${enabled ? 'enabled' : 'disabled'}`);
       fetchConfigs();
     } catch {
       toast.error('Failed to update');
@@ -113,7 +113,7 @@ export function ItemTypeSettings() {
 
     return (
       <div key={type} className="flex items-start gap-3 py-3">
-        <span className="text-xl mt-0.5">{def.icon}</span>
+        <span className="text-xl mt-0.5">{def?.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground">
@@ -125,7 +125,7 @@ export function ItemTypeSettings() {
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">{def.description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{def?.description}</p>
           {isEditing ? (
             <div className="flex items-center gap-2 mt-2">
               <Input
@@ -190,7 +190,7 @@ export function ItemTypeSettings() {
           Recommended for {bundle.displayName}
         </h4>
         <div className="rounded-lg border border-border bg-card divide-y divide-border px-4">
-          {primaryTypes.map(t => renderTypeRow(t, 'Recommended'))}
+          {(primaryTypes || []).map(t => renderTypeRow(t, 'Recommended'))}
         </div>
       </div>
 

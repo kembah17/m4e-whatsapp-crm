@@ -359,8 +359,8 @@ export function ProductForm({
               <Select value={itemType} onValueChange={(v) => {
                 const newType = v as ItemType;
                 setItemType(newType);
-                setItemRole(ITEM_TYPE_REGISTRY[newType].defaultRole);
-                const newFields = ITEM_TYPE_REGISTRY[newType].metadataFields.map(f => f.key);
+                setItemRole(ITEM_TYPE_REGISTRY[newType]?.defaultRole || 'primary');
+                const newFields = (ITEM_TYPE_REGISTRY[newType]?.metadataFields || []).map(f => f.key);
                 setMetadata(prev => {
                   const kept: Record<string, unknown> = {};
                   for (const [k, val] of Object.entries(prev)) {
@@ -375,7 +375,7 @@ export function ProductForm({
                 <SelectContent>
                   {enabledItemTypes.map((t) => (
                     <SelectItem key={t} value={t}>
-                      {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry)}
+                      {ITEM_TYPE_REGISTRY[t]?.icon} {getItemTypeLabel(t, industry)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -557,15 +557,15 @@ export function ProductForm({
           </div>
 
           {/* Industry Details (Dynamic Metadata) */}
-          {currentTypeDef.metadataFields.length > 0 && (
+          {(currentTypeDef?.metadataFields?.length ?? 0) > 0 && (
             <Accordion data-tour="item-metadata">
               <AccordionItem value="industry-details">
                 <AccordionTrigger className="text-sm font-medium text-foreground">
-                  {currentTypeDef.icon} Industry Details ({currentTypeDef.metadataFields.length} fields)
+                  {currentTypeDef?.icon} Industry Details ({currentTypeDef?.metadataFields?.length ?? 0} fields)
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3 pt-2">
-                    {currentTypeDef.metadataFields.map((field) => (
+                    {(currentTypeDef?.metadataFields || []).map((field) => (
                       <div key={field.key} className="space-y-1">
                         <Label className="text-xs">
                           {field.label}

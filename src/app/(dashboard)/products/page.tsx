@@ -142,8 +142,8 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
           <h1 className="text-lg font-semibold text-foreground">
-            {industryBundle.primaryTypes.length > 1
-              ? industryBundle.primaryTypes.map(t => getItemTypeLabel(t.type, industry, true)).join(' & ')
+            {(industryBundle?.primaryTypes || []).length > 1
+              ? (industryBundle?.primaryTypes || []).map(t => getItemTypeLabel(t.type, industry, true)).join(' & ')
               : 'Products'}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -202,7 +202,7 @@ export default function ProductsPage() {
             <SelectItem value="all">All Types</SelectItem>
             {enabledItemTypes.map((t) => (
               <SelectItem key={t} value={t}>
-                {ITEM_TYPE_REGISTRY[t].icon} {getItemTypeLabel(t, industry)}
+                {ITEM_TYPE_REGISTRY[t]?.icon} {getItemTypeLabel(t, industry)}
               </SelectItem>
             ))}
           </SelectContent>
