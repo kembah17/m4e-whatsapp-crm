@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { SessionTimeoutWarning } from "@/components/session-timeout-warning";
+import { DashboardErrorBoundary } from "@/components/layout/dashboard-error-boundary";
 import { createClient } from "@/lib/supabase/client";
 
 // Emails exempt from mandatory 2FA (e.g. meta-reviewer accounts)
@@ -172,7 +173,7 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col overflow-hidden">
           <Header onOpenSidebar={() => setSidebarOpen(true)} />
           {/* Thinner horizontal padding on mobile so cards have room to breathe. */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6"><DashboardErrorBoundary>{children}</DashboardErrorBoundary></main>
         </div>
       </div>
       <SessionTimeoutWarning

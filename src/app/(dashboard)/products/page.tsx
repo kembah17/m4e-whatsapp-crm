@@ -147,7 +147,7 @@ export default function ProductsPage() {
               : 'Products'}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your {industryBundle.displayName.toLowerCase()} catalog
+            Manage your {(industryBundle?.displayName ?? 'Products').toLowerCase()} catalog
           </p>
         </div>
         <div className="flex gap-2">
@@ -226,7 +226,7 @@ export default function ProductsPage() {
             <p className="text-xs text-muted-foreground mb-4 max-w-sm">
               {search || statusFilter !== 'all' || typeFilter !== 'all'
                 ? 'Try adjusting your search or filter criteria'
-                : `Create ${industryBundle.displayName.toLowerCase()} items to track in your growth campaigns`}
+                : `Create ${(industryBundle?.displayName ?? 'product').toLowerCase()} items to track in your growth campaigns`}
             </p>
             {!search && statusFilter === 'all' && typeFilter === 'all' && (
               <GatedButton

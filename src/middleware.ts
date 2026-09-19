@@ -68,6 +68,15 @@ export async function middleware(request: NextRequest) {
     '/admin',  // Super admin routes
     '/getting-started', '/my-package', '/setup-2fa',
     '/onboarding', '/industry-setup', '/help',
+    // All remaining dashboard routes (previously unprotected)
+    '/products', '/inventory', '/invoices', '/guides',
+    '/support', '/loyalty', '/qr-codes', '/referrals',
+    '/segments', '/sentiment', '/subscribers', '/success-metrics',
+    '/whatsapp-flows', '/data-center', '/platform',
+    '/ad-leads', '/ai-chatbot', '/ai-playground', '/analytics',
+    '/audit-log', '/billing', '/campaigns', '/debt-book',
+    '/ecommerce', '/financials', '/funnel', '/import-history',
+    '/insights', '/installments',
   ]
   if (!user && protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
     const url = request.nextUrl.clone()

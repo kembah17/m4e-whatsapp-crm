@@ -20,7 +20,6 @@ import {
   Shield,
   CreditCard,
   Activity,
-  Headphones,
   Layers,
   GraduationCap,
   ExternalLink,
