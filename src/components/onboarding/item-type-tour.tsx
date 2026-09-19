@@ -16,7 +16,7 @@ const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="item-type"]',
     title: 'Choose your item type',
     description:
-      'Select what kind of item you're adding — product, service, menu item, room, and more. This determines which fields and metadata are available.',
+      `Select what kind of item you're adding — product, service, menu item, room, and more. This determines which fields and metadata are available.`,
     position: 'bottom',
   },
   {

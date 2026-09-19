@@ -46,6 +46,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
+import { ItemTypeTour } from '@/components/onboarding/item-type-tour';
 
 interface ProductFormProps {
   open: boolean;
