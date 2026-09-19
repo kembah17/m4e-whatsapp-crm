@@ -32,6 +32,7 @@ export interface MetadataFieldDef {
   unit?: string         // Display unit (e.g., "kg", "minutes")
   helpText?: string     // Tooltip/help text
   required?: boolean    // Whether this field is strongly recommended (never enforced)
+  predefined_values?: string[] // Suggested values for text fields (shown as combobox)
 }
 
 // ============================================================
@@ -72,14 +73,14 @@ export const ITEM_TYPE_REGISTRY: Record<ItemType, ItemTypeDefinition> = {
       { key: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., Peak, Dangote' },
       { key: 'weight', label: 'Weight', type: 'number', unit: 'kg', placeholder: '0.00' },
       { key: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'L x W x H cm' },
-      { key: 'colour', label: 'Colour', type: 'text', placeholder: 'e.g., Red, Blue' },
-      { key: 'size', label: 'Size', type: 'text', placeholder: 'e.g., S, M, L, XL or 42' },
+      { key: 'colour', label: 'Colour', type: 'text', placeholder: 'e.g., Red, Blue', predefined_values: ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Brown', 'Grey', 'Pink', 'Purple', 'Orange', 'Gold', 'Silver', 'Multi-colour'] },
+      { key: 'size', label: 'Size', type: 'text', placeholder: 'e.g., S, M, L, XL or 42', predefined_values: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'One Size', '36', '38', '40', '42', '44', '46'] },
       { key: 'barcode', label: 'Barcode', type: 'text', placeholder: 'EAN/UPC barcode' },
       { key: 'shelf_life_days', label: 'Shelf Life', type: 'number', unit: 'days' },
-      { key: 'storage_conditions', label: 'Storage Conditions', type: 'text', placeholder: 'e.g., Cool dry place' },
+      { key: 'storage_conditions', label: 'Storage Conditions', type: 'text', placeholder: 'e.g., Cool dry place', predefined_values: ['Cool dry place', 'Refrigerated (2-8°C)', 'Frozen (-18°C)', 'Room temperature', 'Away from sunlight', 'Humidity controlled'] },
       { key: 'nafdac_no', label: 'NAFDAC Number', type: 'text', placeholder: 'e.g., A4-1234' },
       { key: 'son_certified', label: 'SON Certified', type: 'boolean' },
-      { key: 'country_of_origin', label: 'Country of Origin', type: 'text', placeholder: 'e.g., Nigeria' },
+      { key: 'country_of_origin', label: 'Country of Origin', type: 'text', placeholder: 'e.g., Nigeria', predefined_values: ['Nigeria', 'China', 'India', 'USA', 'UK', 'Ghana', 'South Africa', 'Turkey', 'Germany', 'Japan'] },
     ],
   },
 
@@ -98,7 +99,7 @@ export const ITEM_TYPE_REGISTRY: Record<ItemType, ItemTypeDefinition> = {
       { key: 'rate_type', label: 'Rate Type', type: 'select', options: ['fixed', 'hourly', 'daily', 'project', 'retainer'] },
       { key: 'delivery_mode', label: 'Delivery Mode', type: 'select', options: ['in-person', 'remote', 'hybrid', 'on-site'] },
       { key: 'sla_hours', label: 'SLA (Response Time)', type: 'number', unit: 'hours' },
-      { key: 'practice_area', label: 'Practice Area', type: 'text', placeholder: 'e.g., Tax Advisory, Family Law' },
+      { key: 'practice_area', label: 'Practice Area', type: 'text', placeholder: 'e.g., Tax Advisory, Family Law', predefined_values: ['Tax Advisory', 'Family Law', 'Corporate Law', 'Real Estate', 'Immigration', 'Criminal Defence', 'Intellectual Property', 'Employment Law', 'General Practice', 'Consulting', 'IT Services', 'Marketing'] },
       { key: 'min_engagement_hours', label: 'Minimum Engagement', type: 'number', unit: 'hours' },
       { key: 'coverage_area', label: 'Coverage Area', type: 'text', placeholder: 'e.g., Lagos-Ibadan corridor' },
       { key: 'requires_appointment', label: 'Requires Appointment', type: 'boolean' },
@@ -182,7 +183,7 @@ export const ITEM_TYPE_REGISTRY: Record<ItemType, ItemTypeDefinition> = {
       { key: 'capacity', label: 'Capacity', type: 'number', placeholder: 'e.g., 2 guests, 50 seats' },
       { key: 'total_units', label: 'Total Units', type: 'number', placeholder: 'e.g., 5 rooms of this type', required: true },
       { key: 'amenities', label: 'Amenities', type: 'multiselect', options: ['wifi', 'ac', 'tv', 'pool', 'gym', 'parking', 'breakfast', 'minibar', 'balcony', 'kitchen', 'laundry'] },
-      { key: 'floor', label: 'Floor/Location', type: 'text', placeholder: 'e.g., 3rd Floor, Building A' },
+      { key: 'floor', label: 'Floor/Location', type: 'text', placeholder: 'e.g., 3rd Floor, Building A', predefined_values: ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor', 'Penthouse', 'Basement', 'Building A', 'Building B', 'Annex'] },
       { key: 'size_sqm', label: 'Size', type: 'number', unit: 'sqm' },
       { key: 'bed_type', label: 'Bed Type', type: 'select', options: ['single', 'double', 'queen', 'king', 'twin', 'bunk', 'sofa-bed'] },
       { key: 'view', label: 'View', type: 'select', options: ['ocean', 'pool', 'garden', 'city', 'courtyard', 'none'] },
@@ -210,7 +211,7 @@ export const ITEM_TYPE_REGISTRY: Record<ItemType, ItemTypeDefinition> = {
       { key: 'term', label: 'Term/Session', type: 'text', placeholder: 'e.g., 2026/2027 First Term' },
       { key: 'schedule', label: 'Schedule', type: 'text', placeholder: 'e.g., Mon-Fri 8am-2pm' },
       { key: 'level', label: 'Level', type: 'select', options: ['beginner', 'intermediate', 'advanced', 'all-levels'] },
-      { key: 'certification', label: 'Certification', type: 'text', placeholder: 'e.g., WAEC, NECO, Certificate' },
+      { key: 'certification', label: 'Certification', type: 'text', placeholder: 'e.g., WAEC, NECO, Certificate', predefined_values: ['WAEC', 'NECO', 'JAMB', 'Certificate of Completion', 'Professional Certificate', 'Diploma', 'None'] },
       { key: 'instructor', label: 'Instructor', type: 'text' },
       { key: 'prerequisites', label: 'Prerequisites', type: 'textarea', placeholder: 'What students need before enrolling' },
     ],

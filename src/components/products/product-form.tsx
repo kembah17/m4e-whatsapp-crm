@@ -354,7 +354,7 @@ export function ProductForm({
 
           {/* Item Type & Role */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" data-tour="item-type">
               <Label>Item Type</Label>
               <Select value={itemType} onValueChange={(v) => {
                 const newType = v as ItemType;
@@ -381,7 +381,7 @@ export function ProductForm({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" data-tour="item-role">
               <Label>Item Role</Label>
               <Select value={itemRole} onValueChange={(v) => setItemRole(v as ItemRole)}>
                 <SelectTrigger className="bg-muted/50 border-border">
@@ -558,7 +558,7 @@ export function ProductForm({
 
           {/* Industry Details (Dynamic Metadata) */}
           {currentTypeDef.metadataFields.length > 0 && (
-            <Accordion>
+            <Accordion data-tour="item-metadata">
               <AccordionItem value="industry-details">
                 <AccordionTrigger className="text-sm font-medium text-foreground">
                   {currentTypeDef.icon} Industry Details ({currentTypeDef.metadataFields.length} fields)
@@ -572,12 +572,22 @@ export function ProductForm({
                           {field.unit && <span className="text-muted-foreground ml-1">({field.unit})</span>}
                         </Label>
                         {field.type === 'text' && (
-                          <Input
-                            value={String(metadata[field.key] ?? '')}
-                            onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value }))}
-                            placeholder={field.placeholder}
-                            className="bg-muted/50 border-border h-8 text-sm"
-                          />
+                          <>
+                            <Input
+                              value={String(metadata[field.key] ?? '')}
+                              onChange={(e) => setMetadata(prev => ({ ...prev, [field.key]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              className="bg-muted/50 border-border h-8 text-sm"
+                              list={field.predefined_values ? `dl-${field.key}` : undefined}
+                            />
+                            {field.predefined_values && (
+                              <datalist id={`dl-${field.key}`}>
+                                {field.predefined_values.map((v) => (
+                                  <option key={v} value={v} />
+                                ))}
+                              </datalist>
+                            )}
+                          </>
                         )}
                         {field.type === 'number' && (
                           <Input
@@ -711,12 +721,15 @@ export function ProductForm({
 
           <Separator className="bg-muted" />
 
+          <ItemTypeTour />
+
           {/* Actions */}
           <div className="flex items-center gap-2">
             <Button
               onClick={handleSave}
               disabled={saving || !canEdit}
               className="flex-1"
+              data-tour="item-save"
             >
               {saving ? (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />

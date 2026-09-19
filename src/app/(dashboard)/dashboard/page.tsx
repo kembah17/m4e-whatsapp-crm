@@ -35,6 +35,9 @@ import { ResponseTimeChart } from '@/components/dashboard/response-time-chart'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import { AutomationRecommendations } from '@/components/dashboard/automation-recommendations'
 import { OperationalSummary } from '@/components/dashboard/operational-summary'
+import { AIInsightsWidget } from '@/components/dashboard/ai-insights-widget'
+import { FinancialAlertsWidget } from '@/components/dashboard/financial-alerts-widget'
+import { IndustryMetricsWidget } from '@/components/dashboard/industry-metrics-widget'
 
 type RangeDays = 7 | 30 | 90
 
@@ -62,6 +65,11 @@ export default function DashboardPage() {
 
   const [activity, setActivity] = useState<ActivityItem[] | null>(null)
   const [activityLoading, setActivityLoading] = useState(true)
+
+  // Auto-refresh state
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  const [secondsAgo, setSecondsAgo] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const loadAll = useCallback(() => {
     const db = createClient()
@@ -102,6 +110,34 @@ export default function DashboardPage() {
     loadAll()
   }, [loadAll])
 
+  // Auto-refresh every 30 seconds when tab is visible
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadAll()
+        setLastRefresh(new Date())
+      }
+    }, 30000)
+
+    const tickInterval = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastRefresh.getTime()) / 1000))
+    }, 1000)
+
+    return () => {
+      clearInterval(refreshInterval)
+      clearInterval(tickInterval)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastRefresh])
+
+  const handleManualRefresh = useCallback(() => {
+    setIsRefreshing(true)
+    loadAll()
+    setLastRefresh(new Date())
+    setSecondsAgo(0)
+    setTimeout(() => setIsRefreshing(false), 1000)
+  }, [loadAll])
+
   // Range switch handler — kept in an event callback (not an effect)
   // so the setState calls stay out of the react-hooks/set-state-in-effect
   // rule's way. The cached bucket check means switching back to a
@@ -123,11 +159,29 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Live analytics across conversations, contacts, deals, broadcasts, and automations.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Live analytics across conversations, contacts, deals, broadcasts, and automations.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            {secondsAgo < 5
+              ? 'Just updated'
+              : `Updated ${secondsAgo}s ago`}
+          </span>
+          <button
+            onClick={handleManualRefresh}
+            className="rounded-md p-1.5 hover:bg-muted transition-colors"
+            title="Refresh now"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Metric cards */}
@@ -181,8 +235,17 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Industry-specific metrics */}
+      <IndustryMetricsWidget />
+
       {/* Operational summary */}
       <OperationalSummary />
+
+      {/* AI Insights */}
+      <AIInsightsWidget />
+
+      {/* Financial Alerts */}
+      <FinancialAlertsWidget />
 
       {/* Quick actions */}
       <QuickActions />

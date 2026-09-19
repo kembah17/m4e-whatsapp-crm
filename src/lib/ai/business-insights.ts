@@ -49,7 +49,7 @@ async function gatherBusinessData(accountId: string) {
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString()
 
   // Parallel data fetching
-  const [orders, debts, inventory, contacts, invoices] = await Promise.all([
+  const [orders, debts, inventory, contacts, invoices, locationStockResult] = await Promise.all([
     // Recent orders
     db.from('orders')
       .select('id, total, status, created_at')
@@ -79,6 +79,11 @@ async function gatherBusinessData(accountId: string) {
       .eq('account_id', accountId)
       .gte('issue_date', sixtyDaysAgo)
       .limit(200),
+    // Location-based stock levels
+    db.from('location_stock')
+      .select('product_id, quantity_on_hand, reorder_point')
+      .eq('account_id', accountId)
+      .limit(500),
   ])
 
   return {
@@ -87,6 +92,7 @@ async function gatherBusinessData(accountId: string) {
     inventory: inventory.data || [],
     contacts: contacts.data || [],
     invoices: invoices.data || [],
+    locationStock: locationStockResult.data || [],
     thirtyDaysAgo,
     sixtyDaysAgo,
     now: now.toISOString(),
@@ -121,11 +127,12 @@ export async function generateInsights(
       .filter((d: { status: string }) => ['pending', 'overdue', 'partial'].includes(d.status))
       .reduce((sum: number, d: { total_amount: number; amount_paid: number }) => sum + (d.total_amount - d.amount_paid), 0),
     overdue_debts_count: businessData.debts.filter((d: { status: string }) => d.status === 'overdue').length,
-    low_stock_count: businessData.inventory.filter(
-      () => false // Stock now tracked in location_stock table
+    low_stock_count: (businessData.locationStock || []).filter(
+      (s: { quantity_on_hand: number; reorder_point: number | null }) =>
+        s.reorder_point !== null && s.quantity_on_hand <= s.reorder_point && s.quantity_on_hand > 0
     ).length,
-    out_of_stock_count: businessData.inventory.filter(
-      () => false // Stock now tracked in location_stock table
+    out_of_stock_count: (businessData.locationStock || []).filter(
+      (s: { quantity_on_hand: number }) => s.quantity_on_hand <= 0
     ).length,
     total_contacts: businessData.contacts.length,
     avg_trust_score: businessData.contacts.length > 0

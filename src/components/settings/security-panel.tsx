@@ -4,6 +4,7 @@ import { PasswordForm } from './password-form';
 import { SessionsCard } from './sessions-card';
 import { TwoFactorSettings } from './two-factor-settings';
 import { SettingsPanelHead } from './settings-panel-head';
+import { LoginNotificationToggle } from './login-notification-toggle';
 
 /**
  * "Login & security" section — groups password management,
@@ -20,6 +21,7 @@ export function SecurityPanel() {
         <PasswordForm />
         <TwoFactorSettings />
         <SessionsCard />
+        <LoginNotificationToggle />
       </div>
     </section>
   );

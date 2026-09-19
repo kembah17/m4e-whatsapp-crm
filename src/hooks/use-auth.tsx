@@ -292,6 +292,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (currentUser) {
         fetchProfile(currentUser.id);
         checkMfa();
+
+        // Send login notification on new sign-in (deduped via sessionStorage)
+        if (_event === 'SIGNED_IN') {
+          const notifKey = `bge-login-notified-${currentUser.id}`;
+          if (typeof window !== 'undefined' && !sessionStorage.getItem(notifKey)) {
+            sessionStorage.setItem(notifKey, '1');
+            fetch('/api/auth/login-notify', { method: 'POST' }).catch(() => {});
+          }
+        }
       } else {
         setProfile(null);
         setAccount(null);

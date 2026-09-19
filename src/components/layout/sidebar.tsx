@@ -44,6 +44,7 @@ import {
   UserPlus,
   Award,
   Headphones,
+  History,
   Lightbulb,
   ListChecks,
   ChevronDown,
@@ -208,6 +209,8 @@ const navGroups: NavGroup[] = [
       { href: "/data-center", label: "Data Center", icon: Database },
       { href: "/support", label: "Support Desk", icon: Headphones },
       { href: "/subscribers", label: "Subscribers", icon: MonitorCheck, superAdminOnly: true },
+      { href: "/import-history", label: "Import History", icon: History },
+      { href: "/audit-log", label: "Audit Log", icon: Shield, superAdminOnly: true },
     ],
   },
 ];

@@ -57,11 +57,18 @@ interface ReviewContact extends ExtractedContact {
   editing: boolean;
 }
 
+interface ImportRowError {
+  row: number;
+  identifier: string;
+  reason: string;
+}
+
 interface ImportResult {
   imported: number;
   updated: number;
   duplicates: number;
   failed: number;
+  errors?: ImportRowError[];
 }
 
 interface ImportWizardProps {
@@ -170,6 +177,7 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [previewMode, setPreviewMode] = useState(false);
   const [updateExisting, setUpdateExisting] = useState(false);
 
   // ── Reset ─────────────────────────────────────────────────
@@ -187,6 +195,11 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
     setImporting(false);
     setImportProgress(0);
     setImportResult(null);
+    setPreviewMode(false);
+    setUndoAvailable(false);
+    setUndoTag(null);
+    setUndoing(false);
+    setUndoResult(null);
     setUpdateExisting(false);
   }, []);
 
@@ -417,6 +430,12 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
       const parts: string[] = [];
       if (result.updated > 0) parts.push(`${result.updated} updated`);
       if (result.duplicates > 0) parts.push(`${result.duplicates} skipped`);
+      // Enable undo for 5 minutes
+      const importTag = `import-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}`;
+      setUndoTag(importTag);
+      setUndoAvailable(true);
+      setTimeout(() => setUndoAvailable(false), 5 * 60 * 1000);
+
       toast.success(`Imported ${result.imported} new contacts`, {
         description: parts.length > 0 ? parts.join(', ') : undefined,
       });
@@ -1227,7 +1246,66 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
         )}
 
         {/* ── Step 4: Import ────────────────────────────────── */}
-        {step === 4 && (
+        {/* ── Import Preview ─────────────────────────────── */}
+        {step === 3 && previewMode && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-4">
+              <h3 className="text-sm font-semibold text-blue-400 mb-2">Import Preview</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Ready to import {contacts.filter(c => c.selected).length} contacts. Review the first rows below:
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="py-2 px-3 text-left text-muted-foreground">#</th>
+                      <th className="py-2 px-3 text-left text-muted-foreground">Name</th>
+                      <th className="py-2 px-3 text-left text-muted-foreground">Phone</th>
+                      <th className="py-2 px-3 text-left text-muted-foreground">Email</th>
+                      <th className="py-2 px-3 text-left text-muted-foreground">Tags</th>
+                      <th className="py-2 px-3 text-left text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contacts.filter(c => c.selected).slice(0, 10).map((c, i) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="py-2 px-3 text-muted-foreground">{i + 1}</td>
+                        <td className="py-2 px-3">{c.name || <span className="text-muted-foreground italic">No name</span>}</td>
+                        <td className="py-2 px-3">
+                          {c.phone ? (
+                            <span>{c.phone}</span>
+                          ) : (
+                            <span className="text-amber-500">Missing phone</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3">{c.email || <span className="text-muted-foreground">—</span>}</td>
+                        <td className="py-2 px-3">{c.tags?.join(', ') || <span className="text-muted-foreground">—</span>}</td>
+                        <td className="py-2 px-3">
+                          {!c.phone ? (
+                            <span className="inline-flex items-center gap-1 text-amber-500">
+                              <AlertTriangle className="h-3 w-3" /> No phone
+                            </span>
+                          ) : c.existingId ? (
+                            <span className="text-blue-400">Will update</span>
+                          ) : (
+                            <span className="text-emerald-400">New</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {contacts.filter(c => c.selected).length > 10 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  ...and {contacts.filter(c => c.selected).length - 10} more contacts
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+                {step === 4 && (
           <div className="space-y-4 py-4">
             {!importResult ? (
               <div className="flex flex-col items-center gap-4">
@@ -1270,6 +1348,41 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                     <p className="text-xs text-muted-foreground">Failed</p>
                   </div>
                 </div>
+
+                {/* Error details section */}
+                {importResult.failed > 0 && importResult.errors && importResult.errors.length > 0 && (
+                  <div className="mt-4 w-full max-w-md">
+                    <button
+                      onClick={() => setShowErrors(!showErrors)}
+                      className="inline-flex items-center gap-1.5 text-sm text-destructive hover:underline"
+                    >
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      {showErrors ? 'Hide' : 'Show'} {importResult.errors.length} error{importResult.errors.length !== 1 ? 's' : ''}
+                    </button>
+                    {showErrors && (
+                      <div className="mt-2 max-h-48 overflow-auto rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-16 text-xs">Row</TableHead>
+                              <TableHead className="text-xs">Contact</TableHead>
+                              <TableHead className="text-xs">Error</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {importResult.errors.map((e, i) => (
+                              <TableRow key={i}>
+                                <TableCell className="text-xs font-mono">{e.row}</TableCell>
+                                <TableCell className="text-xs">{e.identifier}</TableCell>
+                                <TableCell className="text-xs text-destructive">{e.reason}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1290,23 +1403,80 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Button>
-              <Button
-                onClick={runImport}
-                disabled={selectedCount === 0 || importing}
-              >
-                {importing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
+              {!previewMode ? (
+                <Button
+                  onClick={() => setPreviewMode(true)}
+                  disabled={selectedCount === 0 || importing}
+                >
                   <ArrowRight className="mr-2 h-4 w-4" />
-                )}
-                Import {selectedCount + updateCount} Contact{(selectedCount + updateCount) !== 1 ? 's' : ''}{updateCount > 0 ? ` (${updateCount} update${updateCount !== 1 ? 's' : ''})` : ''}
-              </Button>
+                  Preview Import
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPreviewMode(false)}
+                  >
+                    Back to Review
+                  </Button>
+                  <Button
+                    onClick={runImport}
+                    disabled={selectedCount === 0 || importing}
+                  >
+                    {importing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                    )}
+                    Import All {selectedCount + updateCount} Contact{(selectedCount + updateCount) !== 1 ? 's' : ''}
+                  </Button>
+                </>
+              )}
             </>
           )}
           {step === 4 && importResult && (
-            <Button onClick={() => handleOpenChange(false)}>
-              Done
-            </Button>
+            <div className="flex items-center gap-2">
+              {undoAvailable && !undoResult && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={undoing}
+                  onClick={async () => {
+                    if (!undoTag) return;
+                    if (!confirm('Are you sure you want to undo this import? This will delete all contacts that were just imported.')) return;
+                    setUndoing(true);
+                    try {
+                      const res = await fetch('/api/contacts/import/undo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tagName: undoTag }),
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setUndoResult(`${data.undone} contacts removed`);
+                        setUndoAvailable(false);
+                        toast.success(data.message);
+                        onImported();
+                      } else {
+                        toast.error(data.error || 'Undo failed');
+                      }
+                    } catch {
+                      toast.error('Undo request failed');
+                    } finally {
+                      setUndoing(false);
+                    }
+                  }}
+                >
+                  {undoing ? 'Undoing...' : 'Undo Import'}
+                </Button>
+              )}
+              {undoResult && (
+                <span className="text-xs text-muted-foreground">{undoResult}</span>
+              )}
+              <Button onClick={() => handleOpenChange(false)}>
+                Done
+              </Button>
+            </div>
           )}
         </DialogFooter>
       </DialogContent>

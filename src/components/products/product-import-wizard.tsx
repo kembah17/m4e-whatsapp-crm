@@ -8,6 +8,7 @@ import {
   ITEM_TYPE_REGISTRY,
   getEnabledItemTypes,
   getItemTypeLabel,
+  getIndustryBundle,
 } from '@/lib/industry/item-type-config';
 import type { ItemType } from '@/types';
 import {
@@ -267,6 +268,26 @@ export function ProductImportWizard({
                     ))}
                   </SelectContent>
                 </Select>
+                {/* Smart Import Alias Visibility */}
+                {(() => {
+                  const bundle = getIndustryBundle(industry || 'retail')
+                  const aliases = Object.keys(bundle.importAliases)
+                  if (aliases.length === 0) return null
+                  return (
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      <span className="font-medium">Recognized column names:</span>{' '}
+                      {aliases.slice(0, 12).map((alias, i) => (
+                        <span key={alias}>
+                          <code className="rounded bg-muted px-1 py-0.5 text-[10px]">{alias}</code>
+                          {i < Math.min(aliases.length, 12) - 1 ? ' ' : ''}
+                        </span>
+                      ))}
+                      {aliases.length > 12 && (
+                        <span className="text-muted-foreground"> +{aliases.length - 12} more</span>
+                      )}
+                    </p>
+                  )
+                })()}
               </div>
 
               <div

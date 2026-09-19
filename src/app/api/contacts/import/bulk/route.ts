@@ -75,11 +75,14 @@ export async function POST(req: NextRequest) {
     let duplicates = 0;
     let failed = 0;
     const importedContactIds: string[] = [];
+    const errors: { row: number; identifier: string; reason: string }[] = [];
 
     // Process contacts one by one to handle duplicates gracefully
-    for (const c of contacts) {
+    for (let idx = 0; idx < contacts.length; idx++) {
+      const c = contacts[idx];
       if (!c.phone || c.phone.trim().length === 0) {
         failed++;
+        errors.push({ row: idx + 1, identifier: c.name || '(no name)', reason: 'Missing phone number' });
         continue;
       }
 
@@ -126,6 +129,7 @@ export async function POST(req: NextRequest) {
         } else {
           console.error('[bulk-import] insert error:', insertErr);
           failed++;
+          errors.push({ row: idx + 1, identifier: c.name || phone, reason: insertErr.message || 'Insert failed' });
         }
         continue;
       }
@@ -257,7 +261,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ imported, updated, duplicates, failed, originalCount, truncated, ...(warning && { warning }) });
+    return NextResponse.json({ imported, updated, duplicates, failed, errors, originalCount, truncated, ...(warning && { warning }) });
   } catch (err) {
     console.error('[bulk-import] error:', err);
     return NextResponse.json(
