@@ -21,6 +21,7 @@ interface AudienceConfig {
   type: string;
   tagIds?: string[];
   csvContacts?: { phone: string; name?: string }[];
+  segmentId?: string;
 }
 
 interface Step4Props {
@@ -71,6 +72,14 @@ export function Step4ScheduleSend({
           setEstimatedReach(uniqueIds.size);
         } else if (audience.type === 'csv' && audience.csvContacts) {
           setEstimatedReach(audience.csvContacts.length);
+        } else if (audience.type === 'segment' && audience.segmentId) {
+          const res = await fetch(`/api/segments/${audience.segmentId}/contacts?limit=0`);
+          if (res.ok) {
+            const d = await res.json();
+            setEstimatedReach(d.count ?? 0);
+          } else {
+            setEstimatedReach(0);
+          }
         } else {
           setEstimatedReach(0);
         }
@@ -89,7 +98,9 @@ export function Step4ScheduleSend({
         ? `Tags (${audience.tagIds?.length ?? 0} selected)`
         : audience.type === 'csv'
           ? 'CSV Upload'
-          : 'Custom';
+          : audience.type === 'segment'
+            ? 'Saved Segment'
+            : 'Custom';
 
   const costEstimate = estimateBroadcastCost(
     estimatedReach,

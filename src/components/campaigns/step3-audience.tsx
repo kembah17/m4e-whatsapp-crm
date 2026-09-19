@@ -37,6 +37,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { SegmentSelector } from "@/components/ui/segment-selector";
 import type {
   CampaignTemplate,
   CampaignAudienceFilter,
@@ -183,6 +184,7 @@ export function Step3Audience({
     audienceFilter.min_days_inactive?.toString() ?? ""
   );
   const [customTags, setCustomTags] = useState<string>("");
+  const [savedSegmentId, setSavedSegmentId] = useState<string>("");
 
   const getSegmentCount = (
     segment: Exclude<SegmentOption, "custom">
@@ -208,6 +210,7 @@ export function Step3Audience({
 
   const handleSegmentChange = (value: SegmentOption) => {
     setSelectedSegment(value);
+    setSavedSegmentId(""); // Clear saved segment when RFM is selected
     const newFilter: CampaignAudienceFilter = { ...audienceFilter };
 
     if (value === "custom") {
@@ -527,6 +530,45 @@ export function Step3Audience({
         </CardContent>
       </Card>
 
+
+      {/* Saved Segment Selector */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Target className="h-5 w-5 text-gray-600" />
+            Or Select a Saved Segment
+          </CardTitle>
+          <CardDescription>
+            Use a pre-built audience segment instead of the RFM categories above.
+            Selecting a saved segment will override the RFM selection.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SegmentSelector
+            value={savedSegmentId}
+            onValueChange={(id) => {
+              setSavedSegmentId(id);
+              if (id) {
+                // Clear RFM selection when saved segment is chosen
+                setSelectedSegment("custom");
+                onUpdate({ ...audienceFilter, segment: "saved:" + id });
+              } else {
+                // Cleared saved segment — revert to current RFM
+                onUpdate({ ...audienceFilter, segment: selectedSegment === "custom" ? undefined : selectedSegment });
+              }
+            }}
+            placeholder="Choose a saved segment..."
+            showCounts={true}
+            allowClear={true}
+          />
+          {savedSegmentId && (
+            <p className="mt-2 text-xs text-emerald-600 flex items-center gap-1">
+              <Target className="h-3 w-3" />
+              Saved segment active — RFM selection above is overridden.
+            </p>
+          )}
+        </CardContent>
+      </Card>
       {/* Additional Filters */}
       <Card>
         <CardHeader>
@@ -745,7 +787,7 @@ export function Step3Audience({
               className="text-xs gap-1 bg-gray-100 text-gray-700"
             >
               <Hash className="h-3 w-3" />
-              {audienceFilter.segment}
+              {audienceFilter.segment.startsWith("saved:") ? "Saved Segment" : audienceFilter.segment}
             </Badge>
           )}
           {audienceFilter.min_purchase_value !== undefined && (

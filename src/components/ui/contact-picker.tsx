@@ -12,6 +12,7 @@ export interface ContactPickerProps {
   onValueChange: (contactId: string) => void;
   placeholder?: string;
   className?: string;
+  segmentId?: string;
 }
 
 export function ContactPicker({
@@ -19,34 +20,60 @@ export function ContactPicker({
   onValueChange,
   placeholder = "Search customer...",
   className,
+  segmentId,
 }: ContactPickerProps) {
   const { accountId } = useAuth();
   const [options, setOptions] = React.useState<SearchableSelectOption[]>([]);
   const [loaded, setLoaded] = React.useState(false);
 
+  // Reset when segmentId changes
+  React.useEffect(() => {
+    setLoaded(false);
+    setOptions([]);
+  }, [segmentId]);
+
   React.useEffect(() => {
     if (!accountId || loaded) return;
-    const supabase = createClient();
-    supabase
-      .from("contacts")
-      .select("id, name, phone, email")
-      .eq("account_id", accountId)
-      .order("name", { ascending: true })
-      .limit(500)
-      .then(({ data }) => {
-        if (data) {
-          setOptions(
-            data.map((c) => ({
-              value: c.id,
-              label: c.name || c.phone || c.email || "Unnamed",
-              sublabel: c.phone || c.email || undefined,
-              icon: <Users className="size-3.5 text-muted-foreground" />,
-            })),
-          );
+
+    async function fetchContacts() {
+      let contacts: { id: string; name: string; phone: string; email: string }[] = [];
+
+      if (segmentId) {
+        // Fetch contacts scoped to segment
+        try {
+          const res = await fetch(`/api/segments/${segmentId}/contacts?limit=500&fields=id,name,phone,email`);
+          if (res.ok) {
+            const d = await res.json();
+            contacts = d.contacts ?? [];
+          }
+        } catch {
+          // Fall through to empty
         }
-        setLoaded(true);
-      });
-  }, [accountId, loaded]);
+      } else {
+        // Fetch all contacts
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("contacts")
+          .select("id, name, phone, email")
+          .eq("account_id", accountId)
+          .order("name", { ascending: true })
+          .limit(500);
+        contacts = data ?? [];
+      }
+
+      setOptions(
+        contacts.map((c) => ({
+          value: c.id,
+          label: c.name || c.phone || c.email || "Unnamed",
+          sublabel: c.phone || c.email || undefined,
+          icon: <Users className="size-3.5 text-muted-foreground" />,
+        })),
+      );
+      setLoaded(true);
+    }
+
+    fetchContacts();
+  }, [accountId, segmentId, loaded]);
 
   return (
     <SearchableSelect

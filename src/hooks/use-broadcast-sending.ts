@@ -14,10 +14,11 @@ export interface CustomFieldFilter {
 }
 
 export interface AudienceConfig {
-  type: 'all' | 'tags' | 'custom_field' | 'csv';
+  type: 'all' | 'tags' | 'custom_field' | 'csv' | 'segment';
   tagIds?: string[];
   customField?: CustomFieldFilter;
   csvContacts?: { phone: string; name?: string }[];
+  segmentId?: string;
   /** Contacts carrying any of these tags are subtracted from the result. */
   excludeTagIds?: string[];
 }
@@ -182,6 +183,11 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       contacts = await resolveCustomFieldAudience(supabase, audience.customField);
     } else if (audience.type === 'csv' && audience.csvContacts) {
       contacts = await upsertCsvContacts(supabase, audience.csvContacts);
+    } else if (audience.type === 'segment' && audience.segmentId) {
+      const res = await fetch(`/api/segments/${audience.segmentId}/contacts?limit=10000`);
+      if (!res.ok) throw new Error('Failed to resolve segment contacts');
+      const d = await res.json();
+      contacts = (d.contacts ?? []) as Contact[];
     }
 
     // Apply exclude tags (works across all contact-derived audience

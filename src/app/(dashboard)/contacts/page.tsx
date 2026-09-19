@@ -50,6 +50,7 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BranchFilter } from '@/components/shared/branch-filter';
+import { SegmentSelector } from '@/components/ui/segment-selector';
 import { BulkTagPanel } from '@/components/contacts/bulk-tag-panel';
 
 const PAGE_SIZE = 25;
@@ -68,6 +69,8 @@ export default function ContactsPage() {
   const [search, setSearch] = useState('');
   const [branchId, setBranchIdRaw] = useState('');
   const setBranchId = (v: string) => { setBranchIdRaw(v); setPage(0); };
+  const [segmentId, setSegmentIdRaw] = useState('');
+  const setSegmentId = (v: string) => { setSegmentIdRaw(v); setPage(0); };
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -125,6 +128,27 @@ export default function ContactsPage() {
       query = query.or(`name.ilike.${term},phone.ilike.${term},email.ilike.${term}`);
     }
 
+    // Segment filter: resolve segment to contact IDs, then filter
+    if (segmentId) {
+      try {
+        const segRes = await fetch(`/api/segments/${segmentId}/contacts?limit=10000&fields=id`);
+        if (segRes.ok) {
+          const segData = await segRes.json();
+          const contactIds: string[] = (segData.contacts ?? []).map((c: { id: string }) => c.id);
+          if (contactIds.length === 0) {
+            // No contacts match segment — return empty
+            setTotalCount(0);
+            setContacts([]);
+            setLoading(false);
+            return;
+          }
+          query = query.in('id', contactIds);
+        }
+      } catch {
+        // If segment resolution fails, continue without filter
+      }
+    }
+
     const { data, count, error } = await query;
 
     if (error) {
@@ -163,7 +187,7 @@ export default function ContactsPage() {
 
     setContacts(enriched);
     setLoading(false);
-  }, [supabase, page, search, tagsMap]);
+  }, [supabase, page, search, segmentId, tagsMap]);
 
   // Load-once-on-mount-ish data fetches. Each setter inside runs
   // inside an async promise completion (Supabase await), not
@@ -334,6 +358,13 @@ export default function ContactsPage() {
         />
       </div>
       <BranchFilter value={branchId} onChange={setBranchId} />
+      <SegmentSelector
+        value={segmentId}
+        onValueChange={setSegmentId}
+        placeholder="Filter by segment..."
+        allowClear={true}
+        showCounts={true}
+      />
       </div>
 
       {/* Bulk action bar */}

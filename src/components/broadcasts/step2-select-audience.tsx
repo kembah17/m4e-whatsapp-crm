@@ -9,13 +9,15 @@ import {
   Tags,
   Filter,
   Upload,
+  Target,
   Loader2,
   ArrowRight,
   ArrowLeft,
   X,
 } from 'lucide-react';
+import { SegmentSelector } from '@/components/ui/segment-selector';
 
-type AudienceType = 'all' | 'tags' | 'custom_field' | 'csv';
+type AudienceType = 'all' | 'tags' | 'custom_field' | 'csv' | 'segment';
 type CustomFieldOperator = 'is' | 'is_not' | 'contains';
 
 interface CustomFieldFilter {
@@ -29,6 +31,7 @@ interface AudienceConfig {
   tagIds?: string[];
   customField?: CustomFieldFilter;
   csvContacts?: { phone: string; name?: string }[];
+  segmentId?: string;
   excludeTagIds?: string[];
 }
 
@@ -68,6 +71,12 @@ const audienceOptions: {
     label: 'Upload CSV',
     description: 'Upload a list of phone numbers',
     icon: Upload,
+  },
+  {
+    type: 'segment',
+    label: 'Saved Segment',
+    description: 'Use a pre-built audience segment',
+    icon: Target,
   },
 ];
 
@@ -167,6 +176,20 @@ export function Step2SelectAudience({
       ) {
         setEstimatedCount(audience.csvContacts.length);
         return;
+      } else if (audience.type === 'segment' && audience.segmentId) {
+        try {
+          const res = await fetch(`/api/segments/${audience.segmentId}/contacts?limit=0`);
+          if (res.ok) {
+            const d = await res.json();
+            setEstimatedCount(d.count ?? 0);
+          } else {
+            setEstimatedCount(0);
+          }
+        } catch {
+          setEstimatedCount(0);
+        }
+        setLoadingCount(false);
+        return;
       } else {
         // Partially-configured audience — wait for the user to finish.
         setEstimatedCount(null);
@@ -204,6 +227,7 @@ export function Step2SelectAudience({
     audience.tagIds,
     audience.customField,
     audience.csvContacts,
+    audience.segmentId,
     audience.excludeTagIds,
   ]);
 
@@ -244,7 +268,8 @@ export function Step2SelectAudience({
       audience.customField.value.length > 0) ||
     (audience.type === 'csv' &&
       audience.csvContacts &&
-      audience.csvContacts.length > 0);
+      audience.csvContacts.length > 0) ||
+    (audience.type === 'segment' && !!audience.segmentId);
 
   return (
     <div className="space-y-6">
@@ -275,6 +300,8 @@ export function Step2SelectAudience({
                       : undefined,
                   csvContacts:
                     option.type === 'csv' ? audience.csvContacts : undefined,
+                  segmentId:
+                    option.type === 'segment' ? audience.segmentId : undefined,
                 })
               }
               className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-all ${
@@ -389,6 +416,17 @@ export function Step2SelectAudience({
         </div>
       )}
 
+      {audience.type === 'segment' && (
+        <div className="rounded-xl border border-border bg-card/50 p-4">
+          <p className="mb-3 text-sm font-medium text-foreground">Select Segment</p>
+          <SegmentSelector
+            value={audience.segmentId ?? ''}
+            onValueChange={(id) => onUpdate({ ...audience, segmentId: id })}
+            placeholder="Choose a saved segment..."
+            showCounts={true}
+          />
+        </div>
+      )}
       {/* Exclude list — applies regardless of audience type */}
       <div className="rounded-xl border border-border bg-card/50 p-4">
         <div className="mb-3 flex items-center gap-2">
