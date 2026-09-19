@@ -33,6 +33,7 @@ export function AIInsightsWidget() {
   const [insights, setInsights] = useState<Insight[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState(false)
 
   const fetchInsights = useCallback(async () => {
     try {
@@ -43,6 +44,7 @@ export function AIInsightsWidget() {
       setInsights((data.insights || []).slice(0, 3))
     } catch (err) {
       console.error('[ai-insights-widget] fetch error:', err)
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -68,6 +70,8 @@ export function AIInsightsWidget() {
       setGenerating(false)
     }
   }
+
+  if (error) return null
 
   return (
     <div className="rounded-xl border bg-card p-5">

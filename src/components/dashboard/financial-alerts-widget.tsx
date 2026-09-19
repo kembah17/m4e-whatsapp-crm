@@ -15,6 +15,7 @@ export function FinancialAlertsWidget() {
   const { defaultCurrency } = useAuth()
   const [alerts, setAlerts] = useState<FinancialAlert[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -65,6 +66,7 @@ export function FinancialAlertsWidget() {
     } catch (err) {
       console.error('[financial-alerts] fetch error:', err)
       setAlerts([])
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -80,6 +82,8 @@ export function FinancialAlertsWidget() {
     yellow: 'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
     green: 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
   }
+
+  if (error) return null
 
   return (
     <div className="rounded-xl border bg-card p-5">

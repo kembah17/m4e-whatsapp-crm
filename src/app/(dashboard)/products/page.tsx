@@ -284,9 +284,9 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm">{ITEM_TYPE_REGISTRY[product.item_type]?.icon ?? '📦'}</span>
+                      <span className="text-sm">{ITEM_TYPE_REGISTRY[product.item_type || 'product']?.icon ?? '📦'}</span>
                       <span className="text-xs text-muted-foreground">
-                        {getItemTypeLabel(product.item_type, industry)}
+                        {getItemTypeLabel(product.item_type || 'product', industry)}
                       </span>
                     </div>
                     {product.item_role && product.item_role !== 'revenue' && (

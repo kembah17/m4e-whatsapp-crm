@@ -6,14 +6,20 @@ import {
   ChevronDown, ChevronUp, RotateCcw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/use-auth'
 import type { AIChatbotConfig, BusinessHoursConfig } from '@/types/ai'
 
-const MODELS = [
-  { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash (Fast & Cheap)' },
-  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini (Balanced)' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet (Quality)' },
+const FREE_MODELS = [
+  { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended)' },
   { value: 'meta-llama/llama-3.1-8b-instruct', label: 'Llama 3.1 8B (Free Tier)' },
 ]
+
+const PREMIUM_MODELS = [
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini (Balanced)' },
+  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet (Quality)' },
+]
+
+const ALL_MODELS = [...FREE_MODELS, ...PREMIUM_MODELS]
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 
@@ -38,6 +44,12 @@ export function AISettingsForm({ readOnly = false }: AISettingsFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Model access control
+  const { profile } = useAuth()
+  const isSuperAdmin = profile?.is_super_admin === true
+  const availableModels = isSuperAdmin ? ALL_MODELS : FREE_MODELS
+  const isPremiumModel = (model: string) => PREMIUM_MODELS.some(m => m.value === model)
 
   const fetchConfig = useCallback(async () => {
     try {
@@ -167,15 +179,32 @@ export function AISettingsForm({ readOnly = false }: AISettingsFormProps) {
       {/* Model Selection */}
       <div className="bg-white rounded-lg border p-6 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">AI Model</h3>
-        <select disabled={readOnly}
-          value={config.model}
-          onChange={(e) => updateConfig({ model: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-        >
-          {MODELS.map((m) => (
-            <option key={m.value} value={m.value}>{m.label}</option>
-          ))}
-        </select>
+        {!isSuperAdmin && isPremiumModel(config.model) ? (
+          <div>
+            <div className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600">
+              {ALL_MODELS.find(m => m.value === config.model)?.label || config.model}
+            </div>
+            <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Premium model configured by M4E. Contact us to change.
+            </p>
+          </div>
+        ) : (
+          <select disabled={readOnly}
+            value={config.model}
+            onChange={(e) => updateConfig({ model: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          >
+            {availableModels.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        )}
+        {!isSuperAdmin && !isPremiumModel(config.model) && (
+          <p className="text-xs text-gray-500">
+            AI model is optimized for your plan. Contact M4E for premium model access.
+          </p>
+        )}
       </div>
 
       {/* Confidence Threshold */}

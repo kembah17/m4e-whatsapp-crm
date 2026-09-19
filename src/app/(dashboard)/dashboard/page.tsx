@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { formatCurrency } from '@/lib/currency'
@@ -67,7 +67,7 @@ export default function DashboardPage() {
   const [activityLoading, setActivityLoading] = useState(true)
 
   // Auto-refresh state
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  const lastRefreshRef = useRef<number>(Date.now())
   const [secondsAgo, setSecondsAgo] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -115,12 +115,12 @@ export default function DashboardPage() {
     const refreshInterval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadAll()
-        setLastRefresh(new Date())
+        lastRefreshRef.current = Date.now()
       }
     }, 30000)
 
     const tickInterval = setInterval(() => {
-      setSecondsAgo(Math.floor((Date.now() - lastRefresh.getTime()) / 1000))
+      setSecondsAgo(Math.floor((Date.now() - lastRefreshRef.current) / 1000))
     }, 1000)
 
     return () => {
@@ -128,12 +128,12 @@ export default function DashboardPage() {
       clearInterval(tickInterval)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastRefresh])
+  }, [])
 
   const handleManualRefresh = useCallback(() => {
     setIsRefreshing(true)
     loadAll()
-    setLastRefresh(new Date())
+    lastRefreshRef.current = Date.now()
     setSecondsAgo(0)
     setTimeout(() => setIsRefreshing(false), 1000)
   }, [loadAll])

@@ -16,6 +16,7 @@ interface MetricValue {
 export function IndustryMetricsWidget() {
   const { industry, defaultCurrency } = useAuth()
   const [metrics, setMetrics] = useState<MetricValue[]>([])
+  const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const fetchMetrics = useCallback(async () => {
@@ -46,6 +47,7 @@ export function IndustryMetricsWidget() {
     } catch (err) {
       console.error('[industry-metrics] fetch error:', err)
       setMetrics([])
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -68,6 +70,8 @@ export function IndustryMetricsWidget() {
         return String(m.value)
     }
   }
+
+  if (error) return null
 
   if (loading) {
     return (

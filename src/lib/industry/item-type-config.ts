@@ -707,18 +707,19 @@ export function getItemTypeLabel(
   industry: string,
   plural: boolean = false
 ): string {
+  const safeType = itemType || 'product' as ItemType
   const bundle = getIndustryBundle(industry)
-  const override = bundle.primaryTypes.find(t => t.type === itemType)
+  const override = bundle.primaryTypes.find(t => t.type === safeType)
+  const reg = ITEM_TYPE_REGISTRY[safeType]
+  if (!reg) return plural ? 'Products' : 'Product'
 
   if (override) {
     return plural
-      ? (override.labelPluralOverride ?? ITEM_TYPE_REGISTRY[itemType].labelPlural)
-      : (override.labelOverride ?? ITEM_TYPE_REGISTRY[itemType].label)
+      ? (override.labelPluralOverride ?? reg.labelPlural)
+      : (override.labelOverride ?? reg.label)
   }
 
-  return plural
-    ? ITEM_TYPE_REGISTRY[itemType].labelPlural
-    : ITEM_TYPE_REGISTRY[itemType].label
+  return plural ? reg.labelPlural : reg.label
 }
 
 /**
