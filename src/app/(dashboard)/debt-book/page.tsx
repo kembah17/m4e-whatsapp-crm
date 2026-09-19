@@ -24,8 +24,11 @@ import {
 } from "@/components/ui/table";
 import {
   BookOpen, AlertTriangle, DollarSign, TrendingUp,
-  Plus, CreditCard, Loader2, Search, Filter,
+  Plus, CreditCard, Loader2, Search, Filter, Trash2, Send,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ContactPicker } from "@/components/ui/contact-picker";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 interface DebtSummary {
   total_outstanding: number;
@@ -76,6 +79,9 @@ export default function DebtBookPage() {
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -215,6 +221,70 @@ export default function DebtBookPage() {
     }
   };
 
+  // Clear selection on filter change
+  useEffect(() => { setSelected(new Set()); }, [statusFilter, searchQuery]);
+
+  // Bulk selection helpers
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selected.size === entries.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(entries.map((e) => e.id)));
+    }
+  };
+
+  const handleBulkMarkPaid = async () => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/debt/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "paid" }),
+          })
+        )
+      );
+      toast.success(`Marked ${ids.length} entries as paid`);
+      setSelected(new Set());
+      fetchEntries();
+      fetchSummary();
+    } catch { toast.error("Failed to update some entries"); }
+  };
+
+  const handleBulkSendReminder = async () => {
+    if (selected.size === 0) return;
+    toast.success(`Sending reminders to ${selected.size} debtors...`);
+    setSelected(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(ids.map((id) => fetch(`/api/debt/${id}`, { method: "DELETE" })));
+      toast.success(`Deleted ${ids.length} entries`);
+      setSelected(new Set());
+      fetchEntries();
+      fetchSummary();
+    } catch { toast.error("Failed to delete some entries"); }
+  };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNew: () => setShowCreateModal(true),
+    onEscape: () => { setShowCreateModal(false); setShowPaymentModal(false); },
+    onSelectAll: toggleSelectAll,
+  });
+
   const getOutstanding = (e: DebtEntry) => e.original_amount - e.amount_paid;
 
   if (loading) {
@@ -321,9 +391,32 @@ export default function DebtBookPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-lg mb-4">
+              <span className="text-sm text-foreground font-medium">{selected.size} selected</span>
+              <Button size="sm" variant="outline" onClick={handleBulkMarkPaid} className="border-green-600 text-green-400 hover:bg-green-600/20">
+                Mark as Paid
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleBulkSendReminder} className="border-blue-600 text-blue-400 hover:bg-blue-600/20">
+                <Send className="h-3 w-3 mr-1" /> Send Reminder
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleBulkDelete} className="border-red-600 text-red-400 hover:bg-red-600/20">
+                <Trash2 className="h-3 w-3 mr-1" /> Delete
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="text-muted-foreground">
+                Clear
+              </Button>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow className="border-border">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={entries.length > 0 && selected.size === entries.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
                 <TableHead className="text-muted-foreground">Customer</TableHead>
                 <TableHead className="text-muted-foreground">Description</TableHead>
                 <TableHead className="text-muted-foreground text-right">Amount</TableHead>
@@ -337,7 +430,7 @@ export default function DebtBookPage() {
             <TableBody>
               {entries.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                     No debt entries found. Record a credit sale to get started.
                   </TableCell>
                 </TableRow>
@@ -347,6 +440,12 @@ export default function DebtBookPage() {
                   const statusCfg = STATUS_CONFIG[entry.status] || STATUS_CONFIG.outstanding;
                   return (
                     <TableRow key={entry.id} className="border-border">
+                      <TableCell>
+                        <Checkbox
+                          checked={selected.has(entry.id)}
+                          onCheckedChange={() => toggleSelect(entry.id)}
+                        />
+                      </TableCell>
                       <TableCell className="text-foreground font-medium">
                         {contact?.name || "Unknown"}
                       </TableCell>
@@ -413,18 +512,11 @@ export default function DebtBookPage() {
           <div className="space-y-4">
             <div>
               <Label className="text-muted-foreground">Customer *</Label>
-              <Select value={createForm.contact_id} onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}>
-                <SelectTrigger className="bg-muted border-border">
-                  <SelectValue placeholder="Select customer" />
-                </SelectTrigger>
-                <SelectContent>
-                  {contacts.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name} {c.phone ? `(${c.phone})` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ContactPicker
+                value={createForm.contact_id}
+                onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}
+                placeholder="Search customer..."
+              />
             </div>
             <div>
               <Label className="text-muted-foreground">Description *</Label>

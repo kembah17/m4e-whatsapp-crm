@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowLeftRight, Plus, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { ItemPicker } from "@/components/ui/item-picker";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface Product {
   id: string;
@@ -237,37 +239,27 @@ export function TransferStockModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-muted-foreground">From *</Label>
-              <Select value={fromLocationId} onValueChange={setFromLocationId}>
-                <SelectTrigger className="bg-muted border-border mt-1">
-                  <SelectValue placeholder="Source" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={locations.map((l) => ({ value: l.id, label: l.name }))}
+                value={fromLocationId}
+                onValueChange={setFromLocationId}
+                placeholder="Source"
+                searchPlaceholder="Search locations..."
+                className="mt-1"
+              />
             </div>
             <div>
               <Label className="text-muted-foreground">To *</Label>
-              <Select value={toLocationId} onValueChange={setToLocationId}>
-                <SelectTrigger className={`bg-muted border-border mt-1 ${
-                  sameLocation ? "border-red-500" : ""
-                }`}>
-                  <SelectValue placeholder="Destination" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations
-                    .filter((l) => l.id !== fromLocationId)
-                    .map((l) => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={locations
+                  .filter((l) => l.id !== fromLocationId)
+                  .map((l) => ({ value: l.id, label: l.name }))}
+                value={toLocationId}
+                onValueChange={setToLocationId}
+                placeholder="Destination"
+                searchPlaceholder="Search locations..."
+                className={`mt-1 ${sameLocation ? "border-red-500" : ""}`}
+              />
               {sameLocation && (
                 <p className="text-xs text-red-400 mt-1">Must differ from source</p>
               )}
@@ -296,21 +288,11 @@ export function TransferStockModal({
                     }`}
                   >
                     <div className="flex-1 space-y-2">
-                      <Select
+                      <ItemPicker
                         value={item.productId}
                         onValueChange={(v) => updateItem(index, { productId: v })}
-                      >
-                        <SelectTrigger className="bg-muted border-border">
-                          <SelectValue placeholder="Select product" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.name} {p.sku ? `(${p.sku})` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Search product..."
+                      />
                       <div className="flex gap-2">
                         <Input
                           type="number"

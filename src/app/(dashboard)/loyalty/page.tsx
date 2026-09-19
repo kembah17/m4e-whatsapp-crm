@@ -23,6 +23,7 @@ import {
   Award, Users, Star, Loader2, TrendingUp,
   Plus, Minus, Crown, Gem, Medal, CircleDot,
 } from "lucide-react";
+import { ContactPicker } from "@/components/ui/contact-picker";
 
 interface LoyaltyStats {
   active_members: number;
@@ -638,12 +639,11 @@ export default function LoyaltyPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-muted-foreground">Contact ID *</Label>
-              <Input
+              <Label className="text-muted-foreground">Customer *</Label>
+              <ContactPicker
                 value={adjustForm.contact_id}
-                onChange={(e) => setAdjustForm({ ...adjustForm, contact_id: e.target.value })}
-                placeholder="Contact ID"
-                className="bg-muted border-border text-foreground"
+                onValueChange={(v) => setAdjustForm({ ...adjustForm, contact_id: v })}
+                placeholder="Search customer..."
               />
             </div>
             <div>

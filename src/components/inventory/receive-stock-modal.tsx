@@ -22,6 +22,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { ItemPicker } from "@/components/ui/item-picker";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface Product {
   id: string;
@@ -178,18 +180,14 @@ export function ReceiveStockModal({
           {/* Location - shared for all items */}
           <div>
             <Label className="text-muted-foreground">Location *</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger className="bg-muted border-border mt-1">
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={locations.map((l) => ({ value: l.id, label: l.name }))}
+              value={locationId}
+              onValueChange={setLocationId}
+              placeholder="Select location"
+              searchPlaceholder="Search locations..."
+              className="mt-1"
+            />
           </div>
 
           {/* Line Items */}
@@ -206,21 +204,11 @@ export function ReceiveStockModal({
                   className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3"
                 >
                   <div className="flex-1 space-y-2">
-                    <Select
+                    <ItemPicker
                       value={item.productId}
                       onValueChange={(v) => updateItem(index, { productId: v })}
-                    >
-                      <SelectTrigger className="bg-muted border-border">
-                        <SelectValue placeholder="Select product" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name} {p.sku ? `(${p.sku})` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Search product..."
+                    />
                     <div className="flex gap-2">
                       <Input
                         type="number"

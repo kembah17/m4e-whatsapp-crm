@@ -31,6 +31,10 @@ import {
   FileText, AlertTriangle, DollarSign, Clock,
   Plus, Send, ArrowRightLeft, Loader2, Search, Trash2,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ContactPicker } from "@/components/ui/contact-picker";
+import { ItemPicker } from "@/components/ui/item-picker";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 interface ContactOption {
   id: string;
@@ -59,6 +63,12 @@ interface InvoiceSummary {
   this_month_revenue: number;
   pending_count: number;
 }
+
+const INVOICE_PRESETS = [
+  { label: "Blank Invoice", items: [] as LineItem[] },
+  { label: "Service Invoice", items: [{ description: "Professional Services", quantity: 1, unit_price: 0, total: 0 } as LineItem] },
+  { label: "Product Sale", items: [{ description: "", quantity: 1, unit_price: 0, total: 0 } as LineItem] },
+];
 
 const STATUS_CONFIG: Record<InvoiceStatus, { label: string; color: string }> = {
   draft: { label: "Draft", color: "bg-muted/50 text-muted-foreground border-border" },
@@ -96,6 +106,9 @@ export default function InvoicesPage() {
   // Filters
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -288,6 +301,75 @@ export default function InvoicesPage() {
     setLineItems([{ description: "", quantity: 1, unit_price: 0, total: 0 }]);
   };
 
+  // Clear selection on filter change
+  useEffect(() => { setSelected(new Set()); }, [activeTab, searchQuery]);
+
+  // Bulk selection helpers
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selected.size === invoices.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(invoices.map((inv) => inv.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(ids.map((id) => fetch(`/api/invoices/${id}`, { method: "DELETE" })));
+      toast.success(`Deleted ${ids.length} document(s)`);
+      setSelected(new Set());
+      fetchInvoices();
+      fetchSummary();
+    } catch { toast.error("Failed to delete some documents"); }
+  };
+
+  const handleBulkMarkPaid = async () => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/invoices/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "paid" }),
+          })
+        )
+      );
+      toast.success(`Marked ${ids.length} document(s) as paid`);
+      setSelected(new Set());
+      fetchInvoices();
+      fetchSummary();
+    } catch { toast.error("Failed to update some documents"); }
+  };
+
+  // Apply invoice preset (Task 9)
+  const applyPreset = (presetIndex: number) => {
+    const preset = INVOICE_PRESETS[presetIndex];
+    if (!preset) return;
+    if (preset.items.length === 0) {
+      setLineItems([{ description: "", quantity: 1, unit_price: 0, total: 0 }]);
+    } else {
+      setLineItems(preset.items.map((item) => ({ ...item })));
+    }
+  };
+
+  // Keyboard shortcuts (Task 11)
+  useKeyboardShortcuts({
+    onNew: () => setShowCreateModal(true),
+    onEscape: () => setShowCreateModal(false),
+    onSelectAll: toggleSelectAll,
+  });
+
   const handleConvertToInvoice = async (invoiceId: string) => {
     try {
       const res = await fetch(`/api/invoices/${invoiceId}`, {
@@ -413,9 +495,29 @@ export default function InvoicesPage() {
               <CardDescription className="text-muted-foreground">{total} total</CardDescription>
             </CardHeader>
             <CardContent>
+              {selected.size > 0 && (
+                <div className="flex items-center gap-3 p-3 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-lg mb-4">
+                  <span className="text-sm text-foreground font-medium">{selected.size} selected</span>
+                  <Button size="sm" variant="outline" onClick={handleBulkMarkPaid} className="border-green-600 text-green-400 hover:bg-green-600/20">
+                    Mark as Paid
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleBulkDelete} className="border-red-600 text-red-400 hover:bg-red-600/20">
+                    <Trash2 className="h-3 w-3 mr-1" /> Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="text-muted-foreground">
+                    Clear
+                  </Button>
+                </div>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow className="border-border">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={invoices.length > 0 && selected.size === invoices.length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead className="text-muted-foreground">Doc #</TableHead>
                     <TableHead className="text-muted-foreground">Type</TableHead>
                     <TableHead className="text-muted-foreground">Customer</TableHead>
@@ -429,7 +531,7 @@ export default function InvoicesPage() {
                 <TableBody>
                   {invoices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                         No documents found. Create one to get started.
                       </TableCell>
                     </TableRow>
@@ -440,6 +542,12 @@ export default function InvoicesPage() {
                       const balance = inv.total - inv.amount_paid;
                       return (
                         <TableRow key={inv.id} className="border-border">
+                          <TableCell>
+                            <Checkbox
+                              checked={selected.has(inv.id)}
+                              onCheckedChange={() => toggleSelect(inv.id)}
+                            />
+                          </TableCell>
                           <TableCell className="text-foreground font-mono text-sm">
                             {inv.doc_number}
                           </TableCell>
@@ -526,18 +634,11 @@ export default function InvoicesPage() {
               </div>
               <div>
                 <Label className="text-muted-foreground">Customer *</Label>
-                <Select value={createForm.contact_id} onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}>
-                  <SelectTrigger className="bg-muted border-border">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contacts.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ContactPicker
+                  value={createForm.contact_id}
+                  onValueChange={(v) => setCreateForm((p) => ({ ...p, contact_id: v }))}
+                  placeholder="Search customer..."
+                />
               </div>
               <div>
                 <Label className="text-muted-foreground">Issue Date</Label>
@@ -562,7 +663,19 @@ export default function InvoicesPage() {
             {/* Line Items */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-muted-foreground text-base">Line Items</Label>
+                <div className="flex items-center gap-3">
+                  <Label className="text-muted-foreground text-base">Line Items</Label>
+                  <Select onValueChange={(v) => applyPreset(parseInt(v, 10))}>
+                    <SelectTrigger className="bg-muted border-border w-40 h-7 text-xs">
+                      <SelectValue placeholder="Use template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INVOICE_PRESETS.map((preset, i) => (
+                        <SelectItem key={i} value={String(i)}>{preset.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button size="sm" variant="outline" onClick={addLineItem} className="border-border text-muted-foreground">
                   <Plus className="h-3 w-3 mr-1" /> Add Item
                 </Button>
@@ -572,20 +685,13 @@ export default function InvoicesPage() {
                   <div key={idx} className="grid grid-cols-12 gap-3 items-end">
                     <div className="col-span-2">
                       {idx === 0 && <Label className="text-xs text-muted-foreground">Product</Label>}
-                      <Select
+                      <ItemPicker
                         value={item.product_id || "manual"}
-                        onValueChange={(v) => v !== "manual" && selectProduct(idx, v)}
-                      >
-                        <SelectTrigger className="bg-muted border-border text-xs">
-                          <SelectValue placeholder="Pick" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="manual">Manual</SelectItem>
-                          {products.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onValueChange={(v) => selectProduct(idx, v === "manual" ? "" : v)}
+                        placeholder="Pick item"
+                        allowManual
+                        className="text-xs"
+                      />
                     </div>
                     <div className="col-span-4">
                       {idx === 0 && <Label className="text-xs text-muted-foreground">Description</Label>}

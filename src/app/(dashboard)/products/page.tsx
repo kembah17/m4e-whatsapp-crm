@@ -50,6 +50,8 @@ import {
 import { ProductForm } from '@/components/products/product-form';
 import { ProductImportWizard } from '@/components/products/product-import-wizard';
 import Image from 'next/image';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 const PAGE_SIZE = 25;
 
@@ -79,6 +81,9 @@ export default function ProductsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const enabledItemTypes = useMemo(() => getEnabledItemTypes(industry), [industry]);
   const industryBundle = useMemo(() => getIndustryBundle(industry), [industry]);
@@ -115,6 +120,7 @@ export default function ProductsPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(0);
+    setSelected(new Set());
   }, [search, statusFilter, typeFilter]);
 
   async function handleDelete() {
@@ -133,6 +139,76 @@ export default function ProductsPage() {
       setDeleting(false);
     }
   }
+
+  // Bulk selection helpers
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selected.size === products.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(products.map((p) => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(ids.map((id) => fetch(`/api/products/${id}`, { method: 'DELETE' })));
+      toast.success(`Deleted ${ids.length} products`);
+      setSelected(new Set());
+      fetchProducts();
+    } catch { toast.error('Failed to delete some products'); }
+  };
+
+  const handleBulkStatusChange = async (newStatus: ProductStatus) => {
+    if (selected.size === 0) return;
+    const ids = Array.from(selected);
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          })
+        )
+      );
+      toast.success(`Updated ${ids.length} products to ${newStatus}`);
+      setSelected(new Set());
+      fetchProducts();
+    } catch { toast.error('Failed to update some products'); }
+  };
+
+  // Inline status cycling
+  const STATUS_CYCLE: ProductStatus[] = ['active', 'discontinued', 'seasonal'];
+  const cycleStatus = async (product: Product) => {
+    const currentIdx = STATUS_CYCLE.indexOf(product.status);
+    const nextStatus = STATUS_CYCLE[(currentIdx + 1) % STATUS_CYCLE.length];
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      toast.success(`Status changed to ${nextStatus}`);
+      fetchProducts();
+    } catch { toast.error('Failed to update status'); }
+  };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNew: () => { setEditProduct(null); setFormOpen(true); },
+    onEscape: () => { setFormOpen(false); setDeleteConfirmOpen(false); setImportWizardOpen(false); },
+    onSelectAll: toggleSelectAll,
+  });
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -244,9 +320,37 @@ export default function ProductsPage() {
             )}
           </div>
         ) : (
+          <>
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3 px-6 py-3 bg-[#C9A84C]/10 border-b border-[#C9A84C]/30">
+              <span className="text-sm text-foreground font-medium">{selected.size} selected</span>
+              <Button size="sm" variant="outline" onClick={handleBulkDelete} className="border-red-600 text-red-400 hover:bg-red-600/20">
+                <Trash2 className="h-3 w-3 mr-1" /> Delete
+              </Button>
+              <Select onValueChange={(v) => handleBulkStatusChange(v as ProductStatus)}>
+                <SelectTrigger className="w-40 h-8 text-xs bg-muted/50 border-border">
+                  <SelectValue placeholder="Change status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Set Active</SelectItem>
+                  <SelectItem value="discontinued">Set Discontinued</SelectItem>
+                  <SelectItem value="seasonal">Set Seasonal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="text-muted-foreground">
+                Clear
+              </Button>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={products.length > 0 && selected.size === products.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
                 <TableHead className="text-muted-foreground w-[60px]">Image</TableHead>
                 <TableHead className="text-muted-foreground">Type</TableHead>
                 <TableHead className="text-muted-foreground">Name</TableHead>
@@ -266,6 +370,12 @@ export default function ProductsPage() {
                     setFormOpen(true);
                   }}
                 >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selected.has(product.id)}
+                      onCheckedChange={() => toggleSelect(product.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
                       {product.image_url ? (
@@ -318,10 +428,11 @@ export default function ProductsPage() {
                   <TableCell className="text-sm text-foreground">
                     {formatCurrency(product.price, defaultCurrency)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => { e.stopPropagation(); cycleStatus(product); }}>
                     <Badge
                       variant="outline"
-                      className={STATUS_COLORS[product.status] || ''}
+                      className={`cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[product.status] || ''}`}
+                      title="Click to cycle status"
                     >
                       {product.status}
                     </Badge>
@@ -344,6 +455,7 @@ export default function ProductsPage() {
               ))}
             </TableBody>
           </Table>
+          </>
         )}
       </div>
 
