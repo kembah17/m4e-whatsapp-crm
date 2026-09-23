@@ -3,6 +3,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSegmentContacts } from '@/lib/segments/segment-engine'
 import { decrypt } from '@/lib/whatsapp/encryption'
 
+const META_API_VERSION = 'v21.0'
+const META_API_BASE = `https://graph.facebook.com/${META_API_VERSION}`
+
 // ---------------------------------------------------------------------------
 // SHA-256 hashing for Meta Custom Audience upload
 // ---------------------------------------------------------------------------
@@ -62,8 +65,54 @@ export async function prepareAudiencePayload(
 }
 
 // ---------------------------------------------------------------------------
+// Meta API helper with retry logic
+// ---------------------------------------------------------------------------
+
+async function metaPost<T>(
+  url: string,
+  accessToken: string,
+  body: Record<string, unknown>,
+  retries = 2,
+): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, access_token: accessToken }),
+    })
+
+    if (res.ok) {
+      return res.json() as Promise<T>
+    }
+
+    const errorBody = await res.text()
+
+    // Retry on rate limiting (code 32) or transient errors (code 2)
+    if (attempt < retries) {
+      try {
+        const parsed = JSON.parse(errorBody)
+        const code = parsed?.error?.code
+        if (code === 32 || code === 2) {
+          const backoff = (attempt + 1) * 5000
+          console.warn(
+            `[lookalike-sync] Meta API rate limited (code ${code}), retrying in ${backoff}ms`,
+          )
+          await new Promise((r) => setTimeout(r, backoff))
+          continue
+        }
+      } catch {
+        // Not JSON, fall through to throw
+      }
+    }
+
+    throw new Error(`Meta API error ${res.status}: ${errorBody}`)
+  }
+
+  throw new Error('Exhausted retries')
+}
+
+// ---------------------------------------------------------------------------
 // Sync to Meta Custom Audiences API
-// TODO: Activate when Meta Business verification is complete
 // ---------------------------------------------------------------------------
 
 export async function syncToMetaAudience(
@@ -72,53 +121,65 @@ export async function syncToMetaAudience(
   audienceName: string,
   payload: { hashed_phones: string[]; hashed_emails: string[] },
 ): Promise<{ audience_id: string; status: string }> {
-  // Meta Marketing API endpoint for Custom Audiences
-  // POST https://graph.facebook.com/v21.0/act_{ad_account_id}/customaudiences
-  //
-  // Request body:
-  // {
-  //   name: audienceName,
-  //   subtype: 'CUSTOM',
-  //   description: 'M4E CRM customer segment',
-  //   customer_file_source: 'USER_PROVIDED_ONLY',
-  //   access_token: accessToken
-  // }
-  //
-  // Then upload users:
-  // POST https://graph.facebook.com/v21.0/{audience_id}/users
-  // {
-  //   payload: {
-  //     schema: ['PHONE', 'EMAIL'],
-  //     data: [
-  //       [hashed_phone, hashed_email],
-  //       ...
-  //     ]
-  //   },
-  //   access_token: accessToken
-  // }
+  // Step 1: Create Custom Audience
+  const createUrl = `${META_API_BASE}/act_${adAccountId}/customaudiences`
 
-  const _endpoint = `https://graph.facebook.com/v21.0/act_${adAccountId}/customaudiences`
-  void _endpoint // suppress unused warning
-  void accessToken
-  void audienceName
+  const createResult = await metaPost<{ id: string }>(createUrl, accessToken, {
+    name: audienceName,
+    subtype: 'CUSTOM',
+    description: 'M4E Business Growth Engine customer segment',
+    customer_file_source: 'USER_PROVIDED_ONLY',
+  })
 
-  // TODO: Implement actual API call when Meta Business verification is complete
-  // For now, return mock data
+  const audienceId = createResult.id
+
+  // Step 2: Upload hashed user data
+  // Build data rows: each row is [phone_hash, email_hash]
+  // We need to combine phones and emails into rows
+  const maxRows = Math.max(payload.hashed_phones.length, payload.hashed_emails.length)
+  const dataRows: string[][] = []
+
+  for (let i = 0; i < maxRows; i++) {
+    dataRows.push([
+      payload.hashed_phones[i] || '',
+      payload.hashed_emails[i] || '',
+    ])
+  }
+
+  if (dataRows.length > 0) {
+    // Upload in batches of 10,000 (Meta limit)
+    const BATCH_SIZE = 10_000
+    for (let offset = 0; offset < dataRows.length; offset += BATCH_SIZE) {
+      const batch = dataRows.slice(offset, offset + BATCH_SIZE)
+      const uploadUrl = `${META_API_BASE}/${audienceId}/users`
+
+      await metaPost(uploadUrl, accessToken, {
+        payload: {
+          schema: ['PHONE', 'EMAIL'],
+          data: batch,
+        },
+      })
+
+      console.log(
+        `[lookalike-sync] Uploaded batch ${Math.floor(offset / BATCH_SIZE) + 1} ` +
+        `(${batch.length} rows) to audience ${audienceId}`,
+      )
+    }
+  }
+
   console.log(
-    `[lookalike-sync] STUB: Would create audience "${audienceName}" ` +
-    `with ${payload.hashed_phones.length} phones and ${payload.hashed_emails.length} emails ` +
-    `for ad account ${adAccountId}`,
+    `[lookalike-sync] Created audience "${audienceName}" (${audienceId}) ` +
+    `with ${payload.hashed_phones.length} phones and ${payload.hashed_emails.length} emails`,
   )
 
   return {
-    audience_id: `mock_audience_${Date.now()}`,
-    status: 'pending_verification',
+    audience_id: audienceId,
+    status: 'synced',
   }
 }
 
 // ---------------------------------------------------------------------------
 // Create Lookalike Audience from Custom Audience
-// TODO: Activate when Meta Business verification is complete
 // ---------------------------------------------------------------------------
 
 export async function createLookalikeAudience(
@@ -128,33 +189,20 @@ export async function createLookalikeAudience(
   country: string,
   ratio: number, // 0.01 to 0.10
 ): Promise<{ lookalike_id: string; estimated_reach: number }> {
-  // Meta Marketing API endpoint for Lookalike Audiences
-  // POST https://graph.facebook.com/v21.0/act_{ad_account_id}/customaudiences
-  //
-  // Request body:
-  // {
-  //   name: `Lookalike - ${sourceAudienceId} - ${country} ${ratio * 100}%`,
-  //   subtype: 'LOOKALIKE',
-  //   origin_audience_id: sourceAudienceId,
-  //   lookalike_spec: JSON.stringify({
-  //     type: 'similarity',
-  //     country: country,
-  //     ratio: ratio,
-  //   }),
-  //   access_token: accessToken
-  // }
+  const createUrl = `${META_API_BASE}/act_${adAccountId}/customaudiences`
 
-  const _endpoint = `https://graph.facebook.com/v21.0/act_${adAccountId}/customaudiences`
-  void _endpoint
-  void accessToken
-  void sourceAudienceId
-  void country
+  const lookalikeSpec = JSON.stringify({
+    type: 'similarity',
+    country: country.toUpperCase(),
+    ratio,
+  })
 
-  // TODO: Implement actual API call when Meta Business verification is complete
-  console.log(
-    `[lookalike-sync] STUB: Would create lookalike from ${sourceAudienceId} ` +
-    `in ${country} at ${ratio * 100}% ratio`,
-  )
+  const result = await metaPost<{ id: string }>(createUrl, accessToken, {
+    name: `Lookalike - ${sourceAudienceId} - ${country.toUpperCase()} ${Math.round(ratio * 100)}%`,
+    subtype: 'LOOKALIKE',
+    origin_audience_id: sourceAudienceId,
+    lookalike_spec: lookalikeSpec,
+  })
 
   // Estimate reach based on ratio and country population
   const countryPopulations: Record<string, number> = {
@@ -171,8 +219,14 @@ export async function createLookalikeAudience(
   const facebookReach = population * 0.4
   const estimatedReach = Math.round(facebookReach * ratio)
 
+  console.log(
+    `[lookalike-sync] Created lookalike ${result.id} from ${sourceAudienceId} ` +
+    `in ${country.toUpperCase()} at ${Math.round(ratio * 100)}% ratio ` +
+    `(estimated reach: ${estimatedReach.toLocaleString()})`,
+  )
+
   return {
-    lookalike_id: `mock_lookalike_${Date.now()}`,
+    lookalike_id: result.id,
     estimated_reach: estimatedReach,
   }
 }

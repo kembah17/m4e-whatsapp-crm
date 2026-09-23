@@ -174,6 +174,7 @@ const navGroups: NavGroup[] = [
       { href: "/campaigns", label: "Campaigns", icon: Rocket },
       { href: "/ad-leads", label: "Ad Leads", icon: Megaphone, beta: true },
       { href: "/segments", label: "Segments", icon: Target, beta: true },
+      { href: "/ads-performance", label: "Ads Performance", icon: BarChart3 },
     ],
   },
   {
