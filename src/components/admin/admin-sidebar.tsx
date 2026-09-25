@@ -24,6 +24,7 @@ import {
   Headphones,
   User,
   Users,
+  MessageSquare,
   X,
 } from "lucide-react"
 import {
@@ -54,6 +55,7 @@ const navItems: NavItem[] = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/revenue", label: "Revenue", icon: DollarSign },
   { href: "/admin/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/admin/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { href: "/admin/infrastructure", label: "Infrastructure", icon: HardDrive },
   { href: "/admin/safety", label: "AI & Safety", icon: Shield },
   { href: "/admin/ban-avoidance", label: "Ban Avoidance", icon: ShieldAlert },

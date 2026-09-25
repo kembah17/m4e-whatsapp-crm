@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createClient as createBrowserClient } from '@/lib/supabase/server';
-
-const supabaseAdmin = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+import { supabaseAdmin } from '@/lib/ecommerce/admin-client';
 
 /**
  * POST /api/admin/whatsapp-disconnect
  * Super-admin only: disconnect a client's WhatsApp connection.
  * Body: { accountId: string, reason?: string }
+ *
+ * After migration 088, phone_number_id and access_token are nullable,
+ * so we set them to NULL instead of placeholder strings.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -62,8 +58,6 @@ export async function POST(req: NextRequest) {
     let tokenRevoked = false;
     if (config.access_token) {
       try {
-        // Try to decrypt and revoke — if it fails, we still proceed
-        // The token may be encrypted, so we attempt a Graph API revoke
         const revokeRes = await fetch(
           `https://graph.facebook.com/v21.0/me/permissions`,
           {
@@ -73,29 +67,27 @@ export async function POST(req: NextRequest) {
         );
         tokenRevoked = revokeRes.ok;
       } catch {
-        // Token may be encrypted or expired — that's fine
         tokenRevoked = false;
       }
     }
 
-    // 6. Reset the WhatsApp config
-    const placeholderId = `DISCONNECTED_${accountId.substring(0, 8)}_${Date.now()}`;
+    // 6. Reset the WhatsApp config — use NULL for nullable fields
     const { error: updateError } = await admin
       .from('whatsapp_config')
       .update({
         status: 'disconnected',
-        phone_number_id: placeholderId,
-        waba_id: '',
-        business_name: '',
-        display_phone_number: '',
+        phone_number_id: null,
+        waba_id: null,
+        business_name: null,
+        display_phone_number: null,
         connected_at: null,
-        meta_business_id: '',
+        meta_business_id: null,
         phone_verified: false,
         registered_at: null,
         subscribed_apps_at: null,
-        access_token: 'REVOKED',
+        access_token: null,
         token_expires_at: null,
-        quality_rating: 'UNKNOWN',
+        quality_rating: null,
         messaging_limit: null,
         last_registration_error: null,
       })
@@ -109,7 +101,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Log the audit event
-    // Get account name for the log
     const { data: account } = await admin
       .from('accounts')
       .select('name')
