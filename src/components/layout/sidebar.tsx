@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {
+  Smartphone, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -210,6 +211,7 @@ const navGroups: NavGroup[] = [
       { href: "/data-center", label: "Data Center", icon: Database },
       { href: "/support", label: "Support Desk", icon: Headphones },
       { href: "/subscribers", label: "Subscribers", icon: MonitorCheck, superAdminOnly: true },
+      { href: "/admin/whatsapp", label: "WhatsApp Admin", icon: Smartphone, superAdminOnly: true },
       { href: "/import-history", label: "Import History", icon: History },
       { href: "/audit-log", label: "Audit Log", icon: Shield, superAdminOnly: true },
     ],
