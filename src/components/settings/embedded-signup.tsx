@@ -289,7 +289,10 @@ export function EmbeddedSignup() {
           const loginOptions: FBLoginOptions = {
             extras: {
               setup: {},
-              featureType: '',
+              // featureType controls what Meta's popup shows:
+              // 'only_waba_sharing' = share existing WABA (skips "Add phone number" screen)
+              // '' (empty) = full onboarding (forces new phone registration)
+              featureType: config_id ? 'only_waba_sharing' : '',
               sessionInfoVersion: "2",
             },
           };
@@ -297,6 +300,8 @@ export function EmbeddedSignup() {
           if (config_id) {
             // Method A: Use pre-configured Embedded Signup Configuration
             // config_id flow REQUIRES response_type:'code' per Meta docs
+            // featureType:'only_waba_sharing' lets user select existing WABA
+            // instead of being forced to add a new phone number
             loginOptions.config_id = config_id;
             loginOptions.response_type = 'code';
             loginOptions.override_default_response_type = true;
