@@ -110,6 +110,18 @@ export async function GET() {
       )
     }
 
+    // If access_token is null/empty, the config is in a disconnected state — not corrupted.
+    if (!config.access_token) {
+      return NextResponse.json(
+        {
+          connected: false,
+          reason: 'not_connected',
+          message: 'WhatsApp is not connected yet. Use the Manual Setup or Embedded Signup tab to connect your WhatsApp Business Account.',
+        },
+        { status: 200 }
+      )
+    }
+
     // Try to decrypt the stored token with the current ENCRYPTION_KEY.
     // If this fails, the key changed (or was never consistent across envs).
     let accessToken: string
