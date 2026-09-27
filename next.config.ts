@@ -139,7 +139,6 @@ const nextConfig: NextConfig = {
    * to avoid OOM kills in memory-constrained environments.
    */
   typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;
