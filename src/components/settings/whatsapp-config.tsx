@@ -13,6 +13,9 @@ import {
   Zap,
   AlertTriangle,
   RotateCcw,
+  Wifi,
+  WifiOff,
+  Phone,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -388,6 +391,79 @@ export function WhatsAppConfig() {
         title="WhatsApp connection"
         description="Connect your Meta WhatsApp Business API. Credentials, webhook, and setup steps all live here."
       />
+
+      {/* ── Persistent Connection Status Banner ── */}
+      {/* Visible above ALL tabs so screencast always shows connection state */}
+      {!loading && (
+        <div
+          className={`mb-6 rounded-lg border px-4 py-3 flex items-center justify-between gap-4 flex-wrap ${
+            connectionStatus === 'connected'
+              ? 'bg-emerald-950/30 border-emerald-700/50'
+              : 'bg-muted/50 border-border'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            {connectionStatus === 'connected' ? (
+              <div className="flex size-10 items-center justify-center rounded-full bg-emerald-900/60">
+                <Wifi className="size-5 text-emerald-400" />
+              </div>
+            ) : (
+              <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+                <WifiOff className="size-5 text-muted-foreground" />
+              </div>
+            )}
+            <div>
+              <p className={`text-sm font-semibold ${
+                connectionStatus === 'connected' ? 'text-emerald-300' : 'text-foreground'
+              }`}>
+                {connectionStatus === 'connected'
+                  ? 'WhatsApp Connected'
+                  : 'WhatsApp Not Connected'}
+              </p>
+              {connectionStatus === 'connected' && config ? (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {config.phone_number_id && (
+                    <span className="inline-flex items-center gap-1 mr-3">
+                      <Phone className="size-3" />
+                      Phone: {config.phone_number_id}
+                    </span>
+                  )}
+                  {config.waba_id && (
+                    <span className="mr-3">WABA: {config.waba_id}</span>
+                  )}
+                  {config.setup_method && (
+                    <span className="capitalize">via {config.setup_method}</span>
+                  )}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use Quick Setup or Manual Setup below to connect your WhatsApp Business account.
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTestConnection}
+              disabled={testing || !config}
+              className={`h-8 text-xs ${
+                connectionStatus === 'connected'
+                  ? 'border-emerald-700/50 text-emerald-300 hover:bg-emerald-950/40 hover:text-emerald-200'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              {testing ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Zap className="size-3.5" />
+              )}
+              {testing ? 'Testing...' : 'Test Connection'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full sm:w-auto mb-4">
