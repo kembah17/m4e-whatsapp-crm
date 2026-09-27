@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Eye,
@@ -62,6 +62,8 @@ export function WhatsAppConfig() {
   const [verifyToken, setVerifyToken] = useState('');
   const [pin, setPin] = useState('');
   const [tokenEdited, setTokenEdited] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('quick');
+  const initialLoadDone = useRef(false);
 
   // True once /register has succeeded on Meta's side (timestamp set
   // in the row). When false, the saved config is metadata-only and
@@ -88,7 +90,8 @@ export function WhatsAppConfig() {
       : '';
 
   const fetchConfig = useCallback(async (acctId: string) => {
-    setLoading(true);
+    // Only show full loading spinner on initial load, not on background refreshes
+    if (!initialLoadDone.current) setLoading(true);
     try {
       // Load form values from Supabase (shows what's in DB).
       // Switched from `user_id` (which would only match the row's
@@ -155,6 +158,7 @@ export function WhatsAppConfig() {
       toast.error('Failed to load WhatsApp configuration');
     } finally {
       setLoading(false);
+      initialLoadDone.current = true;
     }
   }, [supabase]);
 
@@ -384,7 +388,7 @@ export function WhatsAppConfig() {
         description="Connect your Meta WhatsApp Business API. Credentials, webhook, and setup steps all live here."
       />
 
-      <Tabs defaultValue="quick">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full sm:w-auto mb-4">
           <TabsTrigger value="quick">
             <Zap className="size-3.5" />
@@ -524,10 +528,13 @@ export function WhatsAppConfig() {
                 </>
               ) : (
                 <>
-                  This number was saved before registration tracking
-                  existed, or registration was skipped. Enter the
-                  2-step PIN below and click Save Configuration to
-                  subscribe it.
+                  This number is not yet registered with Meta&apos;s Cloud API.
+                  To receive incoming WhatsApp messages, enter your
+                  6-digit two-step verification PIN in the form below
+                  and click <strong className="text-foreground">Save Configuration</strong>.
+                  If you haven&apos;t set a PIN yet, go to Meta Business
+                  Manager → WhatsApp Accounts → Phone Numbers →
+                  Two-step verification first.
                 </>
               )}
             </AlertDescription>
