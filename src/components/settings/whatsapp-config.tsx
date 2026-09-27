@@ -38,7 +38,6 @@ type ConnectionStatus = 'connected' | 'disconnected' | 'unknown';
 type ResetReason = 'token_corrupted' | 'meta_api_error' | null;
 
 export function WhatsAppConfig() {
-  const supabase = createClient();
   // After multi-user, whatsapp_config is one-row-per-account, not
   // one-row-per-user. We pull `accountId` straight off the auth
   // context and key every read off it — so a teammate who just
@@ -64,6 +63,7 @@ export function WhatsAppConfig() {
   const [tokenEdited, setTokenEdited] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('quick');
   const initialLoadDone = useRef(false);
+  const hasEdits = useRef(false);
 
   // True once /register has succeeded on Meta's side (timestamp set
   // in the row). When false, the saved config is metadata-only and
@@ -93,12 +93,8 @@ export function WhatsAppConfig() {
     // Only show full loading spinner on initial load, not on background refreshes
     if (!initialLoadDone.current) setLoading(true);
     try {
-      // Load form values from Supabase (shows what's in DB).
-      // Switched from `user_id` (which would only match the row's
-      // original author) to `account_id` so every member of the
-      // account sees the same saved configuration. UNIQUE(account_id)
-      // on the table guarantees the .maybeSingle() return type
-      // remains accurate.
+      // Create client inside callback to avoid re-render dependency issues
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('whatsapp_config')
         .select('*')
@@ -111,13 +107,16 @@ export function WhatsAppConfig() {
 
       if (data) {
         setConfig(data);
-        setPhoneNumberId(data.phone_number_id || '');
-        setWabaId(data.waba_id || '');
-        setAccessToken(MASKED_TOKEN);
-        setVerifyToken('');
-        setPin('');
-        setTokenEdited(false);
-      } else {
+        // Only overwrite form fields if user hasn't started editing
+        if (!hasEdits.current) {
+          setPhoneNumberId(data.phone_number_id || '');
+          setWabaId(data.waba_id || '');
+          setAccessToken(MASKED_TOKEN);
+          setVerifyToken('');
+          setPin('');
+          setTokenEdited(false);
+        }
+      } else if (!hasEdits.current) {
         setConfig(null);
         setPhoneNumberId('');
         setWabaId('');
@@ -160,7 +159,7 @@ export function WhatsAppConfig() {
       setLoading(false);
       initialLoadDone.current = true;
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     // Need both the auth session (`!authLoading`) AND the profile
@@ -262,6 +261,7 @@ export function WhatsAppConfig() {
         setPin('');
       }
 
+      hasEdits.current = false;
       if (accountId) await fetchConfig(accountId);
     } catch (err) {
       console.error('Save error:', err);
@@ -343,6 +343,7 @@ export function WhatsAppConfig() {
       }
 
       toast.success('Configuration cleared. You can now re-enter your credentials.');
+      hasEdits.current = false;
       setConfig(null);
       setPhoneNumberId('');
       setWabaId('');
@@ -587,7 +588,7 @@ export function WhatsAppConfig() {
               <Input
                 placeholder="e.g. 100234567890123"
                 value={phoneNumberId}
-                onChange={(e) => setPhoneNumberId(e.target.value)}
+                onChange={(e) => { setPhoneNumberId(e.target.value); hasEdits.current = true; }}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -597,7 +598,7 @@ export function WhatsAppConfig() {
               <Input
                 placeholder="e.g. 100234567890456"
                 value={wabaId}
-                onChange={(e) => setWabaId(e.target.value)}
+                onChange={(e) => { setWabaId(e.target.value); hasEdits.current = true; }}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -612,6 +613,7 @@ export function WhatsAppConfig() {
                   onChange={(e) => {
                     setAccessToken(e.target.value);
                     setTokenEdited(true);
+                    hasEdits.current = true;
                   }}
                   onFocus={() => {
                     if (accessToken === MASKED_TOKEN) {
@@ -641,7 +643,7 @@ export function WhatsAppConfig() {
               <Input
                 placeholder="Create a custom verify token"
                 value={verifyToken}
-                onChange={(e) => setVerifyToken(e.target.value)}
+                onChange={(e) => { setVerifyToken(e.target.value); hasEdits.current = true; }}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground">
@@ -660,9 +662,10 @@ export function WhatsAppConfig() {
                 maxLength={6}
                 placeholder="6-digit PIN from Meta WhatsApp Manager"
                 value={pin}
-                onChange={(e) =>
-                  setPin(e.target.value.replace(/\D/g, '').slice(0, 6))
-                }
+                onChange={(e) => {
+                  setPin(e.target.value.replace(/\D/g, '').slice(0, 6));
+                  hasEdits.current = true;
+                }}
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground tracking-widest"
               />
               <p className="text-xs text-muted-foreground leading-relaxed">
