@@ -334,6 +334,33 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
         const message = value.messages[i]
         const contact = value.contacts[i] || value.contacts[0]
 
+        // ── Idempotency Check ──────────────────────────────────
+        // Skip if this message was already processed (duplicate webhook delivery)
+        const { data: alreadyProcessed } = await supabaseAdmin()
+          .from('webhook_processed_messages')
+          .select('id')
+          .eq('message_id', message.id)
+          .eq('webhook_type', 'whatsapp')
+          .maybeSingle()
+
+        if (alreadyProcessed) {
+          console.log(`[Webhook] Duplicate message ${message.id} — skipping`)
+          continue
+        }
+
+        // Record as processed BEFORE processing (optimistic lock)
+        await supabaseAdmin()
+          .from('webhook_processed_messages')
+          .insert({
+            message_id: message.id,
+            webhook_type: 'whatsapp',
+            account_id: config.account_id,
+          })
+          // If another instance already inserted, ignore the conflict
+          .select()
+          .maybeSingle()
+        // ── End Idempotency Check ──────────────────────────────
+
         await processMessage(
           message,
           contact,

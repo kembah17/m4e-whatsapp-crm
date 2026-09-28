@@ -4,6 +4,7 @@ import { PaystackAdapter } from '@/lib/payments/paystack'
 import { fireTrigger } from '@/lib/campaigns/trigger-engine'
 import { matchContactByPhoneOrEmail } from '@/lib/ecommerce/sync'
 import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+import { sendPaymentNotification } from '@/lib/notifications/payment-notification'
 
 /**
  * POST /api/webhooks/paystack
@@ -119,6 +120,25 @@ export async function POST(request: Request): Promise<Response> {
         contact_id: contactId,
         order_total: event.amount,
       })
+    }
+
+    // Send WhatsApp payment notification
+    if (event.event === 'charge.success') {
+      try {
+        const notifResult = await sendPaymentNotification({
+          accountId,
+          amount: event.amount,
+          description: (event.metadata as Record<string, string>)?.description || 'Subscription payment',
+          customerPhone: customerPhone || undefined,
+        })
+        if (notifResult.sent) {
+          console.log(`[paystack-webhook] Payment notification sent for account ${accountId}`)
+        } else {
+          console.log(`[paystack-webhook] Payment notification not sent: ${notifResult.reason}`)
+        }
+      } catch (notifErr) {
+        console.error('[paystack-webhook] Payment notification error:', notifErr)
+      }
     }
 
     // TODO: Link transaction to ecommerce_order if reference matches
