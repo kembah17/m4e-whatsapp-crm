@@ -53,6 +53,10 @@ export function WhatsAppConfig() {
   const [testing, setTesting] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showToken, setShowToken] = useState(false);
+  const [showPhoneId, setShowPhoneId] = useState(false);
+  const [showWabaId, setShowWabaId] = useState(false);
+  const [showVerifyToken, setShowVerifyToken] = useState(false);
+  const [showPin, setShowPin] = useState(false);
   const [config, setConfig] = useState<WhatsAppConfigType | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
   const [resetReason, setResetReason] = useState<ResetReason>(null);
@@ -661,22 +665,42 @@ export function WhatsAppConfig() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground">Phone Number ID</Label>
-              <Input
-                placeholder="e.g. 100234567890123"
-                value={phoneNumberId}
-                onChange={(e) => { setPhoneNumberId(e.target.value); hasEdits.current = true; }}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
-              />
+              <div className="relative">
+                <Input
+                  type={showPhoneId ? 'text' : 'password'}
+                  placeholder="e.g. 100234567890123"
+                  value={phoneNumberId}
+                  onChange={(e) => { setPhoneNumberId(e.target.value); hasEdits.current = true; }}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPhoneId(!showPhoneId)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPhoneId ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">WhatsApp Business Account ID</Label>
-              <Input
-                placeholder="e.g. 100234567890456"
-                value={wabaId}
-                onChange={(e) => { setWabaId(e.target.value); hasEdits.current = true; }}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
-              />
+              <div className="relative">
+                <Input
+                  type={showWabaId ? 'text' : 'password'}
+                  placeholder="e.g. 100234567890456"
+                  value={wabaId}
+                  onChange={(e) => { setWabaId(e.target.value); hasEdits.current = true; }}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowWabaId(!showWabaId)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showWabaId ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -716,12 +740,22 @@ export function WhatsAppConfig() {
 
             <div className="space-y-2">
               <Label className="text-muted-foreground">Webhook Verify Token</Label>
-              <Input
-                placeholder="Create a custom verify token"
-                value={verifyToken}
-                onChange={(e) => { setVerifyToken(e.target.value); hasEdits.current = true; }}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
-              />
+              <div className="relative">
+                <Input
+                  type={showVerifyToken ? 'text' : 'password'}
+                  placeholder="Create a custom verify token"
+                  value={verifyToken}
+                  onChange={(e) => { setVerifyToken(e.target.value); hasEdits.current = true; }}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowVerifyToken(!showVerifyToken)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showVerifyToken ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground">
                 A custom string you create. Must match the token you set in Meta webhook settings.
               </p>
@@ -732,18 +766,27 @@ export function WhatsAppConfig() {
                 Two-step verification PIN
                 <span className="ml-1 text-muted-foreground">(optional)</span>
               </Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="6-digit PIN from Meta WhatsApp Manager"
-                value={pin}
-                onChange={(e) => {
-                  setPin(e.target.value.replace(/\D/g, '').slice(0, 6));
-                  hasEdits.current = true;
-                }}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground tracking-widest"
-              />
+              <div className="relative">
+                <Input
+                  type={showPin ? 'text' : 'password'}
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="6-digit PIN from Meta WhatsApp Manager"
+                  value={pin}
+                  onChange={(e) => {
+                    setPin(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    hasEdits.current = true;
+                  }}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground tracking-widest pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPin ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Needed only to wire <strong className="text-muted-foreground">inbound</strong> messages
                 for a <strong className="text-muted-foreground">production</strong> number. Set it in{' '}
