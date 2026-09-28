@@ -590,49 +590,78 @@ export default function AdsPerformancePage() {
               </Card>
             ) : (
               <Card className="bg-card/50 border-border">
-                <CardContent className="pt-4">
+                <CardContent className="pt-4 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-muted-foreground">Campaign Name</TableHead>
-                        <TableHead className="text-muted-foreground">Objective</TableHead>
                         <TableHead className="text-muted-foreground">Status</TableHead>
-                        <TableHead className="text-muted-foreground">Daily Budget</TableHead>
-                        <TableHead className="text-muted-foreground">Lifetime Budget</TableHead>
+                        <TableHead className="text-muted-foreground">Objective</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Impressions</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Clicks</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Spend</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Reach</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Conversions</TableHead>
+                        <TableHead className="text-muted-foreground text-right">CTR</TableHead>
+                        <TableHead className="text-muted-foreground text-right">CPC</TableHead>
+                        <TableHead className="text-muted-foreground text-right">Daily Budget</TableHead>
                         <TableHead className="text-muted-foreground">Start</TableHead>
                         <TableHead className="text-muted-foreground">End</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {campaigns.map((c) => (
-                        <TableRow key={c.id}>
-                          <TableCell className="font-medium text-foreground">
-                            {c.name}
-                          </TableCell>
-                          <TableCell className="text-foreground">
-                            {c.objective || "-"}
-                          </TableCell>
-                          <TableCell>
-                            <StatusBadge status={c.status} />
-                          </TableCell>
-                          <TableCell className="text-foreground">
-                            {c.daily_budget ? formatCurrency(c.daily_budget) : "-"}
-                          </TableCell>
-                          <TableCell className="text-foreground">
-                            {c.lifetime_budget ? formatCurrency(c.lifetime_budget) : "-"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-xs">
-                            {c.start_time
-                              ? new Date(c.start_time).toLocaleDateString()
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-xs">
-                            {c.stop_time
-                              ? new Date(c.stop_time).toLocaleDateString()
-                              : "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {campaigns.map((c) => {
+                        const perf = campaignRows.find(
+                          (r) => r.campaign_name === c.name
+                        )
+                        return (
+                          <TableRow key={c.id}>
+                            <TableCell className="font-medium text-foreground">
+                              {c.name}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge status={c.status} />
+                            </TableCell>
+                            <TableCell className="text-foreground text-xs">
+                              {c.objective?.replace("OUTCOME_", "") || "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatNumber(perf.impressions) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatNumber(perf.clicks) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatCurrency(perf.spend) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatNumber(perf.reach) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatNumber(perf.conversions) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatPercent(perf.ctr) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {perf ? formatCurrency(perf.cpc) : "-"}
+                            </TableCell>
+                            <TableCell className="text-foreground text-right">
+                              {c.daily_budget ? formatCurrency(c.daily_budget) : "-"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-xs">
+                              {c.start_time
+                                ? new Date(c.start_time).toLocaleDateString()
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-xs">
+                              {c.stop_time
+                                ? new Date(c.stop_time).toLocaleDateString()
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
