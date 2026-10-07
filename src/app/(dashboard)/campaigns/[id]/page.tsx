@@ -65,6 +65,8 @@ import type {
 } from "@/types/campaigns"
 import { CampaignMonitor } from "@/components/campaigns/campaign-monitor"
 import { EndOfCampaignWorkflow } from "@/components/campaigns/end-of-campaign-workflow"
+import { PatternInsightsPanel } from "@/components/campaigns/pattern-insights-panel"
+import { CampaignEvidencePanel } from "@/components/campaigns/campaign-evidence-panel"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -1008,6 +1010,21 @@ export default function CampaignDetailPage() {
           onRefresh={fetchCampaign}
         />
       )}
+
+      {/* Pattern Insights - suggestions, hypotheses, and business rules */}
+      <PatternInsightsPanel
+        campaignId={campaign.id}
+        campaignStatus={campaign.status}
+        industry={campaign.audience_filter?.industry}
+        channel={campaign.channel}
+        category={campaign.campaign_templates?.category}
+      />
+
+      {/* Evidence & Provenance - what informed this campaign */}
+      <CampaignEvidencePanel
+        campaignId={campaign.id}
+        autoLoad={campaign.status === "completed"}
+      />
 
       {/* Confirmation dialog */}
       <Dialog

@@ -150,3 +150,73 @@ export {
   ALL_LIFECYCLE_STATUSES,
   ALL_CONFIDENCE_LEVELS,
 } from './validation';
+
+
+// =============================================================================
+// CITE Phase 2 — Pattern Library, Hypothesis Engine, Evidence Tracking
+// =============================================================================
+
+// Phase 2 Types
+export type {
+  // Campaign Context
+  CampaignContext,
+  // Pattern Extraction
+  CampaignMetrics,
+  ExtractedPattern,
+  EffectivenessEvidence,
+  AudienceFit,
+  ExtractionResult,
+  ExtractedLearning,
+  // Pattern Consultation
+  PatternMatch,
+  PatternSuggestion,
+  ConsultationResult,
+  // Hypothesis Engine
+  CreativeHypothesisGenerated,
+  SuccessCriteria,
+  HypothesisGenerationResult,
+  BusinessProfileSummary,
+  ICPProfileSummary,
+  ChannelContext,
+  // Rules Engine
+  RuleSeverity,
+  RuleViolation,
+  RuleCheckResult,
+  // Evidence Tracking
+  EvidenceSource,
+  CampaignProvenance,
+  CampaignEvidenceRecord,
+  ProvenanceResult,
+} from './phase2-types';
+
+// Pattern Extraction (post-campaign analysis)
+export {
+  extractPatternsFromCampaign,
+} from './pattern-extraction';
+
+// Pattern Consultation (pre-campaign suggestions)
+export {
+  consultPatterns,
+  generateSuggestions,
+} from './pattern-consultation';
+
+// Hypothesis Engine
+export {
+  generateHypotheses,
+} from './hypothesis-engine';
+
+// Rules Engine (16 business rules)
+export {
+  checkRules,
+  hasBlockingViolations,
+  getBusinessRules,
+  checkRuleById,
+} from './rules-engine';
+
+// Evidence & Provenance Tracking
+export {
+  trackEvidence,
+  getProvenance,
+  autoPopulateProvenance,
+  updatePostCampaignEvidence,
+} from './evidence-tracker';
