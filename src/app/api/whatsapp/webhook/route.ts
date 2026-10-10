@@ -328,6 +328,17 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
 
       const config = configRows[0]
 
+      // ── Disconnected account guard ──────────────────────────────
+      // If the account has been disconnected, acknowledge the webhook
+      // but skip all message processing. This prevents stale webhooks
+      // from creating contacts or triggering automations after disconnect.
+      if (!config.status || config.status === 'disconnected') {
+        console.warn(
+          `[webhook] Ignoring message for disconnected account. phone_number_id=${phoneNumberId}, account_id=${config.account_id}`
+        )
+        continue
+      }
+
       const decryptedAccessToken = decrypt(config.access_token)
 
       for (let i = 0; i < value.messages.length; i++) {
