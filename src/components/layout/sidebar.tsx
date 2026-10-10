@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Smartphone, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -59,6 +58,7 @@ import {
   Compass,
   MonitorCheck,
   BarChart3,
+  Smartphone,
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
