@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/currency";
@@ -25,6 +25,7 @@ import {
 import {
   BookOpen, AlertTriangle, DollarSign, TrendingUp,
   Plus, CreditCard, Loader2, Search, Filter, Trash2, Send,
+  Download, ShieldAlert, ShieldCheck, ShieldQuestion, Shield,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContactPicker } from "@/components/ui/contact-picker";
@@ -44,6 +45,8 @@ interface ContactOption {
   phone?: string;
 }
 
+type RiskLevel = "low" | "medium" | "high" | "critical";
+
 const STATUS_CONFIG: Record<DebtStatus, { label: string; color: string }> = {
   outstanding: { label: "Outstanding", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
   partial: { label: "Partial", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
@@ -51,6 +54,13 @@ const STATUS_CONFIG: Record<DebtStatus, { label: string; color: string }> = {
   overdue: { label: "Overdue", color: "bg-red-500/20 text-red-400 border-red-500/30" },
   written_off: { label: "Written Off", color: "bg-muted/50 text-muted-foreground border-border" },
   disputed: { label: "Disputed", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
+};
+
+const RISK_CONFIG: Record<RiskLevel, { label: string; color: string; bgColor: string; icon: typeof ShieldCheck; range: string }> = {
+  low: { label: "Low", color: "text-green-400", bgColor: "bg-green-500/20 text-green-400 border-green-500/30", icon: ShieldCheck, range: "0-30 days" },
+  medium: { label: "Medium", color: "text-yellow-400", bgColor: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", icon: ShieldQuestion, range: "31-60 days" },
+  high: { label: "High", color: "text-orange-400", bgColor: "bg-orange-500/20 text-orange-400 border-orange-500/30", icon: Shield, range: "61-90 days" },
+  critical: { label: "Critical", color: "text-red-400", bgColor: "bg-red-500/20 text-red-400 border-red-500/30", icon: ShieldAlert, range: "90+ days" },
 };
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
@@ -65,6 +75,42 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+function getAgeDays(entry: DebtEntry): number {
+  const created = entry.created_at ? new Date(entry.created_at).getTime() : Date.now();
+  return Math.floor((Date.now() - created) / 86400000);
+}
+
+function getRiskLevel(entry: DebtEntry): RiskLevel {
+  // Paid and written-off entries are always low risk
+  if (entry.status === "paid" || entry.status === "written_off") return "low";
+  const days = getAgeDays(entry);
+  if (days <= 30) return "low";
+  if (days <= 60) return "medium";
+  if (days <= 90) return "high";
+  return "critical";
+}
+
+function exportToCSV(data: Record<string, unknown>[], filename: string) {
+  if (!data || data.length === 0) {
+    toast.error("No data to export");
+    return;
+  }
+  const headers = Object.keys(data[0] || {});
+  const csv = [
+    headers.join(","),
+    ...data.map((row) =>
+      headers.map((h) => JSON.stringify(row[h] ?? "")).join(",")
+    ),
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function DebtBookPage() {
   const { defaultCurrency } = useAuth();
   const currency = defaultCurrency || "NGN";
@@ -78,6 +124,7 @@ export default function DebtBookPage() {
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [riskFilter, setRiskFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Bulk selection
@@ -157,6 +204,25 @@ export default function DebtBookPage() {
     fetchEntries();
   }, [fetchEntries]);
 
+  // Risk-filtered entries
+  const filteredEntries = useMemo(() => {
+    if (riskFilter === "all") return entries;
+    return entries.filter((e) => getRiskLevel(e) === riskFilter);
+  }, [entries, riskFilter]);
+
+  // Risk distribution
+  const riskDistribution = useMemo(() => {
+    const dist = { low: 0, medium: 0, high: 0, critical: 0 };
+    const amounts = { low: 0, medium: 0, high: 0, critical: 0 };
+    (entries || []).forEach((e) => {
+      if (e.status === "paid" || e.status === "written_off") return;
+      const risk = getRiskLevel(e);
+      dist[risk]++;
+      amounts[risk] += e.original_amount - e.amount_paid;
+    });
+    return { counts: dist, amounts };
+  }, [entries]);
+
   const handleCreateDebt = async () => {
     if (!createForm.contact_id || !createForm.description || !createForm.original_amount) {
       toast.error("Contact, description, and amount are required");
@@ -222,7 +288,7 @@ export default function DebtBookPage() {
   };
 
   // Clear selection on filter change
-  useEffect(() => { setSelected(new Set()); }, [statusFilter, searchQuery]);
+  useEffect(() => { setSelected(new Set()); }, [statusFilter, searchQuery, riskFilter]);
 
   // Bulk selection helpers
   const toggleSelect = (id: string) => {
@@ -233,10 +299,10 @@ export default function DebtBookPage() {
     });
   };
   const toggleSelectAll = () => {
-    if (selected.size === entries.length) {
+    if (selected.size === filteredEntries.length) {
       setSelected(new Set());
     } else {
-      setSelected(new Set(entries.map((e) => e.id)));
+      setSelected(new Set(filteredEntries.map((e) => e.id)));
     }
   };
 
@@ -278,6 +344,25 @@ export default function DebtBookPage() {
     } catch { toast.error("Failed to delete some entries"); }
   };
 
+  const handleExportCSV = () => {
+    const data = (filteredEntries || []).map((e) => {
+      const contact = e.contact as Record<string, string> | undefined;
+      return {
+        customer: contact?.name || "Unknown",
+        description: e.description || "",
+        original_amount: e.original_amount,
+        amount_paid: e.amount_paid,
+        outstanding: e.original_amount - e.amount_paid,
+        due_date: e.due_date || "",
+        status: e.status,
+        risk_level: getRiskLevel(e),
+        age_days: getAgeDays(e),
+        created_at: e.created_at || "",
+      };
+    });
+    exportToCSV(data as unknown as Record<string, unknown>[], "debt_book");
+  };
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onNew: () => setShowCreateModal(true),
@@ -302,9 +387,14 @@ export default function DebtBookPage() {
           <h1 className="text-2xl font-bold text-foreground">Debt Book</h1>
           <p className="text-muted-foreground text-sm">Track credit sales and collect payments</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
-          <Plus className="h-4 w-4 mr-2" /> Record Sale on Credit
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExportCSV} className="border-border text-muted-foreground hover:bg-muted">
+            <Download className="h-4 w-4 mr-2" /> Export CSV
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
+            <Plus className="h-4 w-4 mr-2" /> Record Sale on Credit
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -357,6 +447,44 @@ export default function DebtBookPage() {
         </Card>
       </div>
 
+      {/* Risk Distribution Summary */}
+      {(riskDistribution.counts.medium > 0 || riskDistribution.counts.high > 0 || riskDistribution.counts.critical > 0) && (
+        <Card className="bg-card/50 border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-[#C9A84C]" /> Risk Distribution
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(["low", "medium", "high", "critical"] as RiskLevel[]).map((level) => {
+                const cfg = RISK_CONFIG[level];
+                const Icon = cfg.icon;
+                return (
+                  <div
+                    key={level}
+                    className={`rounded-lg p-3 border cursor-pointer transition-colors ${
+                      riskFilter === level ? "ring-2 ring-[#C9A84C]" : ""
+                    } ${level === "low" ? "bg-green-500/5 border-green-500/20" : level === "medium" ? "bg-yellow-500/5 border-yellow-500/20" : level === "high" ? "bg-orange-500/5 border-orange-500/20" : "bg-red-500/5 border-red-500/20"}`}
+                    onClick={() => setRiskFilter(riskFilter === level ? "all" : level)}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon className={`h-4 w-4 ${cfg.color}`} />
+                      <span className={`text-sm font-medium ${cfg.color}`}>{cfg.label}</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{riskDistribution.counts[level]}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(riskDistribution.amounts[level], currency)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{cfg.range}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -380,6 +508,18 @@ export default function DebtBookPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={riskFilter} onValueChange={setRiskFilter}>
+          <SelectTrigger className="w-[180px] bg-card/50 border-border text-foreground">
+            <ShieldAlert className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Filter risk" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Risk Levels</SelectItem>
+            {(["low", "medium", "high", "critical"] as RiskLevel[]).map((level) => (
+              <SelectItem key={level} value={level}>{RISK_CONFIG[level].label} ({RISK_CONFIG[level].range})</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Debt Entries Table */}
@@ -387,7 +527,7 @@ export default function DebtBookPage() {
         <CardHeader>
           <CardTitle className="text-foreground">Debt Entries</CardTitle>
           <CardDescription className="text-muted-foreground">
-            {total} total entries
+            {filteredEntries.length} of {total} entries{riskFilter !== "all" ? ` (${RISK_CONFIG[riskFilter as RiskLevel]?.label} risk)` : ""}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -413,7 +553,7 @@ export default function DebtBookPage() {
               <TableRow className="border-border">
                 <TableHead className="w-10">
                   <Checkbox
-                    checked={entries.length > 0 && selected.size === entries.length}
+                    checked={filteredEntries.length > 0 && selected.size === filteredEntries.length}
                     onCheckedChange={toggleSelectAll}
                   />
                 </TableHead>
@@ -423,21 +563,28 @@ export default function DebtBookPage() {
                 <TableHead className="text-muted-foreground text-right">Paid</TableHead>
                 <TableHead className="text-muted-foreground text-right">Outstanding</TableHead>
                 <TableHead className="text-muted-foreground">Due Date</TableHead>
+                <TableHead className="text-muted-foreground">Risk</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
                 <TableHead className="text-muted-foreground">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.length === 0 ? (
+              {filteredEntries.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                    No debt entries found. Record a credit sale to get started.
+                  <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                    {entries.length === 0
+                      ? "No debt entries found. Record a credit sale to get started."
+                      : "No entries match the selected risk filter."}
                   </TableCell>
                 </TableRow>
               ) : (
-                entries.map((entry) => {
+                filteredEntries.map((entry) => {
                   const contact = entry.contact as Record<string, string> | undefined;
                   const statusCfg = STATUS_CONFIG[entry.status] || STATUS_CONFIG.outstanding;
+                  const risk = getRiskLevel(entry);
+                  const riskCfg = RISK_CONFIG[risk];
+                  const ageDays = getAgeDays(entry);
+                  const RiskIcon = riskCfg.icon;
                   return (
                     <TableRow key={entry.id} className="border-border">
                       <TableCell>
@@ -467,6 +614,15 @@ export default function DebtBookPage() {
                               day: "numeric", month: "short", year: "numeric",
                             })
                           : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <RiskIcon className={`h-3.5 w-3.5 ${riskCfg.color}`} />
+                          <Badge variant="outline" className={riskCfg.bgColor}>
+                            {riskCfg.label}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{ageDays}d</span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={statusCfg.color}>

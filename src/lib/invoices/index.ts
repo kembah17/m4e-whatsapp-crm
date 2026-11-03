@@ -563,3 +563,84 @@ export async function getContactInvoices(accountId: string, contactId: string) {
   if (error) throw new Error(error.message)
   return (data ?? []) as Invoice[]
 }
+
+
+/* ------------------------------------------------------------------ */
+/*  Payment Recording                                                  */
+/* ------------------------------------------------------------------ */
+
+export async function recordInvoicePayment(
+  accountId: string,
+  invoiceId: string,
+  payment: {
+    amount: number
+    payment_method: string
+    payment_date: string
+    reference?: string
+    notes?: string
+    recorded_by?: string
+  },
+) {
+  const db = supabaseAdmin()
+
+  // Get current invoice
+  const { data: invoice, error: fetchErr } = await db
+    .from('invoices')
+    .select('total, amount_paid, status')
+    .eq('id', invoiceId)
+    .eq('account_id', accountId)
+    .single()
+  if (fetchErr || !invoice) throw new Error('Invoice not found')
+
+  const currentPaid = Number(invoice.amount_paid) || 0
+  const invoiceTotal = Number(invoice.total) || 0
+  const newAmountPaid = currentPaid + payment.amount
+  const balanceDue = invoiceTotal - newAmountPaid
+  const newStatus: InvoiceStatus = balanceDue <= 0 ? 'paid' : 'partial'
+
+  // Update invoice
+  const { data, error } = await db
+    .from('invoices')
+    .update({
+      amount_paid: newAmountPaid,
+      balance_due: Math.max(0, balanceDue),
+      status: newStatus,
+      paid_at: balanceDue <= 0 ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', invoiceId)
+    .eq('account_id', accountId)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+
+  // Also record as offline payment for channel tracking
+  await db.from('offline_payments').insert({
+    account_id: accountId,
+    invoice_id: invoiceId,
+    amount: payment.amount,
+    payment_method: payment.payment_method,
+    payment_date: payment.payment_date,
+    reference_number: payment.reference || null,
+    notes: payment.notes || null,
+    status: 'verified',
+    recorded_by: payment.recorded_by || null,
+  })
+
+  return data as Invoice
+}
+
+export async function getInvoicePayments(
+  accountId: string,
+  invoiceId: string,
+) {
+  const db = supabaseAdmin()
+  const { data, error } = await db
+    .from('offline_payments')
+    .select('*')
+    .eq('account_id', accountId)
+    .eq('invoice_id', invoiceId)
+    .order('payment_date', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}

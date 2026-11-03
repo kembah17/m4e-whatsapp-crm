@@ -30,11 +30,13 @@ import {
 import {
   FileText, AlertTriangle, DollarSign, Clock,
   Plus, Send, ArrowRightLeft, Loader2, Search, Trash2,
+  Download, Eye, CreditCard, Printer,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContactPicker } from "@/components/ui/contact-picker";
 import { ItemPicker } from "@/components/ui/item-picker";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import InvoicePreview from "@/components/invoice-preview";
 
 interface ContactOption {
   id: string;
@@ -64,6 +66,17 @@ interface InvoiceSummary {
   pending_count: number;
 }
 
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  payment_method: string;
+  payment_date: string;
+  reference_number: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+}
+
 const INVOICE_PRESETS = [
   { label: "Blank Invoice", items: [] as LineItem[] },
   { label: "Service Invoice", items: [{ description: "Professional Services", quantity: 1, unit_price: 0, total: 0 } as LineItem] },
@@ -91,6 +104,38 @@ const DOC_TYPE_LABELS: Record<DocType, string> = {
   credit_note: "Credit Note",
 };
 
+const PAYMENT_METHODS = [
+  { value: "cash", label: "Cash" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "card", label: "Card" },
+  { value: "mobile_money", label: "Mobile Money" },
+  { value: "ussd", label: "USSD" },
+  { value: "pos", label: "POS" },
+  { value: "cheque", label: "Cheque" },
+  { value: "other", label: "Other" },
+];
+
+function exportToCSV(data: Record<string, unknown>[], filename: string) {
+  if (!data || data.length === 0) {
+    toast.error("No data to export");
+    return;
+  }
+  const headers = Object.keys(data[0] || {});
+  const csv = [
+    headers.join(","),
+    ...data.map((row) =>
+      headers.map((h) => JSON.stringify(row[h] ?? "")).join(",")
+    ),
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function InvoicesPage() {
   const { defaultCurrency } = useAuth();
   const currency = defaultCurrency || "NGN";
@@ -112,6 +157,24 @@ export default function InvoicesPage() {
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+
+  // Selected invoice for payment/preview
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [previewInvoice, setPreviewInvoice] = useState<(Invoice & { items?: InvoiceItem[] }) | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+
+  // Payment form
+  const [paymentForm, setPaymentForm] = useState({
+    amount: "",
+    payment_method: "bank_transfer",
+    payment_date: new Date().toISOString().split("T")[0],
+    reference: "",
+    notes: "",
+  });
 
   // Create form
   const [createForm, setCreateForm] = useState({
@@ -352,7 +415,6 @@ export default function InvoicesPage() {
     } catch { toast.error("Failed to update some documents"); }
   };
 
-  // Apply invoice preset (Task 9)
   const applyPreset = (presetIndex: number) => {
     const preset = INVOICE_PRESETS[presetIndex];
     if (!preset) return;
@@ -363,7 +425,6 @@ export default function InvoicesPage() {
     }
   };
 
-  // Keyboard shortcuts (Task 11)
   useKeyboardShortcuts({
     onNew: () => setShowCreateModal(true),
     onEscape: () => setShowCreateModal(false),
@@ -400,6 +461,91 @@ export default function InvoicesPage() {
     }
   };
 
+  // ---- Feature 1: Payment Recording ----
+  const openPaymentModal = (inv: Invoice) => {
+    setSelectedInvoice(inv);
+    const balance = (Number(inv.total) || 0) - (Number(inv.amount_paid) || 0);
+    setPaymentForm({
+      amount: String(Math.max(0, balance).toFixed(2)),
+      payment_method: "bank_transfer",
+      payment_date: new Date().toISOString().split("T")[0],
+      reference: "",
+      notes: "",
+    });
+    setShowPaymentModal(true);
+  };
+
+  const handleRecordPayment = async () => {
+    if (!selectedInvoice) return;
+    const amount = parseFloat(paymentForm.amount);
+    if (!amount || amount <= 0) {
+      toast.error("Enter a valid payment amount");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/invoices/${selectedInvoice.id}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          payment_method: paymentForm.payment_method,
+          payment_date: paymentForm.payment_date,
+          reference: paymentForm.reference || undefined,
+          notes: paymentForm.notes || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Failed to record payment");
+      }
+      toast.success("Payment recorded successfully");
+      setShowPaymentModal(false);
+      setSelectedInvoice(null);
+      fetchInvoices();
+      fetchSummary();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to record payment");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openPaymentHistory = async (inv: Invoice) => {
+    setSelectedInvoice(inv);
+    setLoadingPayments(true);
+    setShowPaymentHistory(true);
+    try {
+      const res = await fetch(`/api/invoices/${inv.id}/payment`);
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentHistory(data.payments || []);
+      } else {
+        setPaymentHistory([]);
+      }
+    } catch {
+      setPaymentHistory([]);
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  // ---- Feature 2: Invoice Preview ----
+  const openPreview = async (inv: Invoice) => {
+    try {
+      const res = await fetch(`/api/invoices/${inv.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPreviewInvoice(data.invoice || data || inv);
+      } else {
+        setPreviewInvoice(inv);
+      }
+    } catch {
+      setPreviewInvoice(inv);
+    }
+    setShowPreviewModal(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -415,9 +561,37 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold text-foreground">Invoices & Quotations</h1>
           <p className="text-muted-foreground text-sm">Create and manage invoices, quotations, and receipts</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
-          <Plus className="h-4 w-4 mr-2" /> Create Document
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() =>
+              exportToCSV(
+                (invoices || []).map((inv) => {
+                  const contact = inv.contact as Record<string, string> | undefined;
+                  return {
+                    doc_number: inv.doc_number,
+                    type: DOC_TYPE_LABELS[inv.doc_type] || inv.doc_type,
+                    customer: contact?.name || "Unknown",
+                    total: inv.total,
+                    amount_paid: inv.amount_paid,
+                    balance: inv.total - inv.amount_paid,
+                    status: inv.status,
+                    issue_date: inv.issue_date,
+                    due_date: inv.due_date || "",
+                  };
+                }),
+                "invoices"
+              )
+            }
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
+            <Plus className="h-4 w-4 mr-2" /> Create Document
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -539,7 +713,8 @@ export default function InvoicesPage() {
                     invoices.map((inv) => {
                       const contact = inv.contact as Record<string, string> | undefined;
                       const statusCfg = STATUS_CONFIG[inv.status] || STATUS_CONFIG.draft;
-                      const balance = inv.total - inv.amount_paid;
+                      const balance = (Number(inv.total) || 0) - (Number(inv.amount_paid) || 0);
+                      const canRecordPayment = !["paid", "cancelled", "draft", "rejected", "expired"].includes(inv.status);
                       return (
                         <TableRow key={inv.id} className="border-border">
                           <TableCell>
@@ -577,6 +752,41 @@ export default function InvoicesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
+                              {/* Preview */}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-border text-muted-foreground hover:text-foreground"
+                                onClick={() => openPreview(inv)}
+                                title="Preview"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              {/* Record Payment */}
+                              {canRecordPayment && balance > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-[#C9A84C]/50 text-[#C9A84C] hover:bg-[#C9A84C]/20"
+                                  onClick={() => openPaymentModal(inv)}
+                                  title="Record Payment"
+                                >
+                                  <CreditCard className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {/* Payment History */}
+                              {(Number(inv.amount_paid) || 0) > 0 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-emerald-600/50 text-emerald-400 hover:bg-emerald-600/20"
+                                  onClick={() => openPaymentHistory(inv)}
+                                  title="Payment History"
+                                >
+                                  <DollarSign className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {/* Convert quotation */}
                               {inv.doc_type === "quotation" && inv.status !== "cancelled" && (
                                 <Button
                                   size="sm"
@@ -588,6 +798,7 @@ export default function InvoicesPage() {
                                   <ArrowRightLeft className="h-3 w-3" />
                                 </Button>
                               )}
+                              {/* Send WhatsApp */}
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -610,7 +821,156 @@ export default function InvoicesPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Create Invoice Modal */}
+      {/* ---- Payment Recording Modal (Feature 1) ---- */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+          {selectedInvoice && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Invoice</span>
+                  <span className="text-foreground font-mono">{selectedInvoice.doc_number}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="text-foreground">{formatCurrency(selectedInvoice.total, currency)}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-muted-foreground">Already Paid</span>
+                  <span className="text-emerald-400">{formatCurrency(selectedInvoice.amount_paid || 0, currency)}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1 pt-1 border-t border-border">
+                  <span className="text-muted-foreground font-medium">Balance Due</span>
+                  <span className="text-[#C9A84C] font-bold">
+                    {formatCurrency(Math.max(0, (Number(selectedInvoice.total) || 0) - (Number(selectedInvoice.amount_paid) || 0)), currency)}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <Label>Payment Amount ({currency})</Label>
+                <Input
+                  type="number"
+                  value={paymentForm.amount}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+                  placeholder="0.00"
+                  className="bg-muted border-border"
+                />
+              </div>
+              <div>
+                <Label>Payment Method</Label>
+                <Select
+                  value={paymentForm.payment_method}
+                  onValueChange={(v) => setPaymentForm((p) => ({ ...p, payment_method: v }))}
+                >
+                  <SelectTrigger className="bg-muted border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHODS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Payment Date</Label>
+                <Input
+                  type="date"
+                  value={paymentForm.payment_date}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, payment_date: e.target.value }))}
+                  className="bg-muted border-border"
+                />
+              </div>
+              <div>
+                <Label>Reference / Transaction ID</Label>
+                <Input
+                  value={paymentForm.reference}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, reference: e.target.value }))}
+                  placeholder="Optional reference number"
+                  className="bg-muted border-border"
+                />
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Input
+                  value={paymentForm.notes}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, notes: e.target.value }))}
+                  placeholder="Optional notes"
+                  className="bg-muted border-border"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="border-border">
+              Cancel
+            </Button>
+            <Button onClick={handleRecordPayment} disabled={saving} className="bg-[#C9A84C] hover:bg-[#b8993f] text-black">
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Record Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- Payment History Modal ---- */}
+      <Dialog open={showPaymentHistory} onOpenChange={setShowPaymentHistory}>
+        <DialogContent className="bg-card border-border text-foreground max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Payment History — {selectedInvoice?.doc_number}</DialogTitle>
+          </DialogHeader>
+          {loadingPayments ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
+            </div>
+          ) : (paymentHistory || []).length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No payment records found.</p>
+          ) : (
+            <div className="space-y-3">
+              {(paymentHistory || []).map((p) => (
+                <div key={p.id} className="p-3 rounded-lg border border-border bg-muted/30">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-foreground">{formatCurrency(p.amount, currency)}</span>
+                    <Badge variant="outline" className="text-xs capitalize">{(p.payment_method || "").replace(/_/g, " ")}</Badge>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>{new Date(p.payment_date).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    {p.reference_number && <span>Ref: {p.reference_number}</span>}
+                  </div>
+                  {p.notes && <p className="text-xs text-muted-foreground mt-1 italic">{p.notes}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- Invoice Preview Modal (Feature 2) ---- */}
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent className="bg-white text-black max-w-3xl max-h-[90vh] overflow-y-auto print:max-w-none print:shadow-none">
+          <DialogHeader className="print:hidden">
+            <div className="flex items-center justify-between">
+              <DialogTitle>Invoice Preview</DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => window.print()}
+              >
+                <Printer className="h-3 w-3" /> Print
+              </Button>
+            </div>
+          </DialogHeader>
+          {previewInvoice && (
+            <InvoicePreview invoice={previewInvoice} currency={currency} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- Create Invoice Modal ---- */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="bg-card border-border text-foreground max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>

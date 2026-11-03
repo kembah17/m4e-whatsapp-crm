@@ -144,3 +144,63 @@ export interface MonthlyTrend {
   collections: number
   profit: number
 }
+
+
+// ---------------------------------------------------------------------------
+// New types for 14-feature financial upgrade
+// ---------------------------------------------------------------------------
+
+export interface ManagerMetrics {
+  invoices_sent: number
+  invoices_paid: number
+  collection_rate: number
+  avg_days_to_pay: number
+  overdue_count: number
+  overdue_value: number
+  active_installments: number
+}
+
+export interface HealthScoreFactor {
+  name: string
+  score: number
+  weight: number
+}
+
+export interface HealthScore {
+  score: number
+  grade: 'A' | 'B' | 'C' | 'D' | 'F'
+  factors: HealthScoreFactor[]
+}
+
+export interface CashFlowProjectionDay {
+  date: string
+  projected_inflow: number
+  projected_outflow: number
+  net_position: number
+  cumulative: number
+}
+
+export interface TargetProgress {
+  id: string
+  account_id: string
+  target_type: 'revenue' | 'profit' | 'collections' | 'expenses'
+  period_type: 'monthly' | 'quarterly' | 'annually'
+  period_start: string
+  period_end: string
+  target_amount: number
+  revenue_center_id: string | null
+  branch_id: string | null
+  notes: string | null
+  created_at: string
+  actual: number
+  progress: number
+  status: 'on_track' | 'at_risk' | 'behind'
+}
+
+export interface RevenueByProduct {
+  product_name: string
+  product_id: string
+  revenue: number
+  quantity: number
+  percentage: number
+}

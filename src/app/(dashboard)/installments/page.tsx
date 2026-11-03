@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/currency";
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/table";
 import {
   CalendarClock, AlertTriangle, TrendingUp, ListChecks,
-  Plus, CreditCard, Loader2, Eye, ChevronDown, ChevronUp,
+  Plus, CreditCard, Loader2, Eye, Clock, Bell,
 } from "lucide-react";
 
 interface ContactOption {
@@ -57,6 +57,66 @@ const LATE_FEE_OPTIONS: { value: LateFeeType; label: string }[] = [
   { value: "fixed", label: "Fixed Amount" },
   { value: "percentage", label: "Percentage" },
 ];
+
+function getDueDateInfo(dueDate: string | null | undefined): {
+  daysUntil: number;
+  label: string;
+  color: string;
+  isUpcoming: boolean;
+  isOverdue: boolean;
+} {
+  if (!dueDate) return { daysUntil: Infinity, label: "", color: "", isUpcoming: false, isOverdue: false };
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+  const diffMs = due.getTime() - now.getTime();
+  const daysUntil = Math.ceil(diffMs / 86400000);
+
+  if (daysUntil < 0) {
+    return {
+      daysUntil,
+      label: `${Math.abs(daysUntil)}d overdue`,
+      color: "text-red-400",
+      isUpcoming: false,
+      isOverdue: true,
+    };
+  }
+  if (daysUntil === 0) {
+    return {
+      daysUntil: 0,
+      label: "Due today",
+      color: "text-orange-400",
+      isUpcoming: true,
+      isOverdue: false,
+    };
+  }
+  if (daysUntil <= 3) {
+    return {
+      daysUntil,
+      label: `Due in ${daysUntil}d`,
+      color: "text-orange-400",
+      isUpcoming: true,
+      isOverdue: false,
+    };
+  }
+  if (daysUntil <= 7) {
+    return {
+      daysUntil,
+      label: `Due in ${daysUntil}d`,
+      color: "text-yellow-400",
+      isUpcoming: true,
+      isOverdue: false,
+    };
+  }
+  return {
+    daysUntil,
+    label: "",
+    color: "text-muted-foreground",
+    isUpcoming: false,
+    isOverdue: false,
+  };
+}
 
 export default function InstallmentsPage() {
   const { defaultCurrency } = useAuth();
@@ -231,6 +291,19 @@ export default function InstallmentsPage() {
     return new Date(p.next_due_date) < new Date();
   }).length;
 
+  // Upcoming payments (due within 7 days)
+  const upcomingPlans = useMemo(() => {
+    return (plans || []).filter((p) => {
+      if (p.status !== "active" || !p.next_due_date) return false;
+      const info = getDueDateInfo(p.next_due_date);
+      return info.isUpcoming || info.isOverdue;
+    }).sort((a, b) => {
+      const aDate = a.next_due_date ? new Date(a.next_due_date).getTime() : Infinity;
+      const bDate = b.next_due_date ? new Date(b.next_due_date).getTime() : Infinity;
+      return aDate - bDate;
+    });
+  }, [plans]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -252,7 +325,7 @@ export default function InstallmentsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Plans</CardTitle>
@@ -285,7 +358,81 @@ export default function InstallmentsPage() {
             <p className="text-xs text-muted-foreground">plans with overdue installments</p>
           </CardContent>
         </Card>
+        <Card className="bg-card/50 border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Due Soon</CardTitle>
+            <Bell className="h-4 w-4 text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-400">{upcomingPlans.length}</div>
+            <p className="text-xs text-muted-foreground">payments due within 7 days</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Upcoming Payments Alert */}
+      {upcomingPlans.length > 0 && (
+        <Card className="bg-orange-500/5 border-orange-500/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4 text-orange-400" /> Upcoming & Overdue Payments
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {upcomingPlans.length} plan{upcomingPlans.length !== 1 ? "s" : ""} need attention
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {upcomingPlans.slice(0, 5).map((plan) => {
+                const contact = plan.contact as Record<string, string> | undefined;
+                const dueInfo = getDueDateInfo(plan.next_due_date);
+                return (
+                  <div
+                    key={plan.id}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => fetchPlanDetail(plan.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${dueInfo.isOverdue ? "bg-red-400" : "bg-orange-400"} animate-pulse`} />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {contact?.name || "Unknown"} — {plan.plan_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {plan.next_due_date
+                            ? new Date(plan.next_due_date).toLocaleDateString("en-NG", {
+                                weekday: "short", day: "numeric", month: "short",
+                              })
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-foreground">
+                        {formatCurrency(plan.total_amount - plan.total_paid, currency)}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={dueInfo.isOverdue
+                          ? "bg-red-500/20 text-red-400 border-red-500/30"
+                          : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                        }
+                      >
+                        {dueInfo.label}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+              {upcomingPlans.length > 5 && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  +{upcomingPlans.length - 5} more
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filter */}
       <div className="flex gap-3">
@@ -333,8 +480,14 @@ export default function InstallmentsPage() {
                   const contact = plan.contact as Record<string, string> | undefined;
                   const statusCfg = PLAN_STATUS_CONFIG[plan.status] || PLAN_STATUS_CONFIG.active;
                   const progress = getProgressPercent(plan);
+                  const dueInfo = plan.status === "active" ? getDueDateInfo(plan.next_due_date) : null;
                   return (
-                    <TableRow key={plan.id} className="border-border">
+                    <TableRow
+                      key={plan.id}
+                      className={`border-border ${
+                        dueInfo?.isOverdue ? "bg-red-500/5" : dueInfo?.isUpcoming ? "bg-orange-500/5" : ""
+                      }`}
+                    >
                       <TableCell className="text-foreground font-medium">
                         {contact?.name || "Unknown"}
                       </TableCell>
@@ -351,12 +504,28 @@ export default function InstallmentsPage() {
                           {plan.installments_paid}/{plan.number_of_installments} paid
                         </p>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {plan.next_due_date
-                          ? new Date(plan.next_due_date).toLocaleDateString("en-NG", {
-                              day: "numeric", month: "short",
-                            })
-                          : "—"}
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <span className={dueInfo?.color || "text-muted-foreground"}>
+                            {plan.next_due_date
+                              ? new Date(plan.next_due_date).toLocaleDateString("en-NG", {
+                                  day: "numeric", month: "short",
+                                })
+                              : "—"}
+                          </span>
+                          {dueInfo?.label && (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] px-1.5 py-0 ${
+                                dueInfo.isOverdue
+                                  ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                  : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                              }`}
+                            >
+                              {dueInfo.isOverdue ? "Overdue" : "Due Soon"}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={statusCfg.color}>
@@ -592,19 +761,42 @@ export default function InstallmentsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {schedule.map((entry) => {
+                    {(schedule || []).map((entry) => {
                       const isPending = entry.status === "pending" || entry.status === "partial" || entry.status === "overdue";
+                      const entryDueInfo = getDueDateInfo(entry.due_date);
                       const statusColor =
                         entry.status === "paid" ? "text-green-400" :
                         entry.status === "overdue" ? "text-red-400" :
                         entry.status === "partial" ? "text-blue-400" : "text-muted-foreground";
                       return (
-                        <TableRow key={entry.id} className="border-border">
+                        <TableRow
+                          key={entry.id}
+                          className={`border-border ${
+                            entryDueInfo.isOverdue && isPending ? "bg-red-500/5" :
+                            entryDueInfo.isUpcoming && isPending ? "bg-orange-500/5" : ""
+                          }`}
+                        >
                           <TableCell className="text-muted-foreground">{entry.installment_number}</TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {new Date(entry.due_date).toLocaleDateString("en-NG", {
-                              day: "numeric", month: "short", year: "numeric",
-                            })}
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <span className={isPending ? (entryDueInfo.color || "text-muted-foreground") : "text-muted-foreground"}>
+                                {new Date(entry.due_date).toLocaleDateString("en-NG", {
+                                  day: "numeric", month: "short", year: "numeric",
+                                })}
+                              </span>
+                              {isPending && entryDueInfo.label && (
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] px-1.5 py-0 ${
+                                    entryDueInfo.isOverdue
+                                      ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                      : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                  }`}
+                                >
+                                  {entryDueInfo.label}
+                                </Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="text-foreground text-right">
                             {formatCurrency(entry.amount_due, currency)}
@@ -659,7 +851,7 @@ export default function InstallmentsPage() {
             <div className="space-y-4">
               <div className="bg-muted rounded-lg p-3">
                 <p className="text-sm text-muted-foreground">
-                  Installment #{selectedScheduleEntry.installment_number} - Due{" "}
+                  Installment #{selectedScheduleEntry.installment_number} — Due{" "}
                   {new Date(selectedScheduleEntry.due_date).toLocaleDateString("en-NG")}
                 </p>
                 <p className="text-xl font-bold text-yellow-400">
