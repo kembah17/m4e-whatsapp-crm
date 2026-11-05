@@ -23,6 +23,7 @@ import {
   Brain,
   Headphones,
   User,
+  UserPlus,
   Users,
   MessageSquare,
   X,
@@ -50,6 +51,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/accounts", label: "Accounts", icon: Building2 },
+  { href: "/admin/clients", label: "Clients", icon: UserPlus },
   { href: "/admin/contacts", label: "Contacts", icon: Users },
   { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
