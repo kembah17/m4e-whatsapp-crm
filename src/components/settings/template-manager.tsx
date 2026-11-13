@@ -12,6 +12,7 @@ import {
   Pencil,
   RotateCcw,
   Upload,
+  Sparkles,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -148,6 +149,7 @@ export function TemplateManager() {
   // chat-media bucket and stores the public URL in header_media_url; the
   // submit route turns that into a Meta Resumable-Upload handle.
   const [uploadingHeader, setUploadingHeader] = useState(false);
+  const [loadingPresets, setLoadingPresets] = useState(false);
   const headerFileRef = useRef<HTMLInputElement>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
@@ -475,6 +477,31 @@ export function TemplateManager() {
     }));
   }
 
+
+  async function handleLoadPresets() {
+    setLoadingPresets(true);
+    try {
+      const res = await fetch('/api/whatsapp/templates/load-presets', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load presets');
+
+      const msg = data.submitted > 0
+        ? `${data.submitted} starter template${data.submitted === 1 ? '' : 's'} submitted to Meta for approval`
+        : 'All starter templates already exist';
+      toast.success(msg);
+
+      if (data.errors?.length) {
+        toast.error(`${data.errors.length} template${data.errors.length === 1 ? '' : 's'} failed`);
+      }
+
+      if (user) await fetchTemplates(user.id);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load presets');
+    } finally {
+      setLoadingPresets(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -518,6 +545,19 @@ export function TemplateManager() {
         }
         action={
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleLoadPresets}
+              disabled={loadingPresets}
+              title="Load pre-built starter templates for common business messages"
+            >
+              {loadingPresets ? (
+                <Loader2 className={`size-4 animate-spin`} />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
+              {loadingPresets ? 'Loading…' : 'Starter Templates'}
+            </Button>
             <Button
               variant="outline"
               onClick={handleSyncFromMeta}

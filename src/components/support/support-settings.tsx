@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,24 +22,243 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, Tag, Clock } from 'lucide-react'
+import {
+  Plus, Pencil, Trash2, Tag, Clock, Sparkles, Loader2,
+  Store, UtensilsCrossed, Heart, Home, Briefcase,
+  GraduationCap, Truck, Building2, ChevronDown, ChevronUp,
+} from 'lucide-react'
+import { SUPPORT_INDUSTRY_PRESETS } from '@/lib/support/presets'
 import type { TicketCategory, SLAPolicy, TicketPriority } from '@/types/business-growth'
+
+// ─── Industry icon map ─────────────────────────────────────────────
+
+const INDUSTRY_ICONS: Record<string, React.ElementType> = {
+  retail: Store,
+  restaurant: UtensilsCrossed,
+  healthcare: Heart,
+  real_estate: Home,
+  professional_services: Briefcase,
+  education: GraduationCap,
+  logistics: Truck,
+  hospitality: Building2,
+}
+
+// ─── Quick Setup (Industry Presets) ────────────────────────────────
+
+function QuickSetup({ onPresetsLoaded }: { onPresetsLoaded: () => void }) {
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('')
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(false)
+  const [expanded, setExpanded] = useState(true)
+
+  // When industry changes, select all categories by default
+  function handleSelectIndustry(industry: string) {
+    if (selectedIndustry === industry) {
+      setSelectedIndustry('')
+      setSelectedCategories(new Set())
+      return
+    }
+    setSelectedIndustry(industry)
+    const preset = SUPPORT_INDUSTRY_PRESETS.find(p => p.industry === industry)
+    if (preset) {
+      setSelectedCategories(new Set(preset.categories.map(c => c.name)))
+    }
+  }
+
+  function toggleCategory(name: string) {
+    setSelectedCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) {
+        next.delete(name)
+      } else {
+        next.add(name)
+      }
+      return next
+    })
+  }
+
+  function toggleAll() {
+    const preset = SUPPORT_INDUSTRY_PRESETS.find(p => p.industry === selectedIndustry)
+    if (!preset) return
+    if (selectedCategories.size === preset.categories.length) {
+      setSelectedCategories(new Set())
+    } else {
+      setSelectedCategories(new Set(preset.categories.map(c => c.name)))
+    }
+  }
+
+  async function handleLoadPresets() {
+    if (!selectedIndustry || selectedCategories.size === 0) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/support/load-presets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          industry: selectedIndustry,
+          selectedCategories: Array.from(selectedCategories),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to load presets')
+      toast.success(
+        `Created ${data.categories_created} categories` +
+        (data.sla_policies_created ? ` and ${data.sla_policies_created} SLA policies` : '') +
+        (data.categories_skipped ? ` (${data.categories_skipped} already existed)` : '')
+      )
+      setSelectedIndustry('')
+      setSelectedCategories(new Set())
+      onPresetsLoaded()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load presets')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const activePreset = SUPPORT_INDUSTRY_PRESETS.find(p => p.industry === selectedIndustry)
+
+  return (
+    <Card>
+      <CardHeader className="cursor-pointer" onClick={() => setExpanded(e => !e)}>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-[#C9A84C]" /> Quick Setup
+            </CardTitle>
+            <CardDescription>
+              Load industry-specific categories and SLA policies for your business type
+            </CardDescription>
+          </div>
+          {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+        </div>
+      </CardHeader>
+      {expanded && (
+        <CardContent className="space-y-4">
+          {/* Industry grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {SUPPORT_INDUSTRY_PRESETS.map((preset) => {
+              const Icon = INDUSTRY_ICONS[preset.industry] || Briefcase
+              const isSelected = selectedIndustry === preset.industry
+              return (
+                <button
+                  key={preset.industry}
+                  onClick={() => handleSelectIndustry(preset.industry)}
+                  className={`p-3 rounded-lg border text-left transition-all ${
+                    isSelected
+                      ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                      : 'border-border bg-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 mb-1 ${
+                    isSelected ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
+                  <div className="text-sm font-medium">{preset.label}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {preset.categories.length} categories
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Category customization panel */}
+          {activePreset && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium">{activePreset.label}</span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    &mdash; {activePreset.description}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleAll}
+                  className="text-xs"
+                >
+                  {selectedCategories.size === activePreset.categories.length ? 'Deselect All' : 'Select All'}
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Category checkboxes */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {activePreset.categories.map((cat) => (
+                  <label
+                    key={cat.name}
+                    className={`flex items-center gap-3 rounded-md border p-2.5 cursor-pointer transition-all ${
+                      selectedCategories.has(cat.name)
+                        ? 'border-primary/40 bg-primary/5'
+                        : 'border-border bg-background opacity-60'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedCategories.has(cat.name)}
+                      onCheckedChange={() => toggleCategory(cat.name)}
+                    />
+                    <div
+                      className="h-3 w-3 rounded-full shrink-0"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{cat.name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {cat.description}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {/* SLA info */}
+              {activePreset.slaAdjustments && (
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
+                  <strong>SLA adjustment:</strong>{' '}
+                  Response times &times;{activePreset.slaAdjustments.responseMultiplier},{' '}
+                  Resolution times &times;{activePreset.slaAdjustments.resolutionMultiplier}
+                  {activePreset.slaAdjustments.responseMultiplier < 1 && ' (faster)'}
+                  {activePreset.slaAdjustments.responseMultiplier > 1 && ' (more relaxed)'}
+                  {' \u2014 applied only if no SLA policies exist yet.'}
+                </div>
+              )}
+
+              {/* Load button */}
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={handleLoadPresets}
+                  disabled={loading || selectedCategories.size === 0}
+                >
+                  {loading
+                    ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    : <Sparkles className="h-4 w-4 mr-1" />
+                  }
+                  Load {selectedCategories.size} {selectedCategories.size === 1 ? 'Category' : 'Categories'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      )}
+    </Card>
+  )
+}
 
 // ─── Category Management ───────────────────────────────────────────
 
-function CategoryManager() {
+function CategoryManager({ refreshSignal }: { refreshSignal: number }) {
   const [categories, setCategories] = useState<TicketCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<TicketCategory | null>(null)
   const [form, setForm] = useState({ name: '', description: '', icon: 'tag', color: '#6366f1' })
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  async function loadCategories() {
+  const loadCategories = useCallback(async () => {
     try {
       const res = await fetch('/api/support/categories')
       if (res.ok) { const d = await res.json(); setCategories(Array.isArray(d) ? d : (d?.data ?? [])) }
@@ -48,7 +267,11 @@ function CategoryManager() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories, refreshSignal])
 
   function openCreate() {
     setEditing(null)
@@ -121,7 +344,7 @@ function CategoryManager() {
           </div>
         ) : categories.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No categories yet. Default categories will be created when you create your first ticket.
+            No categories yet. Use Quick Setup above or add categories manually.
           </p>
         ) : (
           <div className="space-y-2">
@@ -210,7 +433,7 @@ function CategoryManager() {
 
 // ─── SLA Policy Management ─────────────────────────────────────────
 
-function SLAPolicyManager() {
+function SLAPolicyManager({ refreshSignal }: { refreshSignal: number }) {
   const [policies, setPolicies] = useState<SLAPolicy[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -225,11 +448,7 @@ function SLAPolicyManager() {
     is_default: false,
   })
 
-  useEffect(() => {
-    loadPolicies()
-  }, [])
-
-  async function loadPolicies() {
+  const loadPolicies = useCallback(async () => {
     try {
       const res = await fetch('/api/support/sla')
       if (res.ok) { const d = await res.json(); setPolicies(Array.isArray(d) ? d : (d?.data ?? [])) }
@@ -238,7 +457,11 @@ function SLAPolicyManager() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadPolicies()
+  }, [loadPolicies, refreshSignal])
 
   function openCreate() {
     setEditing(null)
@@ -337,7 +560,7 @@ function SLAPolicyManager() {
           </div>
         ) : policies.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No SLA policies yet. Defaults will be created when you create your first ticket.
+            No SLA policies yet. Use Quick Setup above or add policies manually.
           </p>
         ) : (
           <div className="space-y-2">
@@ -449,10 +672,13 @@ function SLAPolicyManager() {
 // ─── Main Settings Component ───────────────────────────────────────
 
 export function SupportSettings() {
+  const [refreshSignal, setRefreshSignal] = useState(0)
+
   return (
     <div className="space-y-6">
-      <CategoryManager />
-      <SLAPolicyManager />
+      <QuickSetup onPresetsLoaded={() => setRefreshSignal(s => s + 1)} />
+      <CategoryManager refreshSignal={refreshSignal} />
+      <SLAPolicyManager refreshSignal={refreshSignal} />
     </div>
   )
 }

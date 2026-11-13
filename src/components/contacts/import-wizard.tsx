@@ -5,13 +5,12 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -179,6 +178,13 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [updateExisting, setUpdateExisting] = useState(false);
+
+  // Undo & error display state
+  const [showErrors, setShowErrors] = useState(false);
+  const [undoAvailable, setUndoAvailable] = useState(false);
+  const [undoTag, setUndoTag] = useState<string | null>(null);
+  const [undoing, setUndoing] = useState(false);
+  const [undoResult, setUndoResult] = useState<string | null>(null);
 
   // ── Reset ─────────────────────────────────────────────────
 
@@ -676,47 +682,51 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
   // ── Render ────────────────────────────────────────────────
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent side="right" className="sm:max-w-2xl w-full flex flex-col h-full overflow-hidden">
+        <SheetHeader className="flex-shrink-0 px-6 pt-6">
+          <SheetTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-500" />
             Smart Import
-          </DialogTitle>
-          <DialogDescription>
+          </SheetTitle>
+          <SheetDescription>
             Import contacts from photos, spreadsheets, or text — powered by AI.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 py-2">
-          {stepLabels.map((label, i) => (
-            <div key={label} className="flex items-center gap-2">
-              <div
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  step > i + 1
-                    ? 'bg-emerald-500/20 text-emerald-500'
-                    : step === i + 1
-                      ? 'bg-amber-500/20 text-amber-500'
-                      : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {step > i + 1 ? <CheckCircle className="h-3.5 w-3.5" /> : i + 1}
+        {/* Step indicator - fixed in header area */}
+        <div className="flex-shrink-0 px-6 pb-2">
+          <div className="flex items-center gap-2 py-2">
+            {stepLabels.map((label, i) => (
+              <div key={label} className="flex items-center gap-2">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                    step > i + 1
+                      ? 'bg-emerald-500/20 text-emerald-500'
+                      : step === i + 1
+                        ? 'bg-amber-500/20 text-amber-500 ring-2 ring-amber-500/30'
+                        : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {step > i + 1 ? <CheckCircle className="h-4 w-4" /> : i + 1}
+                </div>
+                <span
+                  className={`text-xs ${
+                    step === i + 1 ? 'text-foreground font-semibold' : 'text-muted-foreground'
+                  }`}
+                >
+                  {label}
+                </span>
+                {i < 3 && (
+                  <div className="h-px w-4 bg-border sm:w-8" />
+                )}
               </div>
-              <span
-                className={`hidden text-xs sm:inline ${
-                  step === i + 1 ? 'text-foreground font-medium' : 'text-muted-foreground'
-                }`}
-              >
-                {label}
-              </span>
-              {i < 3 && (
-                <div className="h-px w-4 bg-border sm:w-8" />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
         {/* ── Step 1: Choose Source ─────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
@@ -1388,8 +1398,41 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
           </div>
         )}
 
-        {/* ── Footer ───────────────────────────────────────── */}
-        <DialogFooter>
+        </div>
+
+        {/* Sticky footer - always visible */}
+        <div className="flex-shrink-0 border-t border-border bg-popover px-6 py-4">
+          <div className="flex items-center justify-between gap-2">
+            {step === 1 && (
+              <>
+                <Button variant="outline" onClick={() => handleOpenChange(false)}>
+                  Cancel
+                </Button>
+                <div />
+              </>
+            )}
+            {step === 2 && (
+              <>
+                <Button
+                  variant="outline"
+                  disabled={processing}
+                  onClick={() => {
+                    setStep(1);
+                    setSource(null);
+                    setProcessing(false);
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+                {processing && (
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {processingMessage}
+                  </span>
+                )}
+              </>
+            )}
           {step === 3 && (
             <>
               <Button
@@ -1478,8 +1521,9 @@ export function ImportWizard({ open, onOpenChange, onImported }: ImportWizardPro
               </Button>
             </div>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

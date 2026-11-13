@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings, Trash2, AlertTriangle } from "lucide-react";
+import { GitBranch, Plus, ChevronDown, Settings, Trash2, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,6 +46,11 @@ const SPEC_DEFAULT_STAGES = [
   { name: "Won", color: "#22c55e", position: 4 }, // green
 ];
 
+const STAGE_COLORS = [
+  '#3b82f6', '#06b6d4', '#eab308', '#f97316', '#8b5cf6',
+  '#ec4899', '#22c55e', '#ef4444', '#10b981', '#6366f1',
+];
+
 export default function PipelinesPage() {
   const supabase = createClient();
   const canEditSettings = useCan("edit-settings");
@@ -64,6 +69,11 @@ export default function PipelinesPage() {
   const [selectedPreset, setSelectedPreset] = useState<string>('default_sales');
   const [creating, setCreating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Custom pipeline builder state
+  const [customStages, setCustomStages] = useState<{name: string, color: string}[]>([]);
+  const [newStageName, setNewStageName] = useState("");
+  const [newStageColor, setNewStageColor] = useState('#3b82f6');
 
   // Delete pipeline state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -292,18 +302,31 @@ export default function PipelinesPage() {
       return;
     }
 
-    const preset = PIPELINE_PRESETS.find((p) => p.id === selectedPreset);
-    const presetStages = preset ? preset.stages : PIPELINE_PRESETS[0].stages;
-    const stagesPayload = presetStages.map((s) => ({
-      pipeline_id: pipeline.id,
-      name: s.name,
-      color: s.color,
-      position: s.position,
-    }));
+    let stagesPayload;
+    if (selectedPreset === 'custom') {
+      stagesPayload = customStages.map((s, i) => ({
+        pipeline_id: pipeline.id,
+        name: s.name,
+        color: s.color,
+        position: i,
+      }));
+    } else {
+      const preset = PIPELINE_PRESETS.find((p) => p.id === selectedPreset);
+      const presetStages = preset ? preset.stages : PIPELINE_PRESETS[0].stages;
+      stagesPayload = presetStages.map((s) => ({
+        pipeline_id: pipeline.id,
+        name: s.name,
+        color: s.color,
+        position: s.position,
+      }));
+    }
     await supabase.from("pipeline_stages").insert(stagesPayload);
 
     setNewPipelineName("");
     setSelectedPreset('default_sales');
+    setCustomStages([]);
+    setNewStageName("");
+    setNewStageColor('#3b82f6');
     setNewPipelineOpen(false);
     setSelectedPipelineId(pipeline.id);
     await refreshPipelines();
@@ -488,7 +511,16 @@ export default function PipelinesPage() {
       )}
 
       {/* New Pipeline Dialog */}
-      <Dialog open={newPipelineOpen} onOpenChange={setNewPipelineOpen}>
+      <Dialog open={newPipelineOpen} onOpenChange={(open) => {
+          if (!open) {
+            setCustomStages([]);
+            setNewStageName('');
+            setNewStageColor('#3b82f6');
+            setSelectedPreset('default_sales');
+            setNewPipelineName('');
+          }
+          setNewPipelineOpen(open);
+        }}>
         <DialogContent className="sm:max-w-md bg-popover border-border">
           <DialogHeader>
             <DialogTitle className="text-popover-foreground">New Pipeline</DialogTitle>
@@ -509,12 +541,39 @@ export default function PipelinesPage() {
             <div>
               <Label className="text-muted-foreground mb-2 block">Pipeline Template</Label>
               <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                {/* Custom Pipeline option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPreset('custom');
+                    setCustomStages([]);
+                    if (!newPipelineName.trim()) setNewPipelineName('Custom Pipeline');
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg border transition-colors ${
+                    selectedPreset === 'custom'
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-dashed border-border bg-muted/50 text-muted-foreground hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">Custom Pipeline</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        Define your own stages
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Industry presets */}
                 {PIPELINE_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
                     type="button"
                     onClick={() => {
                       setSelectedPreset(preset.id);
+                      setCustomStages([]);
                       if (!newPipelineName.trim()) setNewPipelineName(preset.name);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg border transition-colors ${
@@ -536,9 +595,97 @@ export default function PipelinesPage() {
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Default stages (New Lead → Won) will be created automatically.
-            </p>
+            {/* Custom stage builder */}
+            {selectedPreset === 'custom' && (
+              <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+                <div className="flex gap-2">
+                  <Input
+                    value={newStageName}
+                    onChange={(e) => setNewStageName(e.target.value)}
+                    placeholder="Stage name"
+                    className="flex-1 bg-muted border-border text-foreground text-sm h-8"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newStageName.trim()) {
+                        if (!customStages.some((s) => s.name.toLowerCase() === newStageName.trim().toLowerCase())) {
+                          setCustomStages((prev) => [...prev, { name: newStageName.trim(), color: newStageColor }]);
+                          setNewStageName('');
+                          setNewStageColor(STAGE_COLORS[(customStages.length + 1) % STAGE_COLORS.length]);
+                        }
+                      }
+                    }}
+                  />
+                  <div className="flex gap-1 items-center">
+                    {STAGE_COLORS.slice(0, 5).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setNewStageColor(c)}
+                        className={`w-5 h-5 rounded-full border-2 transition-all ${
+                          newStageColor === c ? 'border-foreground scale-110' : 'border-transparent'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    type="button"
+                    onClick={() => {
+                      const name = newStageName.trim();
+                      if (!name) return;
+                      if (customStages.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+                        return;
+                      }
+                      setCustomStages((prev) => [...prev, { name, color: newStageColor }]);
+                      setNewStageName('');
+                      setNewStageColor(STAGE_COLORS[(customStages.length + 1) % STAGE_COLORS.length]);
+                    }}
+                    disabled={!newStageName.trim()}
+                    className="bg-primary text-primary-foreground h-8 px-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {customStages.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    Add at least one stage to create a custom pipeline.
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {customStages.map((stage, i) => (
+                      <div
+                        key={`${stage.name}-${i}`}
+                        className="flex items-center gap-2 px-2 py-1 rounded bg-muted/50 border border-border"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full shrink-0"
+                          style={{ backgroundColor: stage.color }}
+                        />
+                        <span className="text-sm text-foreground flex-1 truncate">
+                          {stage.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          #{i + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCustomStages((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedPreset !== 'custom' && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Default stages (New Lead → Won) will be created automatically.
+              </p>
+            )}
           </div>
           <DialogFooter className="bg-popover/50 border-border">
             <Button
@@ -550,7 +697,7 @@ export default function PipelinesPage() {
             </Button>
             <Button
               onClick={handleCreatePipeline}
-              disabled={creating || !newPipelineName.trim()}
+              disabled={creating || !newPipelineName.trim() || (selectedPreset === 'custom' && customStages.length === 0)}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {creating ? "Creating..." : "Create Pipeline"}
