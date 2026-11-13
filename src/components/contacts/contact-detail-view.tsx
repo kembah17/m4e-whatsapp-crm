@@ -55,6 +55,9 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { getTrustScoreColor, getTrustScoreBgColor, getTrustScoreLabel } from '@/lib/contacts/trust-score';
+import { getTrustTier } from '@/lib/contacts/trust-score-tiers';
+import { TrustScoreEligibility } from '@/components/contacts/trust-score-eligibility';
+import { TrustScoreBadge } from '@/components/contacts/trust-score-badge';
 import { Shield, Wallet, Star } from 'lucide-react';
 
 interface ContactDetailViewProps {
@@ -560,11 +563,7 @@ export function ContactDetailView({
               return (
                 <div className="px-4 py-2 border-b border-border/50 flex flex-wrap items-center gap-2">
                   {trust_score != null && (
-                    <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${getTrustScoreBgColor(trust_score)}`}>
-                      <Shield className={`size-3 ${getTrustScoreColor(trust_score)}`} />
-                      <span className={getTrustScoreColor(trust_score)}>Trust: {trust_score}/100</span>
-                      <span className="text-muted-foreground">({getTrustScoreLabel(trust_score)})</span>
-                    </div>
+                    <TrustScoreBadge score={trust_score} showLabel size="md" />
                   )}
                   {outstanding_balance != null && outstanding_balance > 0 && (
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium">
@@ -598,6 +597,12 @@ export function ContactDetailView({
                   className="data-active:bg-muted data-active:text-primary text-muted-foreground"
                 >
                   Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="trust"
+                  className="data-active:bg-muted data-active:text-primary text-muted-foreground"
+                >
+                  Trust
                 </TabsTrigger>
                 <TabsTrigger
                   value="tags"
@@ -736,6 +741,16 @@ export function ContactDetailView({
                     )}
                     Save Changes
                   </Button>
+                </div>
+              </TabsContent>
+
+              {/* Trust Score & Eligibility Tab */}
+              <TabsContent value="trust" className="flex-1 overflow-y-auto px-4 py-3">
+                <div className="space-y-4">
+                  <TrustScoreEligibility
+                    score={contact?.trust_score}
+                    contactName={contact?.name || undefined}
+                  />
                 </div>
               </TabsContent>
 

@@ -34,6 +34,7 @@ const FIELD_OPTIONS = [
   { value: "last_purchase_at", label: "Last Purchase", type: "date" },
   { value: "read_rate", label: "Read Rate (%)", type: "number" },
   { value: "reply_rate", label: "Reply Rate (%)", type: "number" },
+  { value: "trust_score", label: "Trust Score", type: "number" },
 ] as const;
 
 const OPERATORS: Record<string, { value: SegmentRule["operator"]; label: string }[]> = {

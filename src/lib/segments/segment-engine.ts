@@ -77,6 +77,7 @@ function buildWhereClause(
       last_purchase_at: "c.last_purchase_at",
       read_rate: "c.read_rate",
       reply_rate: "c.reply_rate",
+      trust_score: "c.trust_score",
     };
 
     const col = fieldMap[field] || `c.custom_fields->>'${field.replace(/'/g, "''")}'`;
