@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SettingsPanelHead } from './settings-panel-head';
+import { ExchangeRateBadge } from '@/components/ui/exchange-rate-badge';
 import {
   META_RATES_NGN,
   META_RATES_USD,
@@ -81,6 +82,15 @@ export function MetaCostPanel() {
         title="WhatsApp Costs"
         description="Understand Meta's WhatsApp Business API pricing for Nigeria. All messaging costs are charged directly by Meta — not by M4E."
       />
+
+      <Alert className="border-border bg-muted/50 mb-4">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="flex items-center gap-2">
+          <span>Exchange rate:</span>
+          <ExchangeRateBadge className="text-sm font-semibold text-foreground" />
+          <span className="text-xs">• Used for all NGN estimates</span>
+        </AlertDescription>
+      </Alert>
 
       <div className="space-y-5">
         {/* Rate Card Table */}

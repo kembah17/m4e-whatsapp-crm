@@ -64,6 +64,7 @@ import type {
   CampaignSequenceStep,
 } from "@/types/campaigns"
 import { CampaignMonitor } from "@/components/campaigns/campaign-monitor"
+import { ReactivationKpiPanel } from "@/components/campaigns/reactivation-kpi-panel"
 import { EndOfCampaignWorkflow } from "@/components/campaigns/end-of-campaign-workflow"
 import { PatternInsightsPanel } from "@/components/campaigns/pattern-insights-panel"
 import { CampaignEvidencePanel } from "@/components/campaigns/campaign-evidence-panel"
@@ -819,6 +820,11 @@ export default function CampaignDetailPage() {
         </Card>
       )}
 
+
+      {/* Reactivation KPIs - show for reactivation campaigns */}
+      {campaign.template_slug && (campaign.template_slug.includes('reactivation') || campaign.template_slug.includes('win_back') || campaign.template_slug.includes('dormant')) && (
+        <ReactivationKpiPanel campaignId={campaignId} />
+      )}
 
       {/* Campaign Monitor - show for active/completed/paused campaigns */}
       {campaign.status !== "draft" && campaign.status !== "scheduled" && campaign.status !== "cancelled" && (

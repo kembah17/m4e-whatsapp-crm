@@ -7,6 +7,7 @@ import {
   FREE_TIER_LIMIT,
   type BroadcastCostEstimate,
 } from '@/lib/whatsapp/message-cost-tracker';
+import { ExchangeRateBadge } from '@/components/ui/exchange-rate-badge';
 
 interface CostEstimateBadgeProps {
   audienceSize: number;
@@ -80,6 +81,9 @@ export function CostEstimateBadge({
           </span>
         </div>
       )}
+
+      {/* Exchange rate */}
+      <ExchangeRateBadge />
     </div>
   );
 }

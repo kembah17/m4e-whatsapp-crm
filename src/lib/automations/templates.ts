@@ -21,6 +21,7 @@ export type TemplateSlug =
   | 'overdue_payment_escalation'
   | 'booking_confirmation'
   | 'post_checkout_feedback'
+  | 'sunset_campaign'
 
 export interface TemplateStepSeed {
   step_type: AutomationStepType
@@ -409,6 +410,60 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
       {
         step_type: 'add_tag',
         step_config: { tag_id: '' },
+      },
+    ],
+  },
+
+  sunset_campaign: {
+    slug: 'sunset_campaign',
+    name: 'Sunset Campaign',
+    description:
+      'Gracefully remove unresponsive contacts who completed the full 5-phase reactivation sequence without responding. Gives a final 48-hour window before marking as churned.',
+    trigger_type: 'tag_added',
+    trigger_config: { tag: 'reactivation-sunset' },
+    steps: [
+      // Wait 7 days after reactivation phase 5
+      {
+        step_type: 'wait',
+        step_config: { amount: 7, unit: 'days' },
+      },
+      // Send final removal notice
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}, we have not heard from you in a while and we respect your time. We are removing you from our messaging list. If you would like to stay connected, simply reply STAY within 48 hours and we will keep you on our list. We wish you all the best!",
+        },
+      },
+      {
+        step_type: 'add_tag',
+        step_config: { tag_id: '' }, // tag: sunset_confirmed
+      },
+      // Wait 48 hours for reply
+      {
+        step_type: 'wait',
+        step_config: { amount: 48, unit: 'hours' },
+      },
+      // Check if contact replied
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'message_content',
+          operand: '', // any reply
+        },
+      },
+      // Branch YES: contact replied — save from sunset
+      {
+        step_type: 'add_tag',
+        step_config: { tag_id: '' }, // tag: saved_from_sunset
+        parent_index: 4,
+        branch: 'yes',
+      },
+      // Branch NO: no reply — mark as churned
+      {
+        step_type: 'add_tag',
+        step_config: { tag_id: '' }, // tag: churned
+        parent_index: 4,
+        branch: 'no',
       },
     ],
   },

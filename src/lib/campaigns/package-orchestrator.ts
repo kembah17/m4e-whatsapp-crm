@@ -88,6 +88,7 @@ interface CampaignTemplateRow {
 
 const PKG1_WEEK_MAP: Record<string, number> = {
   'win_back': 4,
+  'reactivation_sequence': 4,
   'review_collection': 4,
   'birthday_campaign': 6,
   'referral_program': 7,
@@ -118,6 +119,7 @@ const DEFAULT_WEEK_MAPS: Record<string, Record<string, number>> = {
 // Event-based campaigns that need triggers instead of scheduled activation
 const EVENT_BASED_CAMPAIGNS: Record<string, string> = {
   'birthday_campaign': 'contact_birthday',
+  'reactivation_sequence': 'contact_dormant_60d',
   'abandoned_cart': 'cart_abandoned',
   'order_status': 'order_placed',
   'cod_confirmation': 'payment_confirmed',
@@ -211,6 +213,9 @@ function determineCampaignWeek(
       return milestone.week
     }
     if (campaignSlug === 'vip_rewards' && (searchText.includes('vip') || searchText.includes('loyalty') || searchText.includes('lifecycle'))) {
+      return milestone.week
+    }
+    if (campaignSlug === 'reactivation_sequence' && (searchText.includes('reactivation') || searchText.includes('dormant') || searchText.includes('win-back'))) {
       return milestone.week
     }
   }

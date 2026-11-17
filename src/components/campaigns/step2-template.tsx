@@ -20,12 +20,14 @@ import {
   ListOrdered,
   ChevronDown,
   ChevronUp,
+  Workflow,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -582,6 +584,23 @@ export function Step2Template({
           </div>
         </div>
       )}
+
+      {/* WhatsApp Flows info */}
+      <Alert className="border-blue-200 bg-blue-50/50">
+        <Workflow className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-sm text-blue-800">
+          <strong>WhatsApp Flows available</strong> for interactive surveys,
+          forms, and appointment booking.{' '}
+          <a
+            href="https://business.facebook.com/wa/manage/flows/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:no-underline font-medium"
+          >
+            Learn more →
+          </a>
+        </AlertDescription>
+      </Alert>
 
       {/* Navigation */}
       <Separator />

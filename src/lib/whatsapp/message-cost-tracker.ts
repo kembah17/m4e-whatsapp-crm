@@ -33,7 +33,7 @@ export const COUNTRY_RATES: Record<
 };
 
 /** Approximate NGN/USD exchange rate for display purposes. */
-const NGN_PER_USD = 1650;
+export const NGN_PER_USD = 1650;
 
 // ── Types ────────────────────────────────────────────────────
 
