@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { AdminMetricCard } from "@/components/admin/admin-metric-card"
+import { PackageConfigEditor } from "@/components/admin/package-config-editor"
 import {
   Package,
   TrendingUp,
@@ -15,6 +17,11 @@ import {
   Eye,
   Users,
   ArrowRight,
+  Plus,
+  Pencil,
+  Copy,
+  Trash2,
+  Loader2,
 } from "lucide-react"
 import type {
   PackageConfig,
@@ -64,12 +71,15 @@ const recommendationColors: Record<string, string> = {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Tab 1 – Package Configs                                           */
+/*  Tab 1 – Package Configs (with Editor integration)                  */
 /* ------------------------------------------------------------------ */
 function PackageConfigsTab() {
   const [loading, setLoading] = useState(true)
   const [packages, setPackages] = useState<PackageConfig[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingPkg, setEditingPkg] = useState<PackageConfig | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchPackages = useCallback(async () => {
     setLoading(true)
@@ -88,109 +98,236 @@ function PackageConfigsTab() {
     fetchPackages()
   }, [fetchPackages])
 
+  const handleCreate = () => {
+    setEditingPkg(null)
+    setEditorOpen(true)
+  }
+
+  const handleEdit = (pkg: PackageConfig) => {
+    setEditingPkg(pkg)
+    setEditorOpen(true)
+  }
+
+  const handleClone = (pkg: PackageConfig) => {
+    // Create a copy with modified name and no ID
+    const cloned: PackageConfig = {
+      ...pkg,
+      id: "", // Will be ignored by editor (treated as new)
+      name: `${pkg.name} (Copy)`,
+      is_active: false, // Start inactive
+    }
+    setEditingPkg(null) // null = create mode
+    setEditorOpen(true)
+    // We need to pass initial data differently - use a ref or state
+    // For now, we'll set editingPkg to a special "clone" marker
+    setTimeout(() => {
+      // The editor will pick up the cloned data
+      setEditingPkg(cloned)
+      setEditorOpen(true)
+    }, 50)
+  }
+
+  const handleDelete = async (pkg: PackageConfig) => {
+    if (!confirm(`Delete "${pkg.name}"? This cannot be undone.`)) return
+    setDeletingId(pkg.id)
+    try {
+      const res = await fetch(`/api/admin/packages/${pkg.id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Failed to delete")
+      toast.success(`"${pkg.name}" deleted`)
+      fetchPackages()
+    } catch (err) {
+      toast.error("Failed to delete package")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleToggleActive = async (pkg: PackageConfig) => {
+    try {
+      const res = await fetch(`/api/admin/packages/${pkg.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !pkg.is_active }),
+      })
+      if (!res.ok) throw new Error("Failed to update")
+      toast.success(`"${pkg.name}" ${!pkg.is_active ? "activated" : "deactivated"}`)
+      fetchPackages()
+    } catch (err) {
+      toast.error("Failed to update package status")
+    }
+  }
+
   if (loading) return <LoadingSkeleton rows={5} />
-  if (!packages.length) return <EmptyState message="No package configurations found." />
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          {packages.length} package{packages.length !== 1 ? "s" : ""} configured
-        </h3>
-        <button onClick={fetchPackages} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
-        </button>
+    <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {packages.length} package{packages.length !== 1 ? "s" : ""} configured
+          </h3>
+          <div className="flex items-center gap-2">
+            <button onClick={fetchPackages} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            </button>
+            <button
+              onClick={handleCreate}
+              className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-medium text-black hover:bg-amber-400 transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create Package
+            </button>
+          </div>
+        </div>
+
+        {!packages.length ? (
+          <EmptyState message="No package configurations found. Create your first package to get started." />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Package Key</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Duration</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Tier</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Campaigns</th>
+                  <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="text-right p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {packages.map((pkg) => (
+                  <>
+                    <tr key={pkg.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                      <td className="p-3 font-medium text-foreground">{pkg.name}</td>
+                      <td className="p-3"><code className="rounded bg-muted px-1.5 py-0.5 text-xs">{pkg.package_key}</code></td>
+                      <td className="p-3 text-amber-500 font-medium">{formatNaira(pkg.price_naira)}</td>
+                      <td className="p-3">{pkg.duration_weeks} weeks</td>
+                      <td className="p-3">
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-500/10 text-amber-500">
+                          Tier {pkg.tier}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-wrap gap-1">
+                          {pkg.campaign_slugs.slice(0, 3).map((slug) => (
+                            <span key={slug} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-muted text-muted-foreground">
+                              {slug}
+                            </span>
+                          ))}
+                          {pkg.campaign_slugs.length > 3 && (
+                            <span className="text-xs text-muted-foreground">+{pkg.campaign_slugs.length - 3}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => handleToggleActive(pkg)}
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity",
+                            pkg.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
+                          )}
+                          title={`Click to ${pkg.is_active ? "deactivate" : "activate"}`}
+                        >
+                          {pkg.is_active ? "Active" : "Inactive"}
+                        </button>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleEdit(pkg)}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
+                            title="Edit package"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleClone(pkg)}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-colors"
+                            title="Clone package"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(pkg)}
+                            disabled={deletingId === pkg.id}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                            title="Delete package"
+                          >
+                            {deletingId === pkg.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setExpandedId(expandedId === pkg.id ? null : pkg.id)}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            title="View details"
+                          >
+                            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expandedId === pkg.id && "rotate-90")} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedId === pkg.id && (
+                      <tr key={`${pkg.id}-detail`}>
+                        <td colSpan={8} className="bg-muted/10 p-4">
+                          <div className="grid gap-4 md:grid-cols-3">
+                            <div>
+                              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Description</h4>
+                              <p className="text-sm text-foreground">{pkg.description || "No description"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Retainer Options</h4>
+                              <div className="flex flex-wrap gap-1.5">
+                                {pkg.retainer_options.length > 0 ? pkg.retainer_options.map((r, i) => (
+                                  <span key={i} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-purple-500/10 text-purple-400">
+                                    {r.name} – {formatNaira(r.price)}
+                                  </span>
+                                )) : <span className="text-xs text-muted-foreground">None</span>}
+                              </div>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Milestones</h4>
+                              <p className="text-sm">{pkg.milestone_template.length} milestone{pkg.milestone_template.length !== 1 ? "s" : ""} defined</p>
+                              <h4 className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Automations</h4>
+                              <div className="flex flex-wrap gap-1">
+                                {pkg.automation_types.map((a) => (
+                                  <span key={a} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400">{a}</span>
+                                ))}
+                              </div>
+                              <h4 className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Transition Rules</h4>
+                              <div className="text-xs text-muted-foreground">
+                                {pkg.transition_rules?.next_packages?.length
+                                  ? `Next: ${pkg.transition_rules.next_packages.join(", ")}`
+                                  : "No transition rules"}
+                                {pkg.transition_rules?.quantitative_criteria?.length
+                                  ? ` • ${pkg.transition_rules.quantitative_criteria.length} quant criteria`
+                                  : ""}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/30">
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Package Key</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Duration</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Tier</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Campaigns</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-              <th className="text-left p-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {packages.map((pkg) => (
-              <>
-                <tr key={pkg.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                  <td className="p-3 font-medium text-foreground">{pkg.name}</td>
-                  <td className="p-3"><code className="rounded bg-muted px-1.5 py-0.5 text-xs">{pkg.package_key}</code></td>
-                  <td className="p-3 text-amber-500 font-medium">{formatNaira(pkg.price_naira)}</td>
-                  <td className="p-3">{pkg.duration_weeks} weeks</td>
-                  <td className="p-3">
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-500/10 text-amber-500">
-                      Tier {pkg.tier}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-1">
-                      {pkg.campaign_slugs.slice(0, 3).map((slug) => (
-                        <span key={slug} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-muted text-muted-foreground">
-                          {slug}
-                        </span>
-                      ))}
-                      {pkg.campaign_slugs.length > 3 && (
-                        <span className="text-xs text-muted-foreground">+{pkg.campaign_slugs.length - 3}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", pkg.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500")}>
-                      {pkg.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <button onClick={() => setExpandedId(expandedId === pkg.id ? null : pkg.id)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-amber-500">
-                      <Eye className="h-3.5 w-3.5" />
-                      <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expandedId === pkg.id && "rotate-90")} />
-                    </button>
-                  </td>
-                </tr>
-                {expandedId === pkg.id && (
-                  <tr key={`${pkg.id}-detail`}>
-                    <td colSpan={8} className="bg-muted/10 p-4">
-                      <div className="grid gap-4 md:grid-cols-3">
-                        <div>
-                          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Description</h4>
-                          <p className="text-sm text-foreground">{pkg.description || "No description"}</p>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Retainer Options</h4>
-                          <div className="flex flex-wrap gap-1.5">
-                            {pkg.retainer_options.length > 0 ? pkg.retainer_options.map((r, i) => (
-                              <span key={i} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-purple-500/10 text-purple-400">
-                                {r.name} – {formatNaira(r.price)}
-                              </span>
-                            )) : <span className="text-xs text-muted-foreground">None</span>}
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Milestones</h4>
-                          <p className="text-sm">{pkg.milestone_template.length} milestone{pkg.milestone_template.length !== 1 ? "s" : ""} defined</p>
-                          <h4 className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Automations</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {pkg.automation_types.map((a) => (
-                              <span key={a} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400">{a}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* Package Config Editor Sheet */}
+      <PackageConfigEditor
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        packageConfig={editingPkg}
+        onSaved={fetchPackages}
+      />
+    </>
   )
 }
 
@@ -239,34 +376,23 @@ function ClientProgressTab() {
 
   return (
     <div className="space-y-6">
-      {/* Selectors */}
       <div className="flex flex-wrap gap-3">
         <div className="flex-1 min-w-[200px]">
           <label className="mb-1 block text-xs font-medium text-muted-foreground">Account ID</label>
-          <input
-            type="text" value={accountId} onChange={(e) => setAccountId(e.target.value)}
-            placeholder="Enter account UUID"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-          />
+          <input type="text" value={accountId} onChange={(e) => setAccountId(e.target.value)} placeholder="Enter account UUID"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500/30" />
         </div>
         <div className="flex-1 min-w-[200px]">
           <label className="mb-1 block text-xs font-medium text-muted-foreground">Package</label>
-          <select
-            value={selectedPkgId} onChange={(e) => setSelectedPkgId(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-          >
+          <select value={selectedPkgId} onChange={(e) => setSelectedPkgId(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500/30">
             <option value="">{pkgLoading ? "Loading..." : "Select package"}</option>
-            {packages.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
+            {packages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
         <div className="flex items-end">
-          <button
-            onClick={fetchMilestones}
-            disabled={!accountId || !selectedPkgId}
-            className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-black hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
+          <button onClick={fetchMilestones} disabled={!accountId || !selectedPkgId}
+            className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-black hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed">
             <Target className="h-4 w-4" /> Load Progress
           </button>
         </div>
@@ -276,7 +402,6 @@ function ClientProgressTab() {
 
       {!loading && milestones.length > 0 && (
         <>
-          {/* Progress bar */}
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Overall Progress</span>
@@ -288,20 +413,17 @@ function ClientProgressTab() {
             <p className="mt-2 text-xs text-muted-foreground">{completed} of {total} milestones completed</p>
           </div>
 
-          {/* Timeline */}
           <div className="space-y-0">
             {milestones
               .sort((a, b) => a.week_number - b.week_number)
               .map((m, idx) => (
                 <div key={m.id} className="relative flex gap-4">
-                  {/* Vertical line */}
                   <div className="flex flex-col items-center">
                     <div className={cn("h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold", statusColors[m.status] || statusColors.pending)}>
                       W{m.week_number}
                     </div>
                     {idx < milestones.length - 1 && <div className="w-px flex-1 bg-border" />}
                   </div>
-                  {/* Content */}
                   <div className="flex-1 pb-6">
                     <div className="rounded-xl border border-border bg-card p-4">
                       <div className="flex items-start justify-between gap-2">
@@ -452,7 +574,6 @@ function TransitionsTab() {
 
       {recommendation && (
         <div className="space-y-4">
-          {/* Recommendation badge */}
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-muted-foreground">Recommendation:</span>
@@ -471,7 +592,6 @@ function TransitionsTab() {
             )}
           </div>
 
-          {/* Quantitative results */}
           {recommendation.quantitative_results && recommendation.quantitative_results.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-5">
               <h4 className="text-sm font-medium mb-3">Quantitative Results ({recommendation.quantitative_passed}/{recommendation.quantitative_total} passed)</h4>
@@ -502,7 +622,6 @@ function TransitionsTab() {
             </div>
           )}
 
-          {/* Qualitative criteria */}
           {recommendation.qualitative_criteria && recommendation.qualitative_criteria.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-5">
               <h4 className="text-sm font-medium mb-3">Qualitative Criteria</h4>
@@ -520,7 +639,6 @@ function TransitionsTab() {
             </div>
           )}
 
-          {/* Decision buttons */}
           <div className="flex gap-3">
             <button onClick={() => handleDecision("accepted")} disabled={deciding}
               className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-emerald-500 disabled:opacity-40">
@@ -588,11 +706,8 @@ function ValidationsTab() {
     }
   }
 
-  const pkgName = (id: string) => packages.find((p) => p.id === id)?.name ?? id.slice(0, 8)
-
   if (loading) return <LoadingSkeleton rows={4} />
 
-  // Group by package
   const grouped = packages.map((pkg) => ({
     pkg,
     vals: validations.filter((v) => v.package_config_id === pkg.id),
@@ -695,7 +810,6 @@ export default function PackagesPage() {
         <p className="text-sm text-muted-foreground mt-1">Configure packages, track client progress, manage transitions and validations.</p>
       </div>
 
-      {/* Tab bar */}
       <div className="flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon
@@ -713,7 +827,6 @@ export default function PackagesPage() {
         })}
       </div>
 
-      {/* Tab content */}
       {activeTab === "configs" && <PackageConfigsTab />}
       {activeTab === "progress" && <ClientProgressTab />}
       {activeTab === "transitions" && <TransitionsTab />}
