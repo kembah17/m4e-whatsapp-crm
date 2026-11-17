@@ -10,7 +10,7 @@ export interface SegmentTemplate {
   name: string
   icon: string
   description: string
-  category: 'engagement' | 'lifecycle' | 'value' | 'industry'
+  category: 'engagement' | 'lifecycle' | 'value' | 'industry' | 'churn'
   rules: SegmentRule[]
 }
 
@@ -292,6 +292,66 @@ export const SEGMENT_TEMPLATES: SegmentTemplate[] = [
     rules: [
       { field: 'purchase_count', operator: 'greater_than', value: 2 },
     ],
+  },
+
+  // ── Inactivity Score Segments ──────────────────────────────
+  {
+    id: 'high_inactivity',
+    name: 'High Inactivity Score (75+)',
+    icon: '📉',
+    description: 'Contacts with inactivity score above 75 — likely lost, consider sunset',
+    category: 'engagement',
+    rules: [{ field: 'inactivity_score', operator: 'greater_than', value: 75 }],
+  },
+  {
+    id: 'cooling_contacts',
+    name: 'Cooling Contacts (26-50)',
+    icon: '🌡️',
+    description: 'Contacts showing early signs of disengagement — intervene now',
+    category: 'engagement',
+    rules: [{ field: 'inactivity_score', operator: 'between', value: '26,50' }],
+  },
+
+  // ── Churn Archetype Segments ───────────────────────────────
+  {
+    id: 'churn_product_fit_drift',
+    name: 'Churn: Product-Fit Drift',
+    icon: '🔄',
+    description: 'Contacts who churned due to product no longer fitting their needs',
+    category: 'churn',
+    rules: [{ field: 'churn_archetype', operator: 'equals', value: 'product_fit_drift' }],
+  },
+  {
+    id: 'churn_price_objection',
+    name: 'Churn: Price Objection',
+    icon: '💰',
+    description: 'Contacts who churned due to price sensitivity or competitor pricing',
+    category: 'churn',
+    rules: [{ field: 'churn_archetype', operator: 'equals', value: 'price_objection' }],
+  },
+  {
+    id: 'churn_competitor_poaching',
+    name: 'Churn: Competitor Poaching',
+    icon: '🏴‍☠️',
+    description: 'Contacts lost to competitors — export requests, competitor mentions',
+    category: 'churn',
+    rules: [{ field: 'churn_archetype', operator: 'equals', value: 'competitor_poaching' }],
+  },
+  {
+    id: 'churn_natural_lifecycle',
+    name: 'Churn: Natural Lifecycle',
+    icon: '🍂',
+    description: 'Contacts with natural end of engagement — seasonal or project-based',
+    category: 'churn',
+    rules: [{ field: 'churn_archetype', operator: 'equals', value: 'natural_lifecycle' }],
+  },
+  {
+    id: 'churn_other',
+    name: 'Churn: Unclassified',
+    icon: '❓',
+    description: 'Contacts with unclassified churn reason — requires manual review',
+    category: 'churn',
+    rules: [{ field: 'churn_archetype', operator: 'equals', value: 'other' }],
   },
 
 ]

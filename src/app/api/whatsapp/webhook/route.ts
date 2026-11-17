@@ -8,6 +8,7 @@ import { verifyMetaWebhookSignature } from '@/lib/whatsapp/webhook-signature'
 import { runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
 import { tryAIChatbotResponse } from '@/lib/ai/chatbot-engine'
+import { addToBurst } from '@/lib/whatsapp/burst-handler'
 import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
@@ -793,156 +794,155 @@ async function processMessage(
   }
 
   // ============================================================
-  // Flow runner dispatch.
-  //
-  // If the runner consumes the message (it either advanced an active
-  // run or started a new one), we suppress the `new_message_received`
-  // + `keyword_match` automation triggers for this inbound. Customer
-  // is navigating the bot menu, not sending a fresh trigger word
-  // that should fork into automations.
-  //
-  // The relationship-level triggers (`new_contact_created`,
-  // `first_inbound_message`) still fire even when consumed — those
-  // are about WHO is messaging, not what they said.
-  //
-  // Awaited (not fire-and-forget) because we need the `consumed`
-  // result before deciding whether to dispatch automations. The
-  // runner has its own try/catch and never throws. Accounts with
-  // no active flows take the runner's early-exit "no_match" path
-  // basically for free (one indexed SELECT for the active run).
+  // Burst handler: batch rapid inbound messages from the same
+  // contact before triggering flows/AI/automations. Each message
+  // is already saved to the DB above — only the response logic
+  // is batched. Non-text messages bypass the burst handler.
   // ============================================================
-  const flowResult = await dispatchInboundToFlows({
-    accountId,
-    userId: configOwnerUserId,
-    contactId: contactRecord.id,
-    conversationId: conversation.id,
-    message:
-      interactiveReplyId
-        ? {
-            kind: 'interactive_reply',
-            reply_id: interactiveReplyId,
-            reply_title: contentText ?? '',
-            meta_message_id: message.id,
-          }
-        : {
-            kind: 'text',
-            text: contentText ?? message.text?.body ?? '',
-            meta_message_id: message.id,
-          },
-    isFirstInboundMessage,
-  })
-  const flowConsumed = flowResult.consumed
-
-  // Fire any automations that react to this webhook event. All dispatches
-  // run here (not earlier) so the contact, conversation, and inbound
-  // message all exist before any step — including send_message — runs.
-  // Fire-and-forget: a slow or failing automation must not block the
-  // webhook's 200 OK response to Meta.
   const inboundText = contentText ?? message.text?.body ?? ''
+  const isTextMessage = message.type === 'text' && !!inboundText
 
-  // ============================================================
-  // Circuit breaker check — prevent message loops.
-  // Check rate limits before any outbound message path.
-  // ============================================================
-  const cbResult = circuitBreakerCheck(accountId, contactRecord.id)
-  if (!cbResult.allowed) {
-    console.warn(
-      `[circuit-breaker] Outbound blocked for contact ${contactRecord.id}: ${cbResult.blockedBy}`
-    )
-  }
-
-  // ============================================================
-  // AI Chatbot dispatch.
-  //
-  // If the flow didn't consume the message and it's a text message,
-  // try the AI chatbot. If the AI handles it (sends a response),
-  // we suppress content-level automation triggers just like flows.
-  // Wrapped in try/catch so AI errors never break the webhook.
-  // ============================================================
-  let aiHandled = false
-  if (!flowConsumed && inboundText && cbResult.allowed) {
-    try {
-      const aiResult = await tryAIChatbotResponse({
-        accountId,
-        contactId: contactRecord.id,
-        conversationId: conversation.id,
-        messageText: inboundText,
-        contactName: contactRecord.name || contactRecord.phone,
-      })
-      aiHandled = aiResult.handled
-
-      // Auto-create support ticket on AI handoff
-      if (aiResult.handedOff) {
-        autoCreateTicketFromHandoff(
-          accountId,
-          contactRecord.id,
-          conversation.id,
-          inboundText,
-          contactRecord.name || undefined,
-        ).catch((err) => console.error('[support-ticket] handoff ticket creation failed:', err))
-      }
-    } catch (err) {
-      console.error('[ai-chatbot] error:', err)
-    }
-  }
-
-  // Sentiment analysis — fire-and-forget, never blocks webhook
-  if (inboundText) {
-    triggerSentimentAnalysis({
+  /**
+   * Core dispatch logic: runs flows, AI chatbot, and automations.
+   * Called directly for non-text messages, or via burst handler
+   * callback for text messages (with combined text from the burst).
+   */
+  const dispatchResponseLogic = async (combinedText: string) => {
+    // ── Flow runner dispatch ──────────────────────────────────
+    const flowResult = await dispatchInboundToFlows({
       accountId,
-      messageMetaId: message.id,
-      conversationId: conversation.id,
+      userId: configOwnerUserId,
       contactId: contactRecord.id,
-      contactName: contactRecord.name || undefined,
-      messageText: inboundText,
-    }).then((result) => {
-      // Auto-create support ticket on negative/urgent sentiment
-      if (result && (result.sentiment === 'negative' || result.sentiment === 'urgent')) {
-        autoCreateTicketFromSentiment(
+      conversationId: conversation.id,
+      message:
+        interactiveReplyId
+          ? {
+              kind: 'interactive_reply',
+              reply_id: interactiveReplyId,
+              reply_title: combinedText,
+              meta_message_id: message.id,
+            }
+          : {
+              kind: 'text',
+              text: combinedText,
+              meta_message_id: message.id,
+            },
+      isFirstInboundMessage,
+    })
+    const flowConsumed = flowResult.consumed
+
+    // ── Circuit breaker check ─────────────────────────────────
+    const cbResult = circuitBreakerCheck(accountId, contactRecord.id)
+    if (!cbResult.allowed) {
+      console.warn(
+        `[circuit-breaker] Outbound blocked for contact ${contactRecord.id}: ${cbResult.blockedBy}`
+      )
+    }
+
+    // ── AI Chatbot dispatch ───────────────────────────────────
+    let aiHandled = false
+    if (!flowConsumed && combinedText && cbResult.allowed) {
+      try {
+        const aiResult = await tryAIChatbotResponse({
           accountId,
-          contactRecord.id,
-          conversation.id,
-          inboundText,
-          result.score ?? -0.5,
-        ).catch((err) => console.error('[support-ticket] sentiment ticket creation failed:', err))
+          contactId: contactRecord.id,
+          conversationId: conversation.id,
+          messageText: combinedText,
+          contactName: contactRecord.name || contactRecord.phone,
+        })
+        aiHandled = aiResult.handled
+
+        // Auto-create support ticket on AI handoff
+        if (aiResult.handedOff) {
+          autoCreateTicketFromHandoff(
+            accountId,
+            contactRecord.id,
+            conversation.id,
+            combinedText,
+            contactRecord.name || undefined,
+          ).catch((err) => console.error('[support-ticket] handoff ticket creation failed:', err))
+        }
+      } catch (err) {
+        console.error('[ai-chatbot] error:', err)
       }
-    }).catch((err) => console.error('[sentiment] failed:', err))
+    }
+
+    // ── Sentiment analysis (fire-and-forget) ──────────────────
+    if (combinedText) {
+      triggerSentimentAnalysis({
+        accountId,
+        messageMetaId: message.id,
+        conversationId: conversation.id,
+        contactId: contactRecord.id,
+        contactName: contactRecord.name || undefined,
+        messageText: combinedText,
+      }).then((result) => {
+        if (result && (result.sentiment === 'negative' || result.sentiment === 'urgent')) {
+          autoCreateTicketFromSentiment(
+            accountId,
+            contactRecord.id,
+            conversation.id,
+            combinedText,
+            result.score ?? -0.5,
+          ).catch((err) => console.error('[support-ticket] sentiment ticket creation failed:', err))
+        }
+      }).catch((err) => console.error('[sentiment] failed:', err))
+    }
+
+    // ── Automation triggers ───────────────────────────────────
+    const automationTriggers: (
+      | 'new_contact_created'
+      | 'first_inbound_message'
+      | 'new_message_received'
+      | 'keyword_match'
+    )[] = []
+    if (!flowConsumed && !aiHandled) {
+      automationTriggers.push('new_message_received', 'keyword_match')
+    }
+    if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
+    if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
+    if (cbResult.allowed) {
+      for (const triggerType of automationTriggers) {
+        runAutomationsForTrigger({
+          accountId,
+          triggerType,
+          contactId: contactRecord.id,
+          context: {
+            message_text: combinedText,
+            conversation_id: conversation.id,
+          },
+        }).catch((err) => console.error('[automations] dispatch failed:', err))
+      }
+    } else {
+      console.warn('[circuit-breaker] Automations suppressed due to rate limit')
+    }
   }
 
-  const automationTriggers: (
-    | 'new_contact_created'
-    | 'first_inbound_message'
-    | 'new_message_received'
-    | 'keyword_match'
-  )[] = []
-  // Content-level triggers are suppressed when a flow consumed the
-  // message OR the AI chatbot handled it.
-  if (!flowConsumed && !aiHandled) {
-    automationTriggers.push('new_message_received', 'keyword_match')
-  }
-  // new_contact_created fires only when the webhook just auto-created the
-  // contact row. first_inbound_message fires whenever this is the contact's
-  // first-ever customer-sent message — a superset that also catches
-  // manually-imported contacts sending for the first time. We dispatch both
-  // so users can pick whichever semantic they want; an automation that
-  // listens to only one trigger runs only when that trigger matches.
-  if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
-  if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
-  // Only dispatch automations if circuit breaker allows outbound
-  if (cbResult.allowed) {
-    for (const triggerType of automationTriggers) {
-      runAutomationsForTrigger({
-        accountId,
-        triggerType,
-        contactId: contactRecord.id,
-        context: {
-          message_text: inboundText,
-          conversation_id: conversation.id,
-        },
-      }).catch((err) => console.error('[automations] dispatch failed:', err))
-    }
+  // ── Route through burst handler or dispatch directly ────────
+  if (isTextMessage) {
+    // Text messages: batch via burst handler (5s window)
+    const burstKey = `${accountId}:${contactRecord.id}`
+    addToBurst(
+      burstKey,
+      { id: message.id, text: inboundText, type: message.type },
+      accountId,
+      contactRecord.id,
+      conversation.id,
+      async (batchedMessages) => {
+        try {
+          // Combine all message texts from the burst
+          const combinedText = batchedMessages.map((m) => m.text).filter(Boolean).join('\n')
+          await dispatchResponseLogic(combinedText)
+        } catch (err) {
+          console.error('[burst-handler] dispatch failed:', err)
+        }
+      }
+    )
   } else {
-    console.warn('[circuit-breaker] Automations suppressed due to rate limit')
+    // Non-text messages (reactions, images, etc.): dispatch immediately
+    dispatchResponseLogic(inboundText).catch((err) =>
+      console.error('[dispatch] non-text dispatch failed:', err)
+    )
   }
 }
 

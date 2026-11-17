@@ -428,7 +428,10 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
       const cfg = step.step_config as AssignConversationStepConfig
       if (!args.contactId) throw new Error('assign_conversation needs a contact')
       let agentId = cfg.agent_id
-      if (cfg.mode === 'round_robin') {
+
+      // Support 'account_owner' assignment mode
+      const cfgAny = step.step_config as Record<string, unknown>
+      if (cfgAny.assign_to === 'account_owner' || cfg.mode === 'round_robin') {
         // Pick any member of the account. The existing implementation
         // only ever returned the automation's author; preserving that
         // shape until a real round-robin algorithm replaces it.
@@ -440,11 +443,79 @@ async function runStep(step: AutomationStep, args: ExecuteArgs): Promise<string>
         agentId = profiles?.[0]?.user_id
       }
       if (!agentId) return 'no agent resolved'
+
+      // Find the conversation to assign
+      const { data: convos } = await db
+        .from('conversations')
+        .select('id')
+        .eq('account_id', args.automation.account_id)
+        .eq('contact_id', args.contactId)
+        .limit(1)
+      const convoId = convos?.[0]?.id
+
       await db
         .from('conversations')
         .update({ assigned_agent_id: agentId })
         .eq('account_id', args.automation.account_id)
         .eq('contact_id', args.contactId)
+
+      // Escalation briefing: insert a system message with context
+      if (cfgAny.escalation_context && convoId) {
+        try {
+          const { buildEscalationBriefing } = await import('./escalation')
+          const { computeInactivityScore } = await import('@/lib/segments/inactivity-score')
+
+          // Fetch contact details for the briefing
+          const { data: contact } = await db
+            .from('contacts')
+            .select('name, phone, total_spent, last_message_at, last_purchase_at, reply_rate, trust_score, custom_fields')
+            .eq('id', args.contactId)
+            .single()
+
+          if (contact) {
+            const inactivityScore = computeInactivityScore({
+              lastMessageAt: contact.last_message_at,
+              lastPurchaseAt: contact.last_purchase_at,
+              responseRate: contact.reply_rate ?? 0,
+              trustScore: contact.trust_score ?? 50,
+            })
+
+            // Fetch recent messages for context
+            const { data: recentMsgs } = await db
+              .from('messages')
+              .select('content, direction')
+              .eq('conversation_id', convoId)
+              .order('created_at', { ascending: false })
+              .limit(5)
+
+            const briefing = buildEscalationBriefing({
+              contactName: contact.name || contact.phone || 'Unknown',
+              totalSpent: contact.total_spent ?? 0,
+              lastInteraction: contact.last_message_at || 'Never',
+              inactivityScore,
+              churnArchetype: (contact.custom_fields as Record<string, string>)?.churn_archetype ?? null,
+              recentMessages: (recentMsgs ?? []).map(
+                (m: { content: string | null; direction: string }) =>
+                  `[${m.direction}] ${m.content || '(empty)'}`
+              ),
+            })
+
+            // Insert briefing as a system message in the conversation
+            await db.from('messages').insert({
+              conversation_id: convoId,
+              account_id: args.automation.account_id,
+              direction: 'system',
+              content: briefing,
+              message_type: 'system',
+              status: 'delivered',
+            })
+          }
+        } catch (err) {
+          console.error('[escalation] briefing generation failed:', err)
+          // Non-fatal: assignment still succeeded
+        }
+      }
+
       return `assigned to ${agentId}`
     }
 

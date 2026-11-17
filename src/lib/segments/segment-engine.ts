@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { INACTIVITY_SCORE_SQL } from "./inactivity-score";
 
 export interface SegmentRule {
   field: string;
@@ -78,6 +79,8 @@ function buildWhereClause(
       read_rate: "c.read_rate",
       reply_rate: "c.reply_rate",
       trust_score: "c.trust_score",
+      inactivity_score: INACTIVITY_SCORE_SQL,
+      churn_archetype: "c.custom_fields->>'churn_archetype'",
     };
 
     const col = fieldMap[field] || `c.custom_fields->>'${field.replace(/'/g, "''")}'`;

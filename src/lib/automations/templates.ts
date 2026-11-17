@@ -22,6 +22,12 @@ export type TemplateSlug =
   | 'booking_confirmation'
   | 'post_checkout_feedback'
   | 'sunset_campaign'
+  // Churn archetype campaign templates
+  | 'churn_product_fit'
+  | 'churn_price_objection'
+  | 'churn_competitor'
+  // Human-in-the-loop escalation
+  | 'high_value_escalation'
 
 export interface TemplateStepSeed {
   step_type: AutomationStepType
@@ -464,6 +470,142 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
         step_config: { tag_id: '' }, // tag: churned
         parent_index: 4,
         branch: 'no',
+      },
+    ],
+  },
+
+
+  // ── Churn Archetype Campaign Templates ─────────────────────
+  churn_product_fit: {
+    slug: 'churn_product_fit',
+    name: 'Churn Recovery: Product-Fit Drift',
+    description: 'Product update announcement sequence for contacts who churned due to product-fit issues.',
+    trigger_type: 'tag_added',
+    trigger_config: { tag_id: '' }, // tag: churn_product_fit_drift
+    steps: [
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}! 🚀 We have been busy building features our customers asked for. Here is what is new:\n\n✅ [Feature 1]\n✅ [Feature 2]\n✅ [Feature 3]\n\nWe would love to show you how these changes address the challenges you faced. Would you be open to a quick 10-minute walkthrough?",
+        },
+      },
+      {
+        step_type: 'wait',
+        step_config: { amount: 3, unit: 'days' },
+      },
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'message_content',
+          operand: '',
+        },
+      },
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}, just following up on the product updates we shared. We have also added [specific improvement] based on feedback from customers like you. No pressure — just wanted to make sure you knew. Reply YES if you would like a demo!",
+        },
+        parent_index: 2,
+        branch: 'no',
+      },
+    ],
+  },
+
+  churn_price_objection: {
+    slug: 'churn_price_objection',
+    name: 'Churn Recovery: Price Objection Win-Back',
+    description: 'Limited-time win-back offer sequence for price-sensitive churned contacts.',
+    trigger_type: 'tag_added',
+    trigger_config: { tag_id: '' }, // tag: churn_price_objection
+    steps: [
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}! 💰 We value the relationship we built and want to make things work. For the next 7 days, we are offering a special returning-customer rate:\n\n🎁 [X]% off your first 3 months back\n\nThis is our way of saying we appreciate you. Interested? Just reply YES and we will set it up.",
+        },
+      },
+      {
+        step_type: 'wait',
+        step_config: { amount: 3, unit: 'days' },
+      },
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'message_content',
+          operand: '',
+        },
+      },
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}, just a reminder — your special returning-customer offer expires in 4 days. We have also introduced a new flexible plan that might be a better fit for your budget. Want to hear about it?",
+        },
+        parent_index: 2,
+        branch: 'no',
+      },
+    ],
+  },
+
+  churn_competitor: {
+    slug: 'churn_competitor',
+    name: 'Churn Recovery: Competitor Win-Back',
+    description: 'Value reminder + direct outreach sequence for contacts lost to competitors.',
+    trigger_type: 'tag_added',
+    trigger_config: { tag_id: '' }, // tag: churn_competitor_poaching
+    steps: [
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Hi {{name}}! We noticed you have been exploring other options and we completely understand. Before you make a final decision, here is what makes us different:\n\n🔒 [Unique value prop 1]\n📊 [Unique value prop 2]\n🤝 [Unique value prop 3]\n\nWe would love 15 minutes to show you what we have been working on. No sales pitch — just an honest conversation. Interested?",
+        },
+      },
+      {
+        step_type: 'wait',
+        step_config: { amount: 2, unit: 'days' },
+      },
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'message_content',
+          operand: '',
+        },
+      },
+      {
+        step_type: 'assign_conversation',
+        step_config: {
+          mode: 'round_robin' as const,
+          escalation_context: true,
+        } as Record<string, unknown>,
+        parent_index: 2,
+        branch: 'no',
+      },
+    ],
+  },
+
+  // ── Human-in-the-Loop Escalation ───────────────────────────
+  high_value_escalation: {
+    slug: 'high_value_escalation',
+    name: 'High-Value Contact Escalation',
+    description: 'Auto-assign dormant high-value contacts to account owner with context briefing.',
+    trigger_type: 'contact_updated',
+    trigger_config: {},
+    steps: [
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'contact_field',
+          operand: 'total_spent',
+          value: '>500000',
+        },
+      },
+      {
+        step_type: 'assign_conversation',
+        step_config: {
+          assign_to: 'account_owner',
+          escalation_context: true,
+        } as Record<string, unknown>,
+        branch: 'yes',
+        parent_index: 0,
       },
     ],
   },

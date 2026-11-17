@@ -35,6 +35,8 @@ const FIELD_OPTIONS = [
   { value: "read_rate", label: "Read Rate (%)", type: "number" },
   { value: "reply_rate", label: "Reply Rate (%)", type: "number" },
   { value: "trust_score", label: "Trust Score", type: "number" },
+  { value: "inactivity_score", label: "Inactivity Score (0-100)", type: "number" },
+  { value: "churn_archetype", label: "Churn Archetype", type: "select", options: ["product_fit_drift", "price_objection", "competitor_poaching", "natural_lifecycle", "other"] },
 ] as const;
 
 const OPERATORS: Record<string, { value: SegmentRule["operator"]; label: string }[]> = {

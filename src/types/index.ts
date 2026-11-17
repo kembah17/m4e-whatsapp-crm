@@ -501,7 +501,8 @@ export type AutomationTriggerType =
   | 'new_contact_created'
   | 'conversation_assigned'
   | 'tag_added'
-  | 'time_based';
+  | 'time_based'
+  | 'contact_updated';
 
 export type AutomationStepType =
   | 'send_message'
