@@ -23,18 +23,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_config_versions_unique_version
 -- RLS
 ALTER TABLE config_versions ENABLE ROW LEVEL SECURITY;
 
--- Super admin can read all versions
-CREATE POLICY "super_admin_read_versions" ON config_versions
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM account_members am
-      WHERE am.user_id = auth.uid()
-      AND am.role = 'super_admin'
-    )
-  );
-
--- Service role can do everything (for API routes)
+-- Service role can do everything (for API routes using service_role key)
 CREATE POLICY "service_role_all_versions" ON config_versions
   FOR ALL USING (auth.role() = 'service_role');
+
+-- Authenticated users can read versions
+CREATE POLICY "authenticated_read_versions" ON config_versions
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 COMMENT ON TABLE config_versions IS 'Tracks version history for package configs and campaign templates';
