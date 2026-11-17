@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { AdminMetricCard } from "@/components/admin/admin-metric-card"
 import { PackageConfigEditor } from "@/components/admin/package-config-editor"
+import { VersionHistoryButton } from "@/components/admin/version-history"
 import {
+  History,
   Package,
   TrendingUp,
   Target,
@@ -235,6 +237,12 @@ function PackageConfigsTab() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center justify-end gap-1">
+                          <VersionHistoryButton
+                            entityType="package_config"
+                            entityId={pkg.id}
+                            entityName={pkg.name}
+                            onRestore={() => fetchPackages()}
+                          />
                           <button
                             onClick={() => handleEdit(pkg)}
                             className="p-1.5 rounded-md text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-colors"

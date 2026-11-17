@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseAdmin } from '@/lib/ecommerce/admin-client'
 import type { CampaignTemplate } from '@/types/campaigns'
+import { saveVersion, computeDiff, generateChangeSummary } from '@/lib/admin/version-history'
 
 // GET /api/admin/campaign-templates/[id]
 export async function GET(
@@ -29,7 +30,7 @@ export async function GET(
   }
 }
 
-// PATCH /api/admin/campaign-templates/[id]
+// PATCH /api/admin/campaign-templates/[id] (with version tracking)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -38,6 +39,28 @@ export async function PATCH(
     const db = supabaseAdmin()
     const { id } = await params
     const body = await request.json()
+
+    // Fetch current state before update
+    const { data: current } = await db
+      .from('campaign_templates')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    // Save version snapshot of current state
+    if (current) {
+      const diffs = computeDiff(
+        current as Record<string, unknown>,
+        { ...current, ...body } as Record<string, unknown>
+      )
+      const summary = generateChangeSummary(diffs)
+      await saveVersion(
+        'campaign_template',
+        id,
+        current as Record<string, unknown>,
+        summary
+      )
+    }
 
     const { data, error } = await db
       .from('campaign_templates')
@@ -63,6 +86,22 @@ export async function DELETE(
   try {
     const db = supabaseAdmin()
     const { id } = await params
+
+    // Save final version before deletion
+    const { data: current } = await db
+      .from('campaign_templates')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (current) {
+      await saveVersion(
+        'campaign_template',
+        id,
+        current as Record<string, unknown>,
+        'Deleted'
+      )
+    }
 
     const { error } = await db
       .from('campaign_templates')
