@@ -6,9 +6,11 @@ import { toast } from "sonner"
 import { AdminMetricCard } from "@/components/admin/admin-metric-card"
 import { PackageConfigEditor } from "@/components/admin/package-config-editor"
 import { VersionHistoryButton } from "@/components/admin/version-history"
+import { FeedbackPanel } from "@/components/admin/feedback-panel"
 import {
   History,
   Package,
+  BarChart3,
   TrendingUp,
   Target,
   CheckCircle,
@@ -37,13 +39,14 @@ import type {
   ValidationType,
 } from "@/types/packages"
 
-type Tab = "configs" | "progress" | "transitions" | "validations"
+type Tab = "configs" | "progress" | "transitions" | "validations" | "feedback"
 
 const tabs: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "configs", label: "Package Configs", icon: Package },
   { id: "progress", label: "Client Progress", icon: TrendingUp },
   { id: "transitions", label: "Transitions", icon: ArrowRight },
   { id: "validations", label: "Validations", icon: CheckCircle },
+  { id: "feedback", label: "Performance Feedback", icon: BarChart3 },
 ]
 
 const formatNaira = (amount: number) =>
@@ -808,6 +811,81 @@ function EmptyState({ message }: { message: string }) {
 /* ------------------------------------------------------------------ */
 /*  Main Page                                                          */
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  Package Feedback Tab                                               */
+/* ------------------------------------------------------------------ */
+function PackageFeedbackTab() {
+  const [loading, setLoading] = useState(true)
+  const [packages, setPackages] = useState<PackageConfig[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/admin/packages")
+      .then((r) => r.json())
+      .then((json) => {
+        const pkgs = json.packages ?? []
+        setPackages(pkgs)
+        if (pkgs.length > 0) setSelectedId(pkgs[0].id)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-muted/40" />
+        ))}
+      </div>
+    )
+  }
+
+  if (packages.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
+        <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
+        <p className="text-sm text-muted-foreground">No packages found. Create packages first to see performance feedback.</p>
+      </div>
+    )
+  }
+
+  const selected = packages.find((p) => p.id === selectedId)
+
+  return (
+    <div className="space-y-4">
+      {/* Package Selector */}
+      <div className="flex items-center gap-3">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Package:</label>
+        <select
+          value={selectedId || ""}
+          onChange={(e) => setSelectedId(e.target.value)}
+          className="flex-1 max-w-md rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+        >
+          {packages.map((pkg) => (
+            <option key={pkg.id} value={pkg.id}>
+              {pkg.name} (Tier {pkg.tier})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Feedback Panel */}
+      {selected && (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <FeedbackPanel
+            key={selected.id}
+            entityType="package_config"
+            entityId={selected.id}
+            entityName={selected.name}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+
 export default function PackagesPage() {
   const [activeTab, setActiveTab] = useState<Tab>("configs")
 
@@ -839,6 +917,7 @@ export default function PackagesPage() {
       {activeTab === "progress" && <ClientProgressTab />}
       {activeTab === "transitions" && <TransitionsTab />}
       {activeTab === "validations" && <ValidationsTab />}
+      {activeTab === "feedback" && <PackageFeedbackTab />}
     </div>
   )
 }

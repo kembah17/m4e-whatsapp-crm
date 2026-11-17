@@ -6,7 +6,9 @@ import { toast } from "sonner"
 import { AdminCampaignTable } from "@/components/admin/admin-campaign-table"
 import { CampaignTemplateEditor } from "@/components/admin/campaign-template-editor"
 import { VersionHistoryButton } from "@/components/admin/version-history"
-import {History, 
+import { FeedbackPanel } from "@/components/admin/feedback-panel"
+import {History,
+  BarChart3, 
   Activity,
   LayoutTemplate,
   RefreshCw,
@@ -21,11 +23,12 @@ import {History,
 } from "lucide-react"
 import type { CampaignTemplate } from "@/types/campaigns"
 
-type Tab = "monitor" | "templates"
+type Tab = "monitor" | "templates" | "feedback"
 
 const tabs: { id: Tab; label: string; icon: typeof Activity }[] = [
   { id: "monitor", label: "Campaign Monitor", icon: Activity },
   { id: "templates", label: "Campaign Templates", icon: LayoutTemplate },
+  { id: "feedback", label: "Performance Feedback", icon: BarChart3 },
 ]
 
 const categoryColors: Record<string, string> = {
@@ -329,6 +332,81 @@ function CampaignTemplatesTab() {
   )
 }
 
+
+/* ------------------------------------------------------------------ */
+/*  Campaign Feedback Tab                                              */
+/* ------------------------------------------------------------------ */
+function CampaignFeedbackTab() {
+  const [loading, setLoading] = useState(true)
+  const [templates, setTemplates] = useState<CampaignTemplate[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/admin/campaign-templates")
+      .then((r) => r.json())
+      .then((json) => {
+        const tpls = json.templates ?? []
+        setTemplates(tpls)
+        if (tpls.length > 0) setSelectedId(tpls[0].id)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-muted/40" />
+        ))}
+      </div>
+    )
+  }
+
+  if (templates.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
+        <BarChart3 className="h-10 w-10 text-muted-foreground/40 mb-3" />
+        <p className="text-sm text-muted-foreground">No campaign templates found. Create templates first to see performance feedback.</p>
+      </div>
+    )
+  }
+
+  const selected = templates.find((t) => t.id === selectedId)
+
+  return (
+    <div className="space-y-4">
+      {/* Template Selector */}
+      <div className="flex items-center gap-3">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Template:</label>
+        <select
+          value={selectedId || ""}
+          onChange={(e) => setSelectedId(e.target.value)}
+          className="flex-1 max-w-md rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+        >
+          {templates.map((tpl) => (
+            <option key={tpl.id} value={tpl.id}>
+              {tpl.name} ({tpl.category})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Feedback Panel */}
+      {selected && (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <FeedbackPanel
+            key={selected.id}
+            entityType="campaign_template"
+            entityId={selected.id}
+            entityName={selected.name}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main Page                                                          */
 /* ------------------------------------------------------------------ */
@@ -367,6 +445,7 @@ export default function AdminCampaignsPage() {
 
       {activeTab === "monitor" && <AdminCampaignTable />}
       {activeTab === "templates" && <CampaignTemplatesTab />}
+      {activeTab === "feedback" && <CampaignFeedbackTab />}
     </div>
   )
 }
