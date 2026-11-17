@@ -10,17 +10,26 @@ import {
 } from '@/components/ui/dialog'
 import { ImportWizard } from '@/components/contacts/import-wizard'
 import { ProductImportWizard } from '@/components/products/product-import-wizard'
+import { InventoryImportWizard } from '@/components/data-center/inventory-import-wizard'
 import {
   Users,
   Package,
   Layers,
+  Warehouse,
   ArrowRight,
   Upload,
   CheckCircle2,
   Sparkles,
 } from 'lucide-react'
 
-type ImportMode = 'choose' | 'contacts' | 'products' | 'both-contacts' | 'both-products' | 'done'
+type ImportMode =
+  | 'choose'
+  | 'contacts'
+  | 'products'
+  | 'inventory'
+  | 'both-contacts'
+  | 'both-products'
+  | 'done'
 
 interface UnifiedImportHubProps {
   open: boolean
@@ -48,6 +57,15 @@ const importOptions = [
     features: ['CSV files', 'Product images', 'Pricing & inventory', 'Categories & tags'],
   },
   {
+    id: 'inventory' as const,
+    title: 'Inventory / Stock Levels',
+    description: 'Import stock quantities per product and location from a CSV file to update your inventory',
+    icon: Warehouse,
+    color: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
+    hoverColor: 'hover:border-orange-500/50 hover:bg-orange-500/5',
+    features: ['CSV stock levels', 'Match by product/SKU', 'Per-location quantities', 'Reorder points'],
+  },
+  {
     id: 'both' as const,
     title: 'Both — Contacts & Products',
     description: 'Import your full business data in one go. We\'ll guide you through contacts first, then products',
@@ -72,7 +90,7 @@ export function UnifiedImportHub({ open, onOpenChange, onImported }: UnifiedImpo
     onOpenChange(isOpen)
   }
 
-  const handleSelect = (option: 'contacts' | 'products' | 'both') => {
+  const handleSelect = (option: 'contacts' | 'products' | 'inventory' | 'both') => {
     if (option === 'both') {
       setMode('both-contacts')
     } else {
@@ -97,6 +115,11 @@ export function UnifiedImportHub({ open, onOpenChange, onImported }: UnifiedImpo
     } else {
       handleClose(false)
     }
+  }
+
+  const handleInventoryImported = () => {
+    onImported?.()
+    handleClose(false)
   }
 
   // Show the chooser dialog
@@ -234,6 +257,19 @@ export function UnifiedImportHub({ open, onOpenChange, onImported }: UnifiedImpo
           if (!isOpen) handleClose(false)
         }}
         onImported={handleProductsImported}
+      />
+    )
+  }
+
+  // Inventory wizard (standalone)
+  if (mode === 'inventory') {
+    return (
+      <InventoryImportWizard
+        open={true}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) handleClose(false)
+        }}
+        onImported={handleInventoryImported}
       />
     )
   }
