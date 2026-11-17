@@ -205,7 +205,7 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
       {
         step_type: 'send_message',
         step_config: {
-          text: 'Hi! We hope you enjoyed your experience with us. Could you take a moment to rate our service? Your feedback helps us serve you better. Reply with a number from 1 (poor) to 5 (excellent).',
+          text: 'Hi! How was your experience with us? Reply with a number from 1 (poor) to 5 (excellent) — your feedback helps us improve.',
         },
       },
       {
@@ -218,19 +218,101 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
   dormant_reactivation: {
     slug: 'dormant_reactivation',
     name: 'Dormant Contact Reactivation',
-    description: 'Re-engage contacts who have been inactive for 60+ days with a personalised message.',
+    description:
+      'Re-engage contacts inactive for 60+ days with a proven 5-phase win-back sequence: check-in → value reminder → limited-time offer → urgency → sunset.',
     trigger_type: 'time_based',
     trigger_config: { delay_days: 60, condition: 'no_interaction' },
     steps: [
+      // ── Phase 1 (Day 0): Personalised check-in ──────────────
       {
         step_type: 'send_message',
         step_config: {
-          text: 'Hello! It has been a while since we heard from you. We have some exciting new offers and updates. Would you like to hear about them? Reply YES to get started!',
+          text: "Hi {{name}}, we noticed it's been a while since we last connected. We hope all is well! We've made some improvements we think you'll love. Would you like to hear what's new?",
         },
       },
       {
         step_type: 'add_tag',
-        step_config: { tag_id: '' },
+        step_config: { tag_id: '' }, // tag: reactivation-started
+      },
+      // ── Check if contact replied → stop if yes ─────────────
+      {
+        step_type: 'wait',
+        step_config: { amount: 3, unit: 'days' },
+      },
+      {
+        step_type: 'condition',
+        step_config: {
+          subject: 'message_content',
+          operand: '', // any reply from contact
+        },
+      },
+      // Branch YES → contact replied, stop sequence
+      {
+        step_type: 'add_tag',
+        step_config: { tag_id: '' }, // tag: reactivation-replied
+        parent_index: 3,
+        branch: 'yes',
+      },
+      // Branch NO → no reply, continue to Phase 2
+      // ── Phase 2 (Day 3): Value reminder ─────────────────────
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Since your last visit, we've added new features and services that other customers are already benefiting from. Here's what you're missing out on — reply HELLO to get a quick update.",
+        },
+        parent_index: 3,
+        branch: 'no',
+      },
+      // ── Phase 3 (Day 7): Limited-time win-back offer ────────
+      {
+        step_type: 'wait',
+        step_config: { amount: 4, unit: 'days' },
+        parent_index: 3,
+        branch: 'no',
+      },
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "We'd love to welcome you back! As a valued customer, here's an exclusive offer just for you — valid for the next 7 days only. Reply OFFER to claim it before it expires.",
+        },
+        parent_index: 3,
+        branch: 'no',
+      },
+      // ── Phase 4 (Day 10): Urgency reminder ──────────────────
+      {
+        step_type: 'wait',
+        step_config: { amount: 3, unit: 'days' },
+        parent_index: 3,
+        branch: 'no',
+      },
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "Just a heads-up — your exclusive offer expires in 4 days. We don't want you to miss out. Reply OFFER to claim it now.",
+        },
+        parent_index: 3,
+        branch: 'no',
+      },
+      // ── Phase 5 (Day 14): Sunset — binary choice ────────────
+      {
+        step_type: 'wait',
+        step_config: { amount: 4, unit: 'days' },
+        parent_index: 3,
+        branch: 'no',
+      },
+      {
+        step_type: 'send_message',
+        step_config: {
+          text: "This is our last message to you. We respect your time and don't want to send messages you don't find useful. Reply STAY to keep hearing from us, or we'll remove you from our list. Either way, we wish you all the best!",
+        },
+        parent_index: 3,
+        branch: 'no',
+      },
+      {
+        step_type: 'add_tag',
+        step_config: { tag_id: '' }, // tag: reactivation-sunset
+        parent_index: 3,
+        branch: 'no',
       },
     ],
   },
@@ -249,7 +331,7 @@ export const AUTOMATION_TEMPLATES: Record<TemplateSlug, AutomationTemplateDefini
       {
         step_type: 'send_message',
         step_config: {
-          text: 'Thank you for reaching out! A team member has been assigned to assist you and will respond shortly.',
+          text: 'Thanks for reaching out! A team member has been assigned and will respond shortly.',
         },
       },
     ],

@@ -107,11 +107,84 @@ export const STARTER_TEMPLATE_PRESETS: TemplatePreset[] = [
     name: 'customer_reactivation',
     category: 'Marketing',
     language: 'en_US',
-    body_text: 'Hi {{1}}, we miss you! It\'s been a while since your last visit. We\'d love to welcome you back with a special {{2}} discount on your next purchase. Valid for {{3}} days.',
+    body_text:
+      'Hi {{1}}, we miss you! It\'s been a while since your last visit. We\'d love to welcome you back with a special {{2}} discount on your next purchase. Valid for {{3}} days.',
     footer_text: 'Reply STOP to opt out',
     buttons: [
       { type: 'QUICK_REPLY', text: 'Claim Offer' },
       { type: 'QUICK_REPLY', text: 'Not Interested' },
+    ],
+  },
+
+  // ── Reactivation Sequence Templates (5-phase win-back) ─────
+  {
+    name: 'reactivation_checkin',
+    category: 'Marketing',
+    language: 'en_US',
+    header_type: 'text',
+    header_content: 'We miss you!',
+    body_text:
+      '{{1}}, still thinking about {{2}}? It\'s been a while and we\'d love to reconnect. We\'ve made some exciting improvements since your last visit.',
+    footer_text: 'Reply STOP to opt out',
+    buttons: [
+      { type: 'QUICK_REPLY', text: 'Tell Me More' },
+      { type: 'QUICK_REPLY', text: 'Not Now' },
+    ],
+  },
+  {
+    name: 'reactivation_value',
+    category: 'Marketing',
+    language: 'en_US',
+    header_type: 'text',
+    header_content: 'What changed since you last visited',
+    body_text:
+      'Hi {{1}}, since you\'ve been away, customers like you have been enjoying {{2}}. Here\'s what\'s new: {{3}}. We think you\'ll love it.',
+    footer_text: 'Reply STOP to opt out',
+    buttons: [
+      { type: 'QUICK_REPLY', text: 'Show Me' },
+      { type: 'QUICK_REPLY', text: 'No Thanks' },
+    ],
+  },
+  {
+    name: 'reactivation_offer',
+    category: 'Marketing',
+    language: 'en_US',
+    header_type: 'text',
+    header_content: 'A quick question, {{1}}',
+    body_text:
+      'We\'d love to welcome you back with something special: {{2}}. This is exclusively for returning customers and expires in exactly 7 days. Reply CLAIM to activate your offer.',
+    footer_text: 'Reply STOP to opt out',
+    buttons: [
+      { type: 'QUICK_REPLY', text: 'Claim Now' },
+      { type: 'QUICK_REPLY', text: 'Not Interested' },
+    ],
+  },
+  {
+    name: 'reactivation_urgency',
+    category: 'Marketing',
+    language: 'en_US',
+    header_type: 'text',
+    header_content: 'Your offer expires soon',
+    body_text:
+      'Hi {{1}}, your exclusive offer expires in {{2}}. We don\'t want you to miss out on {{3}}. This is your last chance to claim it.',
+    footer_text: 'Reply STOP to opt out',
+    buttons: [
+      { type: 'QUICK_REPLY', text: 'Claim Before Expiry' },
+      { type: 'QUICK_REPLY', text: 'Let It Go' },
+    ],
+  },
+  {
+    name: 'reactivation_sunset',
+    category: 'Marketing',
+    language: 'en_US',
+    header_type: 'text',
+    header_content: 'This is our last message to you',
+    body_text:
+      'Hi {{1}}, we respect your time and don\'t want to send messages you don\'t find useful. This is our final message. Reply STAY to keep hearing from us, or we\'ll remove you from our list. Either way, we wish you all the best!',
+    footer_text: 'Reply STOP to opt out',
+    buttons: [
+      { type: 'QUICK_REPLY', text: 'Stay' },
+      { type: 'QUICK_REPLY', text: 'Remove Me' },
     ],
   },
   {

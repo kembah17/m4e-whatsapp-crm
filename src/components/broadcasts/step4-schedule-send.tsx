@@ -14,8 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Send, Loader2, Users, Save, Coins } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Users, Save } from 'lucide-react';
 import { estimateBroadcastCost } from '@/lib/whatsapp/cost-calculator';
+import { CostEstimateBadge } from '@/components/broadcasts/cost-estimate-badge';
 
 interface AudienceConfig {
   type: string;
@@ -159,19 +160,10 @@ export function Step4ScheduleSend({
         </div>
         {/* Meta Cost Estimate */}
         <div className="border-t border-border pt-3 mt-1">
-          <div className="flex items-center gap-2 text-sm">
-            <Coins className="h-4 w-4 text-yellow-500" />
-            <span className="text-muted-foreground">Estimated Meta cost:</span>
-            <span className="font-medium text-foreground">
-              ₦{costEstimate.cost_ngn.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              (${costEstimate.cost_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
-            </span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Based on {template.category || 'Marketing'} rate of ₦{costEstimate.per_recipient_ngn.toFixed(2)}/message. Charged by Meta, not M4E.
-          </p>
+          <CostEstimateBadge
+            audienceSize={estimatedReach}
+            templateCategory={template.category || 'Marketing'}
+          />
         </div>
       </div>
 
