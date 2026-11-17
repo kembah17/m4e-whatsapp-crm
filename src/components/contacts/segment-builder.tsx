@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  Filter, Loader2, Plus, Save, Trash2, Users, X,
+  Filter, Loader2, Plus, RefreshCw, Save, Trash2, Users, X, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,13 +11,26 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { SegmentRule, SegmentGroup } from "@/lib/segments/segment-engine";
+import type { RefreshInterval } from "@/lib/segments/dynamic-segment";
 
 interface SegmentBuilderProps {
   initialRules?: SegmentGroup;
   initialName?: string;
   initialDescription?: string;
   segmentId?: string;
-  onSave?: (segment: { name: string; description: string; rules: SegmentGroup }) => void;
+  initialIsDynamic?: boolean;
+  initialRefreshInterval?: RefreshInterval;
+  initialAutoEnroll?: boolean;
+  initialAutoRemove?: boolean;
+  onSave?: (segment: {
+    name: string;
+    description: string;
+    rules: SegmentGroup;
+    is_dynamic: boolean;
+    refresh_interval: RefreshInterval;
+    auto_enroll: boolean;
+    auto_remove: boolean;
+  }) => void;
   onCancel?: () => void;
 }
 
@@ -73,6 +86,12 @@ const OPERATORS: Record<string, { value: SegmentRule["operator"]; label: string 
 
 const NO_VALUE_OPS = ["is_empty", "is_not_empty"];
 
+const REFRESH_INTERVALS: { value: RefreshInterval; label: string; description: string }[] = [
+  { value: "hourly", label: "Hourly", description: "Re-evaluate every hour" },
+  { value: "daily", label: "Daily", description: "Re-evaluate once per day" },
+  { value: "weekly", label: "Weekly", description: "Re-evaluate once per week" },
+];
+
 function getFieldType(field: string): string {
   const f = FIELD_OPTIONS.find((o) => o.value === field);
   return f?.type ?? "text";
@@ -96,6 +115,10 @@ export function SegmentBuilder({
   initialName = "",
   initialDescription = "",
   segmentId,
+  initialIsDynamic = false,
+  initialRefreshInterval = "daily",
+  initialAutoEnroll = true,
+  initialAutoRemove = true,
   onSave,
   onCancel,
 }: SegmentBuilderProps) {
@@ -107,6 +130,12 @@ export function SegmentBuilder({
   const [previewCount, setPreviewCount] = useState<number | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Dynamic segment state
+  const [isDynamic, setIsDynamic] = useState(initialIsDynamic);
+  const [refreshInterval, setRefreshInterval] = useState<RefreshInterval>(initialRefreshInterval);
+  const [autoEnroll, setAutoEnroll] = useState(initialAutoEnroll);
+  const [autoRemove, setAutoRemove] = useState(initialAutoRemove);
 
   const preview = useCallback(async () => {
     setPreviewing(true);
@@ -137,7 +166,6 @@ export function SegmentBuilder({
       const newRules = [...g.rules];
       const existing = newRules[index] as SegmentRule;
       newRules[index] = { ...existing, ...updates };
-      // Reset value when field or operator changes
       if (updates.field && updates.field !== existing.field) {
         (newRules[index] as SegmentRule).operator = "contains";
         (newRules[index] as SegmentRule).value = "";
@@ -172,7 +200,6 @@ export function SegmentBuilder({
     setGroup((g) => ({ ...g, logic: g.logic === "AND" ? "OR" : "AND" }));
   }
 
-  // Nested group helpers
   function updateNestedRule(groupIdx: number, ruleIdx: number, updates: Partial<SegmentRule>) {
     setGroup((g) => {
       const newRules = [...g.rules];
@@ -226,7 +253,15 @@ export function SegmentBuilder({
   async function handleSave() {
     if (!name.trim()) { toast.error("Segment name is required"); return; }
     if (onSave) {
-      onSave({ name: name.trim(), description: description.trim(), rules: group });
+      onSave({
+        name: name.trim(),
+        description: description.trim(),
+        rules: group,
+        is_dynamic: isDynamic,
+        refresh_interval: refreshInterval,
+        auto_enroll: autoEnroll,
+        auto_remove: autoRemove,
+      });
       return;
     }
     setSaving(true);
@@ -236,7 +271,15 @@ export function SegmentBuilder({
       const res = await fetch(url, {
         method,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: description.trim(), rules: group }),
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim(),
+          rules: group,
+          is_dynamic: isDynamic,
+          refresh_interval: refreshInterval,
+          auto_enroll: autoEnroll,
+          auto_remove: autoRemove,
+        }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -265,7 +308,6 @@ export function SegmentBuilder({
 
     return (
       <div key={index} className="flex items-center gap-2 flex-wrap">
-        {/* Field */}
         <select
           value={rule.field}
           onChange={(e) => onUpdate(index, { field: e.target.value })}
@@ -276,7 +318,6 @@ export function SegmentBuilder({
           ))}
         </select>
 
-        {/* Operator */}
         <select
           value={rule.operator}
           onChange={(e) => onUpdate(index, { operator: e.target.value as SegmentRule["operator"] })}
@@ -287,7 +328,6 @@ export function SegmentBuilder({
           ))}
         </select>
 
-        {/* Value */}
         {needsValue && fieldType === "select" && fieldDef && "options" in fieldDef ? (
           <select
             value={String(rule.value)}
@@ -332,6 +372,98 @@ export function SegmentBuilder({
         </div>
       </div>
 
+      {/* Dynamic Segment Toggle */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-1.5">
+              <Zap className="size-4" />Dynamic Segment
+            </CardTitle>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isDynamic}
+              onClick={() => setIsDynamic(!isDynamic)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                isDynamic ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block size-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                  isDynamic ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          <CardDescription>
+            {isDynamic
+              ? "This segment will automatically refresh its contact list on a schedule."
+              : "Enable to auto-refresh this segment\u2019s contacts on a schedule."}
+          </CardDescription>
+        </CardHeader>
+
+        {isDynamic && (
+          <CardContent className="space-y-4 pt-0">
+            {/* Refresh Interval */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Refresh Interval</Label>
+              <div className="flex gap-2">
+                {REFRESH_INTERVALS.map((ri) => (
+                  <button
+                    key={ri.value}
+                    type="button"
+                    onClick={() => setRefreshInterval(ri.value)}
+                    className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors ${
+                      refreshInterval === ri.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RefreshCw className="size-3" />
+                    {ri.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {REFRESH_INTERVALS.find((r) => r.value === refreshInterval)?.description}
+              </p>
+            </div>
+
+            {/* Auto-enroll & Auto-remove */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={autoEnroll}
+                  onChange={(e) => setAutoEnroll(e.target.checked)}
+                  className="mt-0.5 size-4 rounded border-border"
+                />
+                <div>
+                  <span className="text-sm font-medium">Auto-enroll</span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Automatically add contacts that match rules
+                  </p>
+                </div>
+              </label>
+              <label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={autoRemove}
+                  onChange={(e) => setAutoRemove(e.target.checked)}
+                  className="mt-0.5 size-4 rounded border-border"
+                />
+                <div>
+                  <span className="text-sm font-medium">Auto-remove</span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Remove contacts that no longer match rules
+                  </p>
+                </div>
+              </label>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Rules */}
       <Card>
         <CardHeader className="pb-3">
@@ -351,7 +483,6 @@ export function SegmentBuilder({
         <CardContent className="space-y-3">
           {group.rules.map((item, idx) => {
             if (isGroup(item)) {
-              // Nested group
               return (
                 <div key={idx} className="rounded-lg border border-dashed p-3 space-y-2 bg-muted/30">
                   <div className="flex items-center justify-between">
@@ -366,7 +497,7 @@ export function SegmentBuilder({
                     </Button>
                   </div>
                   {item.rules.map((nestedItem, nIdx) => {
-                    if (isGroup(nestedItem)) return null; // Max 2 levels
+                    if (isGroup(nestedItem)) return null;
                     return renderRuleRow(
                       nestedItem as SegmentRule,
                       nIdx,
@@ -423,6 +554,12 @@ export function SegmentBuilder({
               "Add conditions to preview matches"
             )}
           </span>
+          {isDynamic && previewCount !== null && (
+            <Badge variant="secondary" className="text-[10px] ml-1">
+              <RefreshCw className="size-2.5 mr-0.5" />
+              Auto-refreshes {refreshInterval}
+            </Badge>
+          )}
         </div>
         <Button variant="outline" size="sm" onClick={preview} disabled={previewing}>
           Preview

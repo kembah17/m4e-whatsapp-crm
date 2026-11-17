@@ -3,6 +3,8 @@ import type { CampaignExecution, ComposedMessage } from '@/types/campaigns'
 import { engineSendText } from '@/lib/automations/meta-send'
 import { engineSendEmail } from '@/lib/automations/brevo-send'
 import { engineSendSms } from '@/lib/automations/brevo-sms-send'
+import { resolveChannel } from '@/lib/campaigns/channel-router'
+import type { MessageType, ContactChannelInfo, AccountUsageStats } from '@/lib/campaigns/channel-router'
 
 /**
  * Process queued campaign executions.
@@ -77,8 +79,11 @@ export async function processQueuedExecutions(
         context,
       )
 
-      // Send via the appropriate channel
-      const channel = execution.channel || 'whatsapp'
+      // Resolve the channel — supports 'auto' routing
+      const rawChannel = execution.channel || 'whatsapp'
+      const channel = rawChannel === 'auto'
+        ? await resolveAutoChannel(db, execution.account_id, contact, context)
+        : rawChannel
 
       if (channel === 'whatsapp' && contact.phone) {
         // Find or create a conversation for this contact
@@ -175,6 +180,78 @@ export async function processQueuedExecutions(
     `[processQueuedExecutions] Processed ${processedCount}/${executions.length} executions`,
   )
   return processedCount
+}
+
+/**
+ * Resolve the best channel when campaign is set to 'auto'.
+ * Queries account config to determine available channels and usage.
+ */
+async function resolveAutoChannel(
+  db: SupabaseClient,
+  accountId: string,
+  contact: { phone: string | null; email: string | null },
+  context: Record<string, unknown>,
+): Promise<string> {
+  // Check if account has email config (Brevo)
+  const { data: emailConfig } = await db
+    .from('email_config')
+    .select('id')
+    .eq('account_id', accountId)
+    .maybeSingle()
+
+  // Get approximate service conversation count this month
+  const monthStart = new Date()
+  monthStart.setDate(1)
+  monthStart.setHours(0, 0, 0, 0)
+
+  const { count: serviceConvCount } = await db
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('account_id', accountId)
+    .gte('created_at', monthStart.toISOString())
+    .eq('direction', 'outbound')
+
+  const contactInfo: ContactChannelInfo = {
+    phone: contact.phone,
+    email: contact.email,
+  }
+
+  const usageStats: AccountUsageStats = {
+    serviceConversationsUsed: serviceConvCount ?? 0,
+    hasEmailConfig: !!emailConfig,
+    hasSmsConfig: !!emailConfig, // Brevo handles both email and SMS
+  }
+
+  // Determine message type from context
+  const msgType = inferMessageType(context)
+
+  const decision = resolveChannel(contactInfo, msgType, usageStats)
+
+  console.log(
+    `[resolveAutoChannel] account=${accountId} → ${decision.channel} (${decision.reason})`,
+  )
+
+  return decision.channel
+}
+
+/**
+ * Infer the message type from execution context.
+ */
+function inferMessageType(context: Record<string, unknown>): MessageType {
+  // Check for transactional indicators
+  if (context.order_number || context.order_status || context.order_total) {
+    return 'transactional'
+  }
+  // Check for cart recovery (marketing)
+  if (context.cart_url || context.cart_total) {
+    return 'marketing'
+  }
+  // Check for reactivation
+  if (context.days_since_last_purchase || context.customer_segment === 'dormant') {
+    return 'reactivation'
+  }
+  // Default to marketing
+  return 'marketing'
 }
 
 /**
